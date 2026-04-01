@@ -1,0 +1,358 @@
+{
+  "$schema": "Lead Record Schema — FEDSafe Retirement Lead Manager",
+  "$version": "1.0",
+  "$description": "Schema for a single lead record. Fields are split into three groups: FOIA Source (public employee data from the USPS roster), Enrichment (data obtained from third-party providers like Apollo, ZoomInfo, etc.), and System (app-managed metadata).",
+
+  "lead": {
+    "_comment": "====================================================================",
+    "_comment2": "  GROUP 1: FOIA SOURCE FIELDS                                      ",
+    "_comment3": "  Origin: 'DataSeed/00 FOIA 2025 PO REVISED.xlsx'                  ",
+    "_comment4": "  These fields are populated during the initial data import.        ",
+    "_comment5": "  472,576 records from the US Postal Service employee roster.       ",
+    "_comment6": "====================================================================",
+
+    "id": {
+      "type": "uuid",
+      "source": "system-generated",
+      "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "description": "Unique identifier for the lead. Auto-generated UUID on import. This is the PK used across all relationships (collections, campaigns, enrichment lookups)."
+    },
+
+    "first_name": {
+      "type": "text",
+      "source": "FOIA",
+      "source_column": "First Name",
+      "example": "Andrew",
+      "description": "Employee's legal first name as listed in the FOIA roster. All caps in source but we normalize to title case on import."
+    },
+
+    "last_name": {
+      "type": "text",
+      "source": "FOIA",
+      "source_column": "Last Name",
+      "example": "Mayo",
+      "description": "Employee's legal last name. Primary search field. Indexed for fast lookups."
+    },
+
+    "middle_initial": {
+      "type": "text",
+      "source": "FOIA",
+      "source_column": "Middle Intial",
+      "example": "S",
+      "nullable": true,
+      "description": "Single character middle initial. Note: source column has a typo ('Intial'). ~30% of records have this as null."
+    },
+
+    "occupation_title": {
+      "type": "text",
+      "source": "FOIA",
+      "source_column": "Occupation Title",
+      "example": "BUILDING MAINTENANCE CUSTODIAN",
+      "unique_values": 112,
+      "description": "Federal job title. Useful for filtering prospects by role — e.g., targeting 'POSTMASTER', 'SUPERVISOR', or 'MANAGER' titles for higher-value leads. All uppercase in source."
+    },
+
+    "grade_level": {
+      "type": "text",
+      "source": "FOIA",
+      "source_column": "Grade Level",
+      "example": "P9-05",
+      "unique_values": 120,
+      "description": "Federal pay grade/step. Format is typically '{schedule}{grade}-{step}' (e.g., P9-05 = PS Schedule Grade 9 Step 5). Higher grades = higher seniority and salary. Key indicator for retirement readiness."
+    },
+
+    "annual_salary": {
+      "type": "integer",
+      "source": "FOIA",
+      "source_column": "Annual Salary",
+      "example": 73831,
+      "range": { "min": 0, "max": 192470 },
+      "description": "Annual base salary in USD (no cents). Critical filter for lead quality — higher salary = more retirement savings potential. $0 values may indicate part-time or recently onboarded employees."
+    },
+
+    "hourly_rate": {
+      "type": "numeric(10,2)",
+      "source": "FOIA",
+      "source_column": "Hourly Rate",
+      "example": 35.50,
+      "description": "Hourly pay rate in USD. Derived from annual salary / 2080 hours. Useful for identifying part-time vs full-time employees."
+    },
+
+    "facility_name": {
+      "type": "text",
+      "source": "FOIA",
+      "source_column": "Facility Name",
+      "example": "AGAWAM PO",
+      "description": "Name of the USPS facility where the employee works. Usually formatted as '{CITY} PO' (Post Office), '{CITY} DDP' (Distribution), or '{CITY} P&DC' (Processing & Distribution Center)."
+    },
+
+    "facility_address": {
+      "type": "text",
+      "source": "FOIA",
+      "source_column": "Facility Address",
+      "example": "600 SUFFIELO ST",
+      "description": "Street address of the USPS facility. This is the WORK address, not the employee's home address. Useful for geographic targeting but not for direct mail to the individual."
+    },
+
+    "facility_city": {
+      "type": "text",
+      "source": "FOIA",
+      "source_column": "Facility City",
+      "example": "AGAWAM",
+      "description": "City of the USPS facility. Indexed for geographic filtering. All uppercase in source."
+    },
+
+    "facility_state": {
+      "type": "text",
+      "source": "FOIA",
+      "source_column": "Facility State",
+      "example": "MA",
+      "unique_values": 54,
+      "description": "Two-letter state/territory code. 54 unique values (50 states + DC + territories like PR, GU, VI, AS). Primary geographic filter for regional campaigns."
+    },
+
+    "facility_zip_code": {
+      "type": "text",
+      "source": "FOIA",
+      "source_column": "Facility Zip Code",
+      "example": "01001-9998",
+      "description": "ZIP+4 code of the facility. Text type to preserve leading zeros and the +4 extension. Can be used for radius-based targeting."
+    },
+
+    "entered_on_duty_date": {
+      "type": "date",
+      "source": "FOIA",
+      "source_column": "Entered on Duty Date",
+      "example": "2005-09-17",
+      "description": "Date the employee entered federal service. CRITICAL for retirement planning — employees with 20+ years of service are prime prospects. Calculate years_of_service = today - entered_on_duty_date."
+    },
+
+    "source_file": {
+      "type": "text",
+      "source": "system",
+      "example": "FOIA_2025_PO_REVISED",
+      "description": "Identifier for the import batch/file. Allows tracking which import populated this record, useful when re-importing updated rosters."
+    },
+
+    "_comment_enrichment": "====================================================================",
+    "_comment_enrichment2": "  GROUP 2: ENRICHMENT FIELDS                                       ",
+    "_comment_enrichment3": "  These fields are NULL after initial import and populated by       ",
+    "_comment_enrichment4": "  third-party data enrichment providers.                            ",
+    "_comment_enrichment5": "====================================================================",
+
+    "personal_email": {
+      "type": "text",
+      "source": "enrichment",
+      "nullable": true,
+      "example": "andrew.mayo@gmail.com",
+      "providers": ["Apollo", "ZoomInfo", "Hunter.io", "Clearbit", "Lusha"],
+      "description": "Personal email address (NOT work/gov email). Federal employees have .usps.gov emails but those aren't useful for marketing. Enrichment providers match name + location to find personal email addresses.",
+      "enrichment_notes": "Apollo and ZoomInfo are the best sources for this. Match on: first_name + last_name + facility_state. Expect 30-50% match rate."
+    },
+
+    "personal_phone": {
+      "type": "text",
+      "source": "enrichment",
+      "nullable": true,
+      "example": "(413) 555-0198",
+      "providers": ["Apollo", "ZoomInfo", "Lusha", "Cognism", "RocketReach"],
+      "description": "Personal phone number. Enrichment providers can sometimes return mobile vs landline distinction. Store in E.164 or formatted US format.",
+      "enrichment_notes": "Phone numbers have lower match rates (~15-25%) than email. Lusha and Cognism tend to have better phone data. Some providers return multiple numbers — store the most confident one here."
+    },
+
+    "personal_address": {
+      "type": "text",
+      "source": "enrichment",
+      "nullable": true,
+      "example": "123 Maple Street",
+      "providers": ["Whitepages API", "BeenVerified API", "Spokeo API", "USPS NCOA"],
+      "description": "Employee's home/personal street address. Essential for direct mail campaigns. NOT the same as facility_address.",
+      "enrichment_notes": "People-search APIs (Whitepages, BeenVerified) are the best source. Match on full name + state. USPS National Change of Address (NCOA) can validate/update addresses."
+    },
+
+    "personal_city": {
+      "type": "text",
+      "source": "enrichment",
+      "nullable": true,
+      "example": "Springfield",
+      "description": "Home city. Often close to facility_city but not always — employees may commute from neighboring cities."
+    },
+
+    "personal_state": {
+      "type": "text",
+      "source": "enrichment",
+      "nullable": true,
+      "example": "MA",
+      "description": "Home state. Usually matches facility_state but not guaranteed for border-area employees."
+    },
+
+    "personal_zip": {
+      "type": "text",
+      "source": "enrichment",
+      "nullable": true,
+      "example": "01101",
+      "description": "Home ZIP code. Useful for direct mail and radius targeting from the employee's actual residence."
+    },
+
+    "linkedin_url": {
+      "type": "text",
+      "source": "enrichment",
+      "nullable": true,
+      "example": "https://linkedin.com/in/andrew-mayo-12345",
+      "providers": ["Apollo", "RocketReach", "Clearbit", "Lusha"],
+      "description": "LinkedIn profile URL. Many federal employees maintain LinkedIn profiles. Useful for verifying identity and for LinkedIn outreach campaigns.",
+      "enrichment_notes": "Apollo has the highest LinkedIn match rate. Most USPS workers below management level may not have LinkedIn profiles — expect ~10-20% match rate."
+    },
+
+    "_comment_enrichment_meta": "--- Enrichment Metadata ---",
+
+    "enrichment_source": {
+      "type": "text",
+      "source": "system",
+      "nullable": true,
+      "example": "apollo",
+      "allowed_values": ["apollo", "zoominfo", "lusha", "hunter", "clearbit", "rocketreach", "whitepages", "manual"],
+      "description": "Which provider was used to enrich this record. Important for tracking data quality and cost per enrichment."
+    },
+
+    "enrichment_confidence": {
+      "type": "numeric(3,2)",
+      "source": "system",
+      "nullable": true,
+      "example": 0.85,
+      "range": { "min": 0.0, "max": 1.0 },
+      "description": "Confidence score from the enrichment provider (0.0 = no confidence, 1.0 = exact match). Records below 0.5 should be flagged for manual review."
+    },
+
+    "enrichment_dt": {
+      "type": "timestamptz",
+      "source": "system",
+      "nullable": true,
+      "example": "2026-04-15T10:30:00Z",
+      "description": "Timestamp when this record was last enriched. Enrichment data gets stale — re-enrich records older than 6 months for active campaigns."
+    },
+
+    "enrichment_status": {
+      "type": "text",
+      "source": "system",
+      "nullable": true,
+      "example": "enriched",
+      "allowed_values": ["pending", "enriched", "partial", "not_found", "error"],
+      "description": "Status of the enrichment attempt. 'partial' means some fields were found but not all. 'not_found' means the provider returned no match."
+    },
+
+    "_comment_system": "====================================================================",
+    "_comment_system2": "  GROUP 3: SYSTEM / AUDIT FIELDS (NON-NEGOTIABLE)                  ",
+    "_comment_system3": "  Present on ALL tables. Auto-managed by triggers.                 ",
+    "_comment_system4": "====================================================================",
+
+    "search_vector": {
+      "type": "tsvector",
+      "source": "system",
+      "description": "PostgreSQL full-text search vector. Auto-populated by trigger on INSERT/UPDATE. Covers: first_name, last_name, middle_initial, occupation_title, facility_name, facility_city, facility_state, facility_zip_code. Indexed with GIN for fast text search."
+    },
+
+    "cre_dt": {
+      "type": "timestamptz",
+      "default": "now()",
+      "description": "Record creation timestamp. Set once on INSERT, never updated."
+    },
+    "cre_by": {
+      "type": "text",
+      "default": "''",
+      "description": "User ID or identifier who created the record. 'data_import' for bulk imports, user email for manual entries."
+    },
+    "mod_dt": {
+      "type": "timestamptz",
+      "default": "now()",
+      "description": "Last modification timestamp. Auto-updated by trigger on every UPDATE."
+    },
+    "mod_by": {
+      "type": "text",
+      "default": "''",
+      "description": "User ID or identifier who last modified the record."
+    },
+    "version_no": {
+      "type": "integer",
+      "default": 1,
+      "description": "Optimistic concurrency counter. Incremented by trigger on every UPDATE. Used to prevent lost updates when multiple users edit the same record."
+    },
+    "tenant_id": {
+      "type": "uuid",
+      "nullable": true,
+      "description": "Multi-tenancy partition key. NULL for now (single-tenant). Reserved for future SaaS expansion where multiple advisory firms share the platform."
+    }
+  },
+
+  "_enrichment_strategy": {
+    "overview": "The FOIA data gives us name + work location + salary + tenure but NO personal contact info. To make these leads actionable for outreach, we need to enrich with personal email, phone, and home address.",
+
+    "recommended_providers": [
+      {
+        "provider": "Apollo.io",
+        "best_for": ["email", "phone", "linkedin"],
+        "match_fields": "first_name + last_name + company:'US Postal Service' + location:facility_state",
+        "pricing": "Free tier: 10K enrichments/month. Paid: ~$0.03-0.05/record",
+        "match_rate_estimate": "35-45% for email, 15-20% for phone",
+        "api_docs": "https://apolloio.github.io/apollo-api-docs/",
+        "notes": "Best overall value. Has a 'people search' API that can match by name + employer. USPS is a known employer in their database."
+      },
+      {
+        "provider": "ZoomInfo",
+        "best_for": ["email", "phone", "address"],
+        "match_fields": "first_name + last_name + company:'United States Postal Service'",
+        "pricing": "Enterprise only — $15K-25K/year minimum",
+        "match_rate_estimate": "40-55% for email, 20-30% for phone",
+        "notes": "Highest match rates but very expensive. Worth it only if you plan to enrich 100K+ records regularly."
+      },
+      {
+        "provider": "Lusha",
+        "best_for": ["phone", "email"],
+        "match_fields": "first_name + last_name + company + location",
+        "pricing": "Free tier: 50 credits/month. Pro: ~$0.10/record",
+        "match_rate_estimate": "25-35% for phone (their strength)",
+        "notes": "Best phone number accuracy. Smaller database than Apollo/ZoomInfo but higher phone match quality."
+      },
+      {
+        "provider": "Hunter.io",
+        "best_for": ["email"],
+        "match_fields": "first_name + last_name + domain (usps.gov)",
+        "pricing": "Free tier: 25 searches/month. Starter: $49/month",
+        "match_rate_estimate": "20-30% for personal email",
+        "notes": "Good for finding work emails (@usps.gov) but less useful for personal emails. Use as a supplement."
+      },
+      {
+        "provider": "Whitepages Pro API",
+        "best_for": ["address", "phone"],
+        "match_fields": "first_name + last_name + state",
+        "pricing": "~$0.05-0.15/lookup",
+        "match_rate_estimate": "50-65% for address, 40-50% for phone",
+        "api_docs": "https://pro.whitepages.com/developer/",
+        "notes": "Best source for home addresses. People-search data. Can return multiple matches — use facility_city proximity to pick the right one."
+      },
+      {
+        "provider": "RocketReach",
+        "best_for": ["email", "linkedin"],
+        "match_fields": "first_name + last_name + employer",
+        "pricing": "Free tier: 5 lookups/month. Pro: ~$0.20/record",
+        "match_rate_estimate": "30-40% for email",
+        "notes": "Good LinkedIn URL discovery. API supports bulk lookups."
+      }
+    ],
+
+    "recommended_approach": [
+      "STEP 1: Start with Apollo.io (best free tier, good match rates). Enrich all 472K records using their bulk 'people search' API. Match on: first_name + last_name + company:'US Postal Service' + location:state.",
+      "STEP 2: For records Apollo couldn't match, try Whitepages Pro for home address + phone (their strength).",
+      "STEP 3: For high-value leads only (salary > $100K, years_of_service > 20), use Lusha or ZoomInfo for phone numbers.",
+      "STEP 4: Store enrichment_source, enrichment_confidence, and enrichment_dt so you know which provider found what and how fresh the data is.",
+      "STEP 5: Re-enrich records every 6 months for active campaigns — people move and change numbers."
+    ],
+
+    "cost_estimate": {
+      "apollo_free_tier": "10K records/month × 0 cost = $0 (would take ~47 months for all records)",
+      "apollo_paid_bulk": "472K × $0.04 = ~$18,880 one-time",
+      "tiered_approach": "Enrich top 50K leads first (salary > $80K, 20+ years service) via Apollo free tier = 5 months at $0, then evaluate ROI before scaling",
+      "recommendation": "Start with tiered approach. Enrich the highest-value segment first and measure conversion before investing in full-database enrichment."
+    }
+  }
+}

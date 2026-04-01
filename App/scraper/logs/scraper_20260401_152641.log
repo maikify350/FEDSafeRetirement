@@ -1,0 +1,35 @@
+2026-04-01 15:26:41,264  INFO     Sites: ['fastpeoplesearch', 'truepeoplesearch']
+2026-04-01 15:26:41,264  INFO     Leads to process: 5
+2026-04-01 15:26:41,264  INFO     Concurrent browsers: 3
+2026-04-01 15:26:43,843  INFO     Worker 0 started
+2026-04-01 15:26:43,843  INFO     [1/5] Worker 0: Semo Alaelua (AK)
+2026-04-01 15:26:43,887  INFO     Worker 1 started
+2026-04-01 15:26:43,887  INFO     [2/5] Worker 1: Charlea Kewan-Bartleson (AK)
+2026-04-01 15:26:44,044  INFO     Worker 2 started
+2026-04-01 15:26:44,045  INFO     [3/5] Worker 2: Chantelle Nakarak (AK)
+2026-04-01 15:26:54,968  WARNING  CAPTCHA detected on truepeoplesearch for Chantelle Nakarak
+2026-04-01 15:26:54,971  WARNING  Blocked on truepeoplesearch — skipping to next site
+2026-04-01 15:26:56,047  WARNING  CAPTCHA detected on truepeoplesearch for Charlea Kewan-Bartleson
+2026-04-01 15:26:56,047  WARNING  Blocked on truepeoplesearch — skipping to next site
+2026-04-01 15:26:56,376  WARNING  CAPTCHA detected on truepeoplesearch for Semo Alaelua
+2026-04-01 15:26:56,376  WARNING  Blocked on truepeoplesearch — skipping to next site
+2026-04-01 15:27:02,123  INFO     [4/5] Worker 1: Jonathan Quimpo (AK)
+2026-04-01 15:27:03,230  INFO     [5/5] Worker 2: Eleanor Sanbei (AK)
+2026-04-01 15:27:04,364  INFO     Worker 0 finished
+2026-04-01 15:27:11,961  WARNING  CAPTCHA detected on truepeoplesearch for Jonathan Quimpo
+2026-04-01 15:27:11,962  WARNING  Blocked on truepeoplesearch — skipping to next site
+2026-04-01 15:27:15,686  WARNING  CAPTCHA detected on truepeoplesearch for Eleanor Sanbei
+2026-04-01 15:27:15,686  WARNING  Blocked on truepeoplesearch — skipping to next site
+2026-04-01 15:27:18,789  INFO     Worker 1 finished
+2026-04-01 15:27:21,228  INFO     Worker 2 finished
+2026-04-01 15:27:21,415  INFO     ============================================================
+2026-04-01 15:27:21,415  INFO     ENRICHMENT COMPLETE
+2026-04-01 15:27:21,415  INFO       Total processed : 5
+2026-04-01 15:27:21,415  INFO       Enriched        : 0
+2026-04-01 15:27:21,415  INFO       Not found       : 5
+2026-04-01 15:27:21,415  INFO       Match rate      : 0.0%
+2026-04-01 15:27:21,415  INFO       Phones found    : 0
+2026-04-01 15:27:21,416  INFO       Emails found    : 0
+2026-04-01 15:27:21,416  INFO       Addresses found : 0
+2026-04-01 15:27:21,416  INFO       Results saved   : C:\WIP\FEDSafeRetirement_App\App\scraper\output\enriched_leads.json
+2026-04-01 15:27:21,416  INFO     ============================================================

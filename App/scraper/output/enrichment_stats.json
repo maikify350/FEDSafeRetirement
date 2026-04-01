@@ -1,0 +1,15 @@
+{
+  "total": 3,
+  "processed": 3,
+  "enriched": 0,
+  "not_found": 3,
+  "found_personal_phone": 0,
+  "found_personal_email": 0,
+  "found_personal_address": 0,
+  "started_at": "2026-04-01T20:29:23.648852+00:00",
+  "sites_used": [
+    "fastpeoplesearch"
+  ],
+  "finished_at": "2026-04-01T20:29:44.512709+00:00",
+  "match_rate": "0.0%"
+}

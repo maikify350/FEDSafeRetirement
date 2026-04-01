@@ -81,6 +81,17 @@ erDiagram
         text facility_zip_code
         date entered_on_duty_date
         text source_file
+        text personal_email
+        text personal_phone
+        text personal_address
+        text personal_city
+        text personal_state
+        text personal_zip
+        text linkedin_url
+        text enrichment_source
+        numeric enrichment_confidence
+        timestamptz enrichment_dt
+        text enrichment_status
         timestamptz cre_dt
         text cre_by
         timestamptz mod_dt
@@ -198,6 +209,20 @@ CREATE TABLE public.leads (
     facility_zip_code     text        DEFAULT '',
     entered_on_duty_date  date,
     source_file           text        DEFAULT '',
+
+    -- Enrichment fields (populated by third-party providers: Apollo, ZoomInfo, etc.)
+    personal_email        text,
+    personal_phone        text,
+    personal_address      text,
+    personal_city         text,
+    personal_state        text,
+    personal_zip          text,
+    linkedin_url          text,
+    enrichment_source     text,
+    enrichment_confidence numeric(3,2),
+    enrichment_dt         timestamptz,
+    enrichment_status     text        DEFAULT 'pending'
+                                      CHECK (enrichment_status IN ('pending', 'enriched', 'partial', 'not_found', 'error')),
 
     -- Full-text search vector (auto-populated by trigger)
     search_vector         tsvector,
