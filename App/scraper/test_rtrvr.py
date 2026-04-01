@@ -20,9 +20,9 @@ def load_api_key() -> str:
     env_path = Path(__file__).resolve().parent.parent / ".env"
     if env_path.exists():
         for line in env_path.read_text().splitlines():
-            if line.startswith("RTRVR_API_KEY="):
+            if "RTRVR_API_KEY=" in line and not line.strip().startswith("#"):
                 return line.split("=", 1)[1].strip().strip('"').strip("'")
-    key = os.environ.get("RTRVR_API_KEY", "")
+    key = os.environ.get("RTRVR_API_KEY", "") or os.environ.get("NEXT_PUBLIC_RTRVR_API_KEY", "")
     if not key:
         print("ERROR: RTRVR_API_KEY not found.")
         print("Add to App/.env:  RTRVR_API_KEY=rtrvr_your_key_here")

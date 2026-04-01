@@ -1,6 +1,6 @@
 # FEDSafe Retirement — TODO Tracker
 
-> **Last Updated:** 2026-04-01 16:13 CST
+> **Last Updated:** 2026-04-01 16:36 CST
 > **Purpose:** Crash recovery and session continuity. Always check this file when resuming.
 
 ---
@@ -35,21 +35,26 @@
 - [x] Create migration runner scripts (Node.js)
 - [x] Dev server tested — login screen renders correctly on localhost:8001
 
+### Phase 1: Database & Auth (Session 2)
+- [x] Run SQL migration via Supabase MCP — all 4 tables created
+- [x] Verify seed user (rgarcia350@gmail.com) inserted with JSONB settings field
+- [x] Create Supabase Auth user (rgarcia350@gmail.com / FedSafe2026!)
+- [x] Link auth.users ID to public.users ID
+- [x] Wire Login.tsx to Supabase Auth (email/password sign-in)
+- [x] Remove social login buttons (not needed)
+- [x] Create auth callback route (/auth/callback) for password reset
+- [x] Wire UserDropdown to display real user data (Ricardo Garcia, rgarcia350@gmail.com)
+- [x] Wire Logout button to supabase.auth.signOut()
+- [x] Fix VerticalMenu to use custom navigation data (Dashboard, Leads, Collections, Settings, Users)
+- [x] Fix root redirect: / → /dashboard (was /home)
+- [x] Fix middleware redirect for authenticated users: auth pages → /dashboard
+- [x] Fix TypeScript lint errors in middleware.ts
+- [x] Login → Dashboard → User Profile → Logout flow VERIFIED ✅
+- [x] Deploy admin-create-user edge function (temporary, for user creation)
+
 ---
 
 ## 🔲 IN PROGRESS / NEXT SESSION
-
-### Phase 1 Remaining: Database Migration
-- [ ] **Run SQL migration against Supabase** — MCP token updated, retry via MCP `apply_migration` on next session
-- [ ] Verify all 4 tables created (users, leads, collections, leads_to_collections)
-- [ ] Verify seed user (rgarcia350@gmail.com) inserted
-- [ ] Set up Supabase Auth user for login
-
-### Phase 1 Remaining: Login Integration
-- [ ] Wire Login.tsx view to Supabase Auth (email/password sign-in)
-- [ ] Remove social login buttons (not needed for this use case)
-- [ ] Test login → redirect to /dashboard flow
-- [ ] Auth callback route for password reset
 
 ### Phase 2: Data Import
 - [ ] Build data import script (Excel → Supabase batch insert)
@@ -92,9 +97,10 @@
 | **GitHub Repo** | `maikify350/FEDSafeRetirement` |
 | **Migration SQL** | `App/supabase/migrations/001_initial_schema.sql` |
 | **Vuexy Reference** | `Docs/Vuexy_library_Reference/nextjs-typescript-version/` |
+| **Login Credentials** | `rgarcia350@gmail.com` / `FedSafe2026!` |
+| **Auth User ID** | `ca723b5e-58ed-49d9-9dd2-9775caac74b8` |
 
 ### First Thing Next Session:
-1. Verify Supabase MCP connects (`list_projects` should show `gqarlkfmpgaotbezpkbs`)
-2. Run migration via MCP `apply_migration`
-3. Wire Login to Supabase Auth
-4. Start data import
+1. Build data import script for FOIA Excel file
+2. Import 472K records into `leads` table
+3. Start building the Lead Search grid (TanStack Table + server-side pagination)

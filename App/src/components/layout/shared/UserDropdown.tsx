@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import type { MouseEvent } from 'react'
 
 // Next Imports
@@ -24,6 +24,9 @@ import Button from '@mui/material/Button'
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
 
+// Supabase
+import { createClient } from '@/utils/supabase/client'
+
 // Styled component for badge content
 const BadgeContentSpan = styled('span')({
   width: 8,
@@ -34,17 +37,59 @@ const BadgeContentSpan = styled('span')({
   boxShadow: '0 0 0 2px var(--mui-palette-background-paper)'
 })
 
+interface UserProfile {
+  first_name: string
+  last_name: string
+  email: string
+  role: string
+  avatar_url: string
+}
+
 const UserDropdown = () => {
   // States
   const [open, setOpen] = useState(false)
+  const [user, setUser] = useState<UserProfile | null>(null)
 
   // Refs
   const anchorRef = useRef<HTMLDivElement>(null)
 
   // Hooks
   const router = useRouter()
-
   const { settings } = useSettings()
+
+  // Load user profile from Supabase
+  useEffect(() => {
+    const loadUser = async () => {
+      const supabase = createClient()
+
+      // Get the auth user first
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+
+      if (authUser) {
+        // Try to get the public profile
+        const { data: profile } = await supabase
+          .from('users')
+          .select('first_name, last_name, email, role, avatar_url')
+          .eq('id', authUser.id)
+          .single()
+
+        if (profile) {
+          setUser(profile)
+        } else {
+          // Fallback to auth metadata
+          setUser({
+            first_name: authUser.user_metadata?.first_name || '',
+            last_name: authUser.user_metadata?.last_name || '',
+            email: authUser.email || '',
+            role: 'viewer',
+            avatar_url: ''
+          })
+        }
+      }
+    }
+
+    loadUser()
+  }, [])
 
   const handleDropdownOpen = () => {
     !open ? setOpen(true) : setOpen(false)
@@ -63,9 +108,22 @@ const UserDropdown = () => {
   }
 
   const handleUserLogout = async () => {
-    // Redirect to login page
+    const supabase = createClient()
+
+    await supabase.auth.signOut()
     router.push('/login')
+    router.refresh()
   }
+
+  const displayName = user
+    ? `${user.first_name} ${user.last_name}`.trim() || user.email
+    : 'Loading...'
+
+  const displayEmail = user?.email || ''
+  const displayRole = user?.role || ''
+  const initials = user
+    ? `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase()
+    : '?'
 
   return (
     <>
@@ -78,11 +136,14 @@ const UserDropdown = () => {
       >
         <Avatar
           ref={anchorRef}
-          alt='John Doe'
-          src='/images/avatars/1.png'
+          alt={displayName}
+          src={user?.avatar_url || ''}
           onClick={handleDropdownOpen}
           className='cursor-pointer bs-[38px] is-[38px]'
-        />
+          sx={{ bgcolor: 'primary.main', fontSize: '0.875rem' }}
+        >
+          {!user?.avatar_url && initials}
+        </Avatar>
       </Badge>
       <Popper
         open={open}
@@ -103,30 +164,24 @@ const UserDropdown = () => {
               <ClickAwayListener onClickAway={e => handleDropdownClose(e as MouseEvent | TouchEvent)}>
                 <MenuList>
                   <div className='flex items-center plb-2 pli-6 gap-2' tabIndex={-1}>
-                    <Avatar alt='John Doe' src='/images/avatars/1.png' />
+                    <Avatar
+                      alt={displayName}
+                      src={user?.avatar_url || ''}
+                      sx={{ bgcolor: 'primary.main', fontSize: '0.875rem' }}
+                    >
+                      {!user?.avatar_url && initials}
+                    </Avatar>
                     <div className='flex items-start flex-col'>
                       <Typography className='font-medium' color='text.primary'>
-                        John Doe
+                        {displayName}
                       </Typography>
-                      <Typography variant='caption'>admin@vuexy.com</Typography>
+                      <Typography variant='caption'>{displayEmail}</Typography>
                     </div>
                   </div>
                   <Divider className='mlb-1' />
-                  <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                    <i className='tabler-user' />
-                    <Typography color='text.primary'>My Profile</Typography>
-                  </MenuItem>
-                  <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
+                  <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e, '/settings')}>
                     <i className='tabler-settings' />
                     <Typography color='text.primary'>Settings</Typography>
-                  </MenuItem>
-                  <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                    <i className='tabler-currency-dollar' />
-                    <Typography color='text.primary'>Pricing</Typography>
-                  </MenuItem>
-                  <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                    <i className='tabler-help-circle' />
-                    <Typography color='text.primary'>FAQ</Typography>
                   </MenuItem>
                   <div className='flex items-center plb-2 pli-3'>
                     <Button
