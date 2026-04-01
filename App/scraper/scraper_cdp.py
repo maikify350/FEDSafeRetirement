@@ -64,9 +64,24 @@ async def human_scroll(page: Page):
 
 
 def build_url(site: dict, lead: dict) -> str:
-    first = (lead.get("first_name") or "").strip().lower().replace(" ", "-")
-    last  = (lead.get("last_name") or "").strip().lower().replace(" ", "-")
-    state = (lead.get("facility_state") or "").strip().lower()
+    first_raw = (lead.get("first_name") or "").strip()
+    last_raw  = (lead.get("last_name") or "").strip()
+    state_raw = (lead.get("facility_state") or "").strip()
+
+    name = site["name"]
+    if name == "radaris":
+        # Radaris uses title case: /p/First/Last/
+        first = first_raw.title().replace(" ", "-")
+        last  = last_raw.title().replace(" ", "-")
+    elif name == "spokeo":
+        # Spokeo uses title case with dash: /First-Last
+        first = first_raw.title().replace(" ", "-")
+        last  = last_raw.title().replace(" ", "-")
+    else:
+        first = first_raw.lower().replace(" ", "-")
+        last  = last_raw.lower().replace(" ", "-")
+
+    state = state_raw.lower()
     return site["base_url"].format(first=first, last=last, state=state)
 
 
@@ -98,10 +113,30 @@ def save_stats(stats: dict):
 
 
 async def check_for_captcha(page: Page) -> bool:
-    content = await page.content()
-    lower = content.lower()
-    signals = ["captcha", "recaptcha", "hcaptcha", "cf-challenge", "challenge-running", "security challenge"]
-    return any(sig in lower for sig in signals)
+    """
+    Detect actual CAPTCHA/challenge pages — NOT just the word 'captcha'
+    anywhere in the source (Radaris includes Turnstile JS on normal pages).
+    We check for signs that the page is BLOCKED, not just that it has
+    anti-bot scripts loaded.
+    """
+    title = (await page.title()).lower()
+
+    # title-based signals are the strongest indicator of a block page
+    if any(s in title for s in ["just a moment", "security challenge", "attention required", "access denied"]):
+        return True
+
+    # check if the page has almost no visible text (block pages are empty)
+    try:
+        body_text = await page.inner_text("body")
+        if len(body_text.strip()) < 100:
+            content = await page.content()
+            lower = content.lower()
+            if "cf-challenge" in lower or "challenge-running" in lower:
+                return True
+    except Exception:
+        pass
+
+    return False
 
 
 async def scrape_lead(page: Page, lead: dict, site: dict) -> dict | None:

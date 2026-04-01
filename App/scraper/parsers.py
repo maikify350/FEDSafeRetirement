@@ -1,6 +1,10 @@
 """
 Site-specific HTML parsers.  Each parser receives a Playwright Page and
 returns a list of candidate matches (dicts) found on the results page.
+
+Radaris is the primary target — it returns address, phone, email, age,
+and employer in a structured format without heavy anti-bot protection
+when accessed from a real Chrome session via CDP.
 """
 from __future__ import annotations
 
@@ -171,8 +175,136 @@ def _parse_address_text(text: str) -> dict:
     return result
 
 
+async def parse_radaris(page: Page, first: str, last: str, state: str) -> list[dict]:
+    """
+    Parse Radaris person page.
+
+    Radaris has a structured Q&A section at the bottom of each person page:
+      "What is X's address?"  -> "X's address is ..."
+      "What is X's phone number?" -> "X's phone number is ..."
+      "What is X's email address?" -> "X's email address is ..."
+
+    It also shows address/phone/email in card sections and the body text.
+    """
+    candidate: dict = {}
+
+    try:
+        body = await page.inner_text("body")
+        body = body.replace("\u2002", " ")  # en-space -> normal space
+
+        # ── Parse the Q&A section (most reliable) ─────────────────────
+        # Address
+        addr_match = re.search(
+            r"address\s+is\s+(.+?)(?:\.|$)",
+            body,
+            re.IGNORECASE,
+        )
+        if addr_match:
+            addr_raw = addr_match.group(1).strip().rstrip(".")
+            candidate.update(_parse_address_text(addr_raw))
+
+        # Phone
+        phone_match = re.search(
+            r"phone\s+number\s+is\s+\(?(\d{3})\)?\s*[-.]?\s*(\d{3})\s*[-.]?\s*(\d{4})",
+            body,
+            re.IGNORECASE,
+        )
+        if phone_match:
+            candidate["phone"] = f"({phone_match.group(1)}) {phone_match.group(2)}-{phone_match.group(3)}"
+
+        # Email
+        email_match = re.search(
+            r"email\s+address\s+is\s+([\w.+-]+@[\w-]+\.[\w.]+)",
+            body,
+            re.IGNORECASE,
+        )
+        if email_match:
+            email = email_match.group(1).strip().rstrip(".")
+            # remove trailing TLD-period artifacts (e.g., "user@gmail.com." -> "user@gmail.com")
+            candidate["email"] = email
+
+        # ── Fallback: parse from page elements ────────────────────────
+        if not candidate.get("phone"):
+            phone_els = await page.query_selector_all("[class*=phone]")
+            for el in phone_els:
+                text = (await el.inner_text()).strip()
+                pm = re.search(r"\(?(\d{3})\)?\s*[-.]?\s*(\d{3})\s*[-.]?\s*(\d{4})", text)
+                if pm:
+                    candidate["phone"] = f"({pm.group(1)}) {pm.group(2)}-{pm.group(3)}"
+                    break
+
+        if not candidate.get("address"):
+            addr_els = await page.query_selector_all("[class*=address]")
+            for el in addr_els:
+                text = (await el.inner_text()).strip()
+                if re.search(r"\d{5}", text):  # has a zip code
+                    candidate.update(_parse_address_text(text.split("\n")[-1].strip()))
+                    break
+
+        # ── Name from page title ──────────────────────────────────────
+        title = await page.title()
+        name_match = re.match(r"^(.+?)\s*[-\u2013]", title)
+        if name_match:
+            candidate["matched_name"] = name_match.group(1).strip()
+
+        # ── Age ───────────────────────────────────────────────────────
+        age_match = re.search(r"Age\s+(\d+)", body)
+        if age_match:
+            candidate["age"] = age_match.group(1)
+
+        # ── Verified location from body text ──────────────────────────
+        # "Aniak, AK   Verified" pattern
+        verified_match = re.search(
+            r"([A-Z][a-z]+(?:\s[A-Z][a-z]+)*),\s*([A-Z]{2})\s+Verified",
+            body,
+        )
+        if verified_match and not candidate.get("city"):
+            candidate["city"] = verified_match.group(1)
+            candidate["state"] = verified_match.group(2)
+
+    except Exception:
+        pass
+
+    return [candidate] if (candidate.get("phone") or candidate.get("address") or candidate.get("email")) else []
+
+
+async def parse_spokeo(page: Page, first: str, last: str, state: str) -> list[dict]:
+    """
+    Parse Spokeo search results.
+    Spokeo shows partial info (city, state, age) on the results page.
+    Full contact info requires a paid account, but partial data is still useful.
+    """
+    candidates = []
+    try:
+        body = await page.inner_text("body")
+
+        # Look for result entries with location info
+        # Spokeo results typically show: "Name, Age XX, City, ST"
+        pattern = re.compile(
+            rf"{re.escape(first)}\s+{re.escape(last)}.*?(?:Age\s+(\d+))?.*?"
+            rf"([A-Z][a-z]+(?:\s[A-Z][a-z]+)*),\s*([A-Z]{{2}})",
+            re.IGNORECASE | re.DOTALL,
+        )
+        for m in pattern.finditer(body):
+            cand = {
+                "matched_name": f"{first} {last}",
+                "city": m.group(2),
+                "state": m.group(3),
+            }
+            if m.group(1):
+                cand["age"] = m.group(1)
+            candidates.append(cand)
+
+    except Exception:
+        pass
+
+    return candidates
+
+
 # Registry: site name -> parser function
 PARSERS = {
     "fastpeoplesearch": parse_fastpeoplesearch,
     "truepeoplesearch": parse_truepeoplesearch,
+    "radaris": parse_radaris,
+    "spokeo": parse_spokeo,
 }
