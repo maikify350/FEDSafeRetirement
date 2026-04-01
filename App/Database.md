@@ -88,6 +88,12 @@ erDiagram
         text personal_state
         text personal_zip
         text linkedin_url
+        text facebook_url
+        numeric lat
+        numeric lon
+        numeric years_of_service
+        int age_estimate
+        boolean do_not_contact
         text enrichment_source
         numeric enrichment_confidence
         timestamptz enrichment_dt
@@ -218,6 +224,12 @@ CREATE TABLE public.leads (
     personal_state        text,
     personal_zip          text,
     linkedin_url          text,
+    facebook_url          text,
+    lat                   numeric(10,7),
+    lon                   numeric(10,7),
+    years_of_service      numeric(4,1),
+    age_estimate          integer,
+    do_not_contact        boolean     DEFAULT false,
     enrichment_source     text,
     enrichment_confidence numeric(3,2),
     enrichment_dt         timestamptz,

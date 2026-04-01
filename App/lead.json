@@ -201,7 +201,61 @@
       "example": "https://linkedin.com/in/andrew-mayo-12345",
       "providers": ["Apollo", "RocketReach", "Clearbit", "Lusha"],
       "description": "LinkedIn profile URL. Many federal employees maintain LinkedIn profiles. Useful for verifying identity and for LinkedIn outreach campaigns.",
-      "enrichment_notes": "Apollo has the highest LinkedIn match rate. Most USPS workers below management level may not have LinkedIn profiles — expect ~10-20% match rate."
+      "enrichment_notes": "Apollo has the highest LinkedIn match rate. Most USPS workers below management level may not have LinkedIn profiles — expect ~10-20% match rate. Alternative: web scraper that Googles '{first_name} {last_name} {facility_city} site:linkedin.com' and extracts the profile URL from search results."
+    },
+
+    "facebook_url": {
+      "type": "text",
+      "source": "enrichment",
+      "nullable": true,
+      "example": "https://facebook.com/andrew.mayo.12345",
+      "providers": ["Manual scraping", "Social search APIs", "Pipl"],
+      "description": "Facebook profile URL. Many USPS employees are active on Facebook. Useful for Facebook Ads custom audience targeting and direct messaging outreach.",
+      "enrichment_notes": "Harder to find programmatically than LinkedIn due to Facebook's privacy settings. Best approach: scraper that searches Google for '{first_name} {last_name} {facility_city} site:facebook.com' and evaluates results. Expect ~5-15% match rate with confidence."
+    },
+
+    "lat": {
+      "type": "numeric(10,7)",
+      "source": "enrichment",
+      "nullable": true,
+      "example": 42.0702,
+      "description": "Latitude of the lead's location. Can be geocoded from either facility_address (work) or personal_address (home) using Google Maps Geocoding API or Mapbox. Enables map-based visualization, radius search, and proximity-based campaign targeting.",
+      "enrichment_notes": "Geocode from facility address first (we always have it). Update to personal address lat/lon when enrichment provides home address. Google Geocoding API: $0.005/request. Mapbox: 100K free/month."
+    },
+
+    "lon": {
+      "type": "numeric(10,7)",
+      "source": "enrichment",
+      "nullable": true,
+      "example": -72.5779,
+      "description": "Longitude of the lead's location. Paired with lat for geographic operations."
+    },
+
+    "years_of_service": {
+      "type": "numeric(4,1)",
+      "source": "computed",
+      "nullable": true,
+      "example": 20.5,
+      "description": "Years of federal service calculated as: (current_date - entered_on_duty_date) / 365.25. CRITICAL business metric — employees with 20-30+ years are closest to retirement and are the highest-value prospects. Can be computed on import and refreshed periodically.",
+      "enrichment_notes": "This is a COMPUTED field, not from a third-party. Calculate during import: EXTRACT(EPOCH FROM (now() - entered_on_duty_date)) / 31557600. Update periodically or compute on-the-fly in queries."
+    },
+
+    "age_estimate": {
+      "type": "integer",
+      "source": "enrichment",
+      "nullable": true,
+      "example": 55,
+      "description": "Estimated age of the employee. Federal employees typically enter service between ages 18-35. Rough estimate: entered_on_duty_date + assumed_entry_age. More accurate estimates from people-search APIs.",
+      "enrichment_notes": "Whitepages and BeenVerified sometimes return age ranges. For USPS, a reasonable estimate is: age ≈ (current_year - entered_on_duty_year) + 25 (average entry age). Employees aged 55-62 are in the retirement planning sweet spot."
+    },
+
+    "do_not_contact": {
+      "type": "boolean",
+      "source": "system",
+      "default": false,
+      "example": false,
+      "description": "Opt-out / suppression flag. Set to TRUE if the lead has requested not to be contacted, or if they appear on a DNC (Do Not Call) list. Checked before any outreach. CRITICAL for CAN-SPAM and TCPA compliance.",
+      "enrichment_notes": "Cross-reference with the FTC National Do Not Call Registry and any internal suppression lists. Must be checked before phone or email outreach."
     },
 
     "_comment_enrichment_meta": "--- Enrichment Metadata ---",
