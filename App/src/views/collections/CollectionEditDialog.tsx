@@ -12,6 +12,36 @@ import Chip from '@mui/material/Chip'
 import CustomTextField from '@core/components/mui/TextField'
 import EntityEditDialog from '@/components/EntityEditDialog'
 
+function filterSummaryChips(fc: any): string[] {
+  if (!fc || typeof fc !== 'object') return []
+  const chips: string[] = []
+  if (fc.state && fc.state !== 'all') chips.push(`State: ${fc.state}`)
+  if (fc.gender && fc.gender !== 'all') chips.push(`Gender: ${fc.gender === 'M' ? 'Male' : 'Female'}`)
+  if (fc.favorite === true) chips.push('Favorites only')
+  if (fc.search?.trim()) chips.push(`Search: "${fc.search.trim()}"`)
+  if (Array.isArray(fc.columnFilters)) {
+    const opLabel: Record<string, string> = {
+      contains: 'contains', notContains: 'not contains',
+      startsWith: 'starts with', endsWith: 'ends with',
+      equals: 'equals', notEquals: 'not equals',
+      isEmpty: 'is empty', isNotEmpty: 'is not empty',
+    }
+    for (const cf of fc.columnFilters) {
+      const conds = cf?.value?.conditions?.filter((c: any) =>
+        c.op === 'isEmpty' || c.op === 'isNotEmpty' || c.value?.trim()
+      ) ?? []
+      for (const cond of conds) {
+        const col = cf.id?.replace(/_/g, ' ')
+        const label = cond.op === 'isEmpty' || cond.op === 'isNotEmpty'
+          ? `${col} ${opLabel[cond.op] ?? cond.op}`
+          : `${col} ${opLabel[cond.op] ?? cond.op} "${cond.value}"`
+        chips.push(label)
+      }
+    }
+  }
+  return chips
+}
+
 interface Collection {
   id: string
   name: string
@@ -111,6 +141,33 @@ export default function CollectionEditDialog({ open, onClose, collection, onSave
         </CustomTextField>
         <CustomTextField fullWidth label='Tags (comma-separated)' value={form.tagsInput} onChange={handleChange('tagsInput')} disabled={saving} placeholder='e.g. campaign-q1, high-value' />
       </div>
+
+      {/* ── Saved filter criteria (read-only) ─────────────────────── */}
+      {collection && (() => {
+        const chips = filterSummaryChips(collection.filter_criteria)
+        return (
+          <>
+            <Divider sx={{ my: 2 }} />
+            <SectionHeader icon='tabler-filter'>Saved Filters</SectionHeader>
+            {chips.length === 0 ? (
+              <Typography variant='body2' color='text.secondary' fontStyle='italic'>
+                No filters saved yet. Apply filters in Leads and click the bookmark button to save them here.
+              </Typography>
+            ) : (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
+                {chips.map((chip, i) => (
+                  <Chip key={i} label={chip} size='small' color='primary' variant='tonal'
+                    sx={{ fontSize: 11, height: 24 }} />
+                ))}
+              </Box>
+            )}
+            <Typography variant='caption' color='text.secondary'>
+              Applied automatically when this collection is selected in the Leads grid.
+              Use the <strong>🔖 bookmark button</strong> in Leads to update these filters.
+            </Typography>
+          </>
+        )
+      })()}
     </EntityEditDialog>
   )
 }

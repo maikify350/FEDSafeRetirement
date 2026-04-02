@@ -6,11 +6,13 @@
  */
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import Checkbox from '@mui/material/Checkbox'
 import Tooltip from '@mui/material/Tooltip'
 import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
 import { createColumnHelper } from '@tanstack/react-table'
 
@@ -45,7 +47,39 @@ const formatDate = (v: string | null) => {
   return new Date(v).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
+/** Turn a saved filter_criteria into human-readable chips */
+function filterSummary(fc: any): string[] {
+  if (!fc || typeof fc !== 'object') return []
+  const chips: string[] = []
+  if (fc.state && fc.state !== 'all') chips.push(`State: ${fc.state}`)
+  if (fc.gender && fc.gender !== 'all') chips.push(`Gender: ${fc.gender === 'M' ? 'Male' : 'Female'}`)
+  if (fc.favorite === true) chips.push('Favorites only')
+  if (fc.search?.trim()) chips.push(`Search: "${fc.search.trim()}"`)
+  if (Array.isArray(fc.columnFilters)) {
+    for (const cf of fc.columnFilters) {
+      const conds = cf?.value?.conditions?.filter((c: any) =>
+        c.op === 'isEmpty' || c.op === 'isNotEmpty' || c.value?.trim()
+      ) ?? []
+      for (const cond of conds) {
+        const opLabel: Record<string, string> = {
+          contains: 'contains', notContains: 'not contains',
+          startsWith: 'starts with', endsWith: 'ends with',
+          equals: 'equals', notEquals: 'not equals',
+          isEmpty: 'is empty', isNotEmpty: 'is not empty',
+        }
+        const col = cf.id?.replace(/_/g, ' ')
+        const label = cond.op === 'isEmpty' || cond.op === 'isNotEmpty'
+          ? `${col} ${opLabel[cond.op] ?? cond.op}`
+          : `${col} ${opLabel[cond.op] ?? cond.op} "${cond.value}"`
+        chips.push(label)
+      }
+    }
+  }
+  return chips
+}
+
 export default function CollectionsView() {
+  const router = useRouter()
   const [collections, setCollections] = useState<Collection[]>([])
   const [loading, setLoading] = useState(true)
   const [editCollection, setEditCollection] = useState<Collection | null>(null)
@@ -95,6 +129,46 @@ export default function CollectionsView() {
         </Box>
       ),
     }),
+    columnHelper.accessor('filter_criteria', {
+      header: 'Filters', size: 320, enableSorting: false,
+      cell: ({ row }) => {
+        const chips = filterSummary(row.original.filter_criteria)
+        if (chips.length === 0) return <Typography className='text-sm' color='text.secondary'>— no filters saved —</Typography>
+        return (
+          <Box className='flex flex-wrap gap-1'>
+            {chips.map((c, i) => (
+              <Chip key={i} label={c} size='small' color='primary' variant='tonal'
+                sx={{ fontSize: 10, height: 20, maxWidth: 200 }} />
+            ))}
+          </Box>
+        )
+      },
+    }),
+    {
+      id: 'apply',
+      header: '',
+      size: 130,
+      enableSorting: false,
+      enableColumnFilter: false,
+      cell: ({ row }: any) => {
+        const hasFilters = filterSummary(row.original.filter_criteria).length > 0
+        if (!hasFilters) return null
+        return (
+          <Tooltip title='Open Leads with these filters applied'>
+            <Button
+              size='small'
+              variant='tonal'
+              color='primary'
+              startIcon={<i className='tabler-filter-check text-sm' />}
+              onClick={(e) => { e.stopPropagation(); router.push(`/leads?collection=${row.original.id}`) }}
+              sx={{ fontSize: 11, py: 0.25, px: 1, whiteSpace: 'nowrap' }}
+            >
+              Apply in Leads
+            </Button>
+          </Tooltip>
+        )
+      },
+    },
     columnHelper.accessor('cre_dt', {
       header: 'Created', size: 130,
       cell: ({ row }) => <Typography className='text-sm'>{formatDate(row.original.cre_dt)}</Typography>,
