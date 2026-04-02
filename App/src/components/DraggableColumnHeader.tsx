@@ -145,11 +145,25 @@ function FilterPopover({
         </div>
       </div>
 
-      {/* 4 condition rows with plain dividers */}
+      {/* 4 condition rows with AND/OR connector badges between them */}
       <ConditionRow condition={draft.conditions[0]} onChange={c => setCondition(0, c)} />
       {([0, 1, 2] as const).map(i => (
         <div key={i}>
-          <div style={{ height: 1, background: 'var(--mui-palette-divider)', margin: '6px 0' }} />
+          {/* Connector showing the active combinator */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '5px 0' }}>
+            <div style={{ flex: 1, height: 1, background: 'var(--mui-palette-divider)' }} />
+            <span style={{
+              fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.05em',
+              padding: '1px 7px', borderRadius: 10,
+              background: 'var(--mui-palette-primary-lightOpacity)',
+              color: 'var(--mui-palette-primary-main)',
+              border: '1px solid var(--mui-palette-primary-light)',
+              userSelect: 'none',
+            }}>
+              {draft.combinator.toUpperCase()}
+            </span>
+            <div style={{ flex: 1, height: 1, background: 'var(--mui-palette-divider)' }} />
+          </div>
           <ConditionRow condition={draft.conditions[i + 1]} onChange={c => setCondition((i + 1) as 1 | 2 | 3, c)} />
         </div>
       ))}
