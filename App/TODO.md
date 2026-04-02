@@ -1,6 +1,6 @@
 # FEDSafe Retirement — TODO Tracker
 
-> **Last Updated:** 2026-04-01 16:36 CST
+> **Last Updated:** 2026-04-01 20:00 CST
 > **Purpose:** Crash recovery and session continuity. Always check this file when resuming.
 
 ---
@@ -11,77 +11,121 @@
 - [x] Analyze FOIA data source (472,576 records, 13 columns)
 - [x] Create PRD.md — product requirements document
 - [x] Create Database.md — schema, tables, triggers, indexes, RLS
-- [x] Create UI-UX.md — design spec, component mapping, responsive rules
+- [x] Create UI-UX.md — design spec, components, Vuexy mapping
 - [x] Create .agent/claude.md — agent instruction rules
-- [x] Create .agent/antigravity.md — project metadata
 - [x] Create lead.json — full schema with enrichment strategy & provider comparison
 - [x] Initialize Git repo, .gitignore, initial commit
 - [x] Create GitHub repo (maikify350/FEDSafeRetirement) and push
-- [x] Update Supabase MCP config with new token (ricardo@mustautomate.ai account)
 
-### Phase 1: App Initialization
+### Phase 1: App Initialization & Auth
 - [x] Copy Vuexy starter-kit to App/ folder
-- [x] Customize package.json (name, deps: Supabase, TanStack Table, react-hook-form, valibot, date-fns, react-toastify, xlsx)
-- [x] npm install — all dependencies installed
+- [x] Customize package.json (Supabase, TanStack Table, react-hook-form, etc.)
 - [x] Create Supabase client utilities (browser, server, middleware)
 - [x] Create Next.js middleware for auth redirects
 - [x] Customize themeConfig.ts (FEDSafe branding, wide layout, semiDark)
-- [x] Create vertical navigation (Dashboard, Leads, Collections, Settings, Users)
-- [x] Create horizontal navigation
-- [x] Create route pages: /dashboard, /leads, /collections, /settings (placeholders)
-- [x] Create ForgotPassword view with Supabase Auth integration
-- [x] Create forgot-password route page
-- [x] Create SQL migration script (001_initial_schema.sql)
-- [x] Create migration runner scripts (Node.js)
-- [x] Dev server tested — login screen renders correctly on localhost:8001
+- [x] Create vertical/horizontal navigation
+- [x] Create route pages: /dashboard, /leads, /collections, /settings
+- [x] Create Login/ForgotPassword views with Supabase Auth
+- [x] Run SQL migration (001_initial_schema.sql) — all tables created
+- [x] Wire Login → Dashboard → User Profile → Logout flow
+- [x] Deploy admin-create-user edge function
+- [x] Custom FEDSafe logo in sidebar, login, favicon
 
-### Phase 1: Database & Auth (Session 2)
-- [x] Run SQL migration via Supabase MCP — all 4 tables created
-- [x] Verify seed user (rgarcia350@gmail.com) inserted with JSONB settings field
-- [x] Create Supabase Auth user (rgarcia350@gmail.com / FedSafe2026!)
-- [x] Link auth.users ID to public.users ID
-- [x] Wire Login.tsx to Supabase Auth (email/password sign-in)
-- [x] Remove social login buttons (not needed)
-- [x] Create auth callback route (/auth/callback) for password reset
-- [x] Wire UserDropdown to display real user data (Ricardo Garcia, rgarcia350@gmail.com)
-- [x] Wire Logout button to supabase.auth.signOut()
-- [x] Fix VerticalMenu to use custom navigation data (Dashboard, Leads, Collections, Settings, Users)
-- [x] Fix root redirect: / → /dashboard (was /home)
-- [x] Fix middleware redirect for authenticated users: auth pages → /dashboard
-- [x] Fix TypeScript lint errors in middleware.ts
-- [x] Login → Dashboard → User Profile → Logout flow VERIFIED ✅
-- [x] Deploy admin-create-user edge function (temporary, for user creation)
+### Phase 2: Data Import (Session 2)
+- [x] Build FOIA Excel import script (import-foia-data.mjs)
+- [x] Import 472,576 records in batches
+- [x] Compute years_of_service on import
+- [x] Verify import with count query
+- [x] Seed US States lookup table (54 entries)
+
+### Phase 3: Lead Search Grid (Session 2-3)
+- [x] Build EntityListView — shared data-grid shell (reusable for all entities)
+- [x] Server-side pagination via Supabase RPC (search_leads)
+- [x] Full-text search (debounced, server-side)
+- [x] Filter pills: State (CA/TX/NY/FL/IL), Gender (Male/Female/All)
+- [x] Column sorting (server-side via RPC)
+- [x] Multi-condition column filters (contains/starts with/equals/empty with AND/OR)
+- [x] Column picker (show/hide + drag-to-reorder)
+- [x] Column resizing with persistence (TanStack enableColumnResizing)
+- [x] Density toggle (compact/normal/comfortable)
+- [x] Row selection checkboxes (column 1)
+- [x] DraggableColumnHeader — sort + reorder + filter + resize
+- [x] Persisted grid preferences via useGridPreferences hook (Supabase + localStorage)
+
+### Phase 3.5: Lead Edit & CRUD (Session 3)
+- [x] Create EntityEditDialog — shared edit dialog shell with audit footer
+- [x] Create LeadEditDialog with all 18+ fields
+- [x] Layout: First/MI/Last on one line, Facility 1/3 + Location 2/3
+- [x] Address autocomplete (Google Places API) for facility address
+- [x] Required field validation: First Name*, Last Name*, State* (red asterisks)
+- [x] Audit footer: "Created by X on date • Last modified by Y on date"
+- [x] Audit fields: cre_dt, mod_dt, cre_by, mod_by (NON-NEGOTIABLE naming)
+- [x] AuditFooter reusable component
+- [x] SectionHeader reusable component
+
+### Phase 3.6: Favorites System (Session 3)
+- [x] Add `is_favorite` boolean column to leads table
+- [x] Partial index on is_favorite WHERE true
+- [x] API: PATCH /api/leads/[id]/favorite (toggle)
+- [x] API: DELETE /api/leads/favorites (clear all)
+- [x] RPC: search_leads updated with p_favorite filter
+- [x] Grid: Star column with optimistic toggle (gold when favorited)
+- [x] Edit dialog: Star toggle in header (left of Cancel)
+- [x] Filter pill: ⭐ Favorites
+- [x] Clear All Favorites with ConfirmDialog
+
+### Phase 3.7: Bulk Actions & Export (Session 3)
+- [x] Checkbox multi-select in all grids
+- [x] Floating bulk selection bar ("N selected" + action buttons)
+- [x] ExportFieldPickerDialog — pick/reorder fields for export
+- [x] Field selections persist to localStorage per storageKey
+- [x] CSV and JSON export with user-selected fields
+- [x] "Push to ACT" bulk action button
+- [x] PushToActDialog — fake progress spinner → green checkmark (placeholder)
+- [x] "+Add" button always pinned to far right with 10px padding (global)
+
+### Phase 4: Collections (Session 2-3)
+- [x] Collections grid page with CRUD
+- [x] Collection filter combobox on leads grid
+- [x] New Collection button
+
+### Phase 5: UI/UX Standards (Session 3)
+- [x] ConfirmDialog reusable component (RULE: never use alert()/confirm())
+- [x] Remove "New Collection" from nav (already in grid)
+- [x] Configuration page with US States lookup editor
+- [x] User Management page with grid
+- [x] Settings page
 
 ---
 
 ## 🔲 IN PROGRESS / NEXT SESSION
 
-### Phase 2: Data Import
-- [ ] Build data import script (Excel → Supabase batch insert)
-- [ ] Import 472,576 records in 1,000-row chunks
-- [ ] Compute years_of_service on import
-- [ ] Verify import with count query
+### Phase 6: ACT CRM Integration
+- [ ] Research ACT.COM API documentation
+- [ ] Build API endpoint: POST /api/act/push
+- [ ] Replace fake PushToActDialog with real API calls
+- [ ] Map lead fields to ACT contact fields
+- [ ] Error handling and retry logic
 
-### Phase 3: Lead Search Grid
-- [ ] Build LeadListTable using Vuexy UserListTable pattern + TanStack Table
-- [ ] Server-side pagination via Supabase .range()
-- [ ] Full-text search input (tsvector)
-- [ ] Filter bar: state, salary range, grade, occupation, years of service
-- [ ] Column sorting
-- [ ] Row selection + "Add to Collection" action
-- [ ] Export selected leads (CSV)
+### Phase 7: Advanced Features
+- [ ] "Save as Collection" — save current filtered lead views as a named collection
+- [ ] "Add Lead" form (currently placeholder)
+- [ ] Bulk assignment of leads to collections
+- [ ] Lead detail full-page view
+- [ ] Dashboard KPI cards and charts
 
-### Phase 4: Collections
-- [ ] Collection CRUD (create, edit, delete, archive)
-- [ ] Collection detail page showing assigned leads
-- [ ] Add leads from search grid to collections
-- [ ] Collection export functionality
-
-### Phase 5: Enrichment (Future)
+### Phase 8: Enrichment (Future)
 - [ ] Apollo.io API integration for email/phone enrichment
+- [ ] USPS Address Verification API for address standardization
+- [ ] Name-based gender inference for existing records
 - [ ] Geocoding (facility addresses → lat/lon)
 - [ ] LinkedIn/Facebook URL scraper
 - [ ] Enrichment status dashboard
+
+### Infrastructure
+- [ ] Fix Supabase RLS infinite recursion on users table (affects preference DB persistence)
+- [ ] Add error boundary components
+- [ ] Production build optimization
 
 ---
 
@@ -91,16 +135,27 @@
 |------|-------|
 | **App Dir** | `c:\WIP\FEDSafeRetirement_App\App` |
 | **Dev Server** | `npm run dev` → `http://localhost:8001` |
-| **Supabase Project** | `gqarlkfmpgaotbezpkbs` |
-| **Supabase Account** | `ricardo@mustautomate.ai` |
-| **MCP Token** | Updated in `C:\Users\HomePC\.gemini\antigravity\mcp_config.json` |
+| **Supabase Project** | `ypteqfmxsjolpfzbkbxo` |
 | **GitHub Repo** | `maikify350/FEDSafeRetirement` |
-| **Migration SQL** | `App/supabase/migrations/001_initial_schema.sql` |
-| **Vuexy Reference** | `Docs/Vuexy_library_Reference/nextjs-typescript-version/` |
 | **Login Credentials** | `rgarcia350@gmail.com` / `FedSafe2026!` |
-| **Auth User ID** | `ca723b5e-58ed-49d9-9dd2-9775caac74b8` |
+| **Vuexy Reference** | `Docs/Vuexy_library_Reference/nextjs-typescript-version/` |
 
-### First Thing Next Session:
-1. Build data import script for FOIA Excel file
-2. Import 472K records into `leads` table
-3. Start building the Lead Search grid (TanStack Table + server-side pagination)
+### Key Reusable Components
+| Component | File | Purpose |
+|-----------|------|---------|
+| EntityListView | `src/components/EntityListView.tsx` | Shared data-grid for all entity pages |
+| EntityEditDialog | `src/components/EntityEditDialog.tsx` | Shared edit dialog shell with audit footer |
+| DraggableColumnHeader | `src/components/DraggableColumnHeader.tsx` | Column header with sort+reorder+filter+resize |
+| ExportFieldPickerDialog | `src/components/ExportFieldPickerDialog.tsx` | Export field selection with reorder & persistence |
+| ConfirmDialog | `src/components/ConfirmDialog.tsx` | Styled confirmation (NEVER use alert/confirm) |
+| PushToActDialog | `src/components/PushToActDialog.tsx` | ACT CRM push progress (currently fake) |
+| AuditFooter | `src/components/AuditFooter.tsx` | Created/modified audit timestamp footer |
+| useGridPreferences | `src/hooks/useGridPreferences.ts` | Persisted grid prefs (Supabase + localStorage) |
+
+### UI/UX Rules (NON-NEGOTIABLE)
+1. **Never use `window.alert()` or `window.confirm()`** — use ConfirmDialog
+2. **All audit fields must be named `cre_dt`, `mod_dt`, `cre_by`, `mod_by`**
+3. **All tables must have UUID primary keys**
+4. **Required fields show bold red asterisk labels**
+5. **"+Add" button always far right with 10px padding**
+6. **Grid preferences persist per-user (column visibility, order, sizing, density, filters)**

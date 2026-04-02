@@ -27,6 +27,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from config import SAMPLE_FILE, OUTPUT_DIR, LOG_DIR
+from db import LeadsDB
 
 # ── Logging ────────────────────────────────────────────────────────────
 LOG_DIR.mkdir(parents=True, exist_ok=True)
@@ -239,11 +240,12 @@ def build_chrome_instructions(lead: dict) -> str:
 
 # ── Main orchestrator ──────────────────────────────────────────────────
 
-async def run_api(leads: list[dict], api_key: str):
-    """Enrich leads via RTRVR REST API."""
+async def run_api(leads: list[dict], api_key: str, db: LeadsDB | None = None):
+    """Enrich leads via RTRVR REST API. Writes to Supabase if db is provided."""
     import aiohttp
 
     results = []
+    db_updates: list[dict] = []
     stats = {
         "total": len(leads),
         "processed": 0,
@@ -264,27 +266,54 @@ async def run_api(leads: list[dict], api_key: str):
                 log.error("Credits exhausted — stopping early.")
                 break
 
+            db_record = {"id": lead.get("id")}
+
             if enrichment and any(enrichment.get(f) for f in ("personal_phone", "personal_email", "personal_address")):
                 stats["enriched"] += 1
-                lead_out = {**lead, **enrichment, "enrichment_status": "enriched"}
+                found = [f for f in ("personal_phone", "personal_email", "personal_address") if enrichment.get(f)]
+                status = "enriched" if len(found) >= 2 else "partial"
+                lead_out = {**lead, **enrichment, "enrichment_status": status}
                 log.info(f"  ENRICHED: phone={enrichment.get('personal_phone')} addr={enrichment.get('personal_address')}")
+                db_record.update({
+                    "personal_phone": enrichment.get("personal_phone"),
+                    "personal_email": enrichment.get("personal_email"),
+                    "personal_address": enrichment.get("personal_address"),
+                    "personal_city": enrichment.get("personal_city"),
+                    "personal_state": enrichment.get("personal_state"),
+                    "personal_zip": enrichment.get("personal_zip"),
+                    "enrichment_source": "rtrvr_api",
+                    "enrichment_confidence": enrichment.get("match_confidence", 0.8),
+                    "enrichment_status": status,
+                })
             else:
                 stats["not_found"] += 1
                 lead_out = {**lead, "enrichment_status": "not_found"}
+                db_record["enrichment_status"] = "not_found"
 
             results.append(lead_out)
             stats["processed"] += 1
+            if db and db_record.get("id"):
+                db_updates.append(db_record)
 
             # save every 10
             if stats["processed"] % 10 == 0:
+                if db and db_updates:
+                    result = db.bulk_update_enrichment(db_updates)
+                    log.info(f"  DB: wrote {result['updated']} records to Supabase")
+                    db_updates.clear()
                 _save(results, stats)
 
             await asyncio.sleep(2)  # respect rate limits
 
+    # final flush
+    if db and db_updates:
+        result = db.bulk_update_enrichment(db_updates)
+        log.info(f"  DB: final flush — wrote {result['updated']} records to Supabase")
+
     stats["finished_at"] = datetime.now(timezone.utc).isoformat()
     stats["match_rate"] = f"{stats['enriched'] / stats['total'] * 100:.1f}%" if stats["total"] > 0 else "N/A"
     _save(results, stats)
-    _print_summary(stats)
+    _print_summary(stats, db is not None)
 
 
 def run_chrome_prompts(leads: list[dict]):
@@ -317,7 +346,7 @@ def _save(results, stats):
         json.dump(stats, f, indent=2)
 
 
-def _print_summary(stats):
+def _print_summary(stats, wrote_to_db: bool = False):
     log.info("=" * 60)
     log.info("RTRVR ENRICHMENT COMPLETE")
     log.info(f"  Total processed : {stats['processed']}")
@@ -325,28 +354,45 @@ def _print_summary(stats):
     log.info(f"  Not found       : {stats['not_found']}")
     log.info(f"  Match rate      : {stats['match_rate']}")
     log.info(f"  Results saved   : {RTRVR_ENRICHED_FILE}")
+    if wrote_to_db:
+        log.info(f"  Supabase        : leads table updated")
     log.info("=" * 60)
 
 
 def main():
     parser = argparse.ArgumentParser(description="Enrich leads via RTRVR.ai")
-    parser.add_argument("--limit", type=int, help="Only process first N leads")
+    parser.add_argument("--limit", type=int, default=100, help="Number of leads to process (default: 100)")
+    parser.add_argument("--state", type=str, help="Filter leads by state (e.g. 'CA', 'TX')")
+    parser.add_argument("--from-file", action="store_true", help="Use sample_leads.json instead of Supabase")
     parser.add_argument(
         "--method", choices=["api", "chrome"], default="api",
         help="'api' for REST API, 'chrome' to generate prompts for extension"
     )
     args = parser.parse_args()
 
-    with open(SAMPLE_FILE, "r") as f:
-        leads = json.load(f)
-    if args.limit:
-        leads = leads[:args.limit]
+    api_key = load_env_key()
+    db = None
+
+    if args.from_file:
+        with open(SAMPLE_FILE, "r") as f:
+            leads = json.load(f)
+        if args.limit:
+            leads = leads[:args.limit]
+        log.info(f"Loaded {len(leads)} leads from sample file")
+    else:
+        db = LeadsDB()
+        leads = db.get_pending_leads(limit=args.limit or 100, state=args.state)
+        log.info(f"Loaded {len(leads)} pending leads from Supabase" +
+                 (f" (state={args.state.upper()})" if args.state else ""))
+
+    if not leads:
+        log.info("No pending leads to process.")
+        return
 
     if args.method == "chrome":
         run_chrome_prompts(leads)
     else:
-        api_key = load_env_key()
-        asyncio.run(run_api(leads, api_key))
+        asyncio.run(run_api(leads, api_key, db))
 
 
 if __name__ == "__main__":

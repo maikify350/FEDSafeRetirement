@@ -5,6 +5,8 @@ This bypasses all anti-bot detection because it's a real browser with your
 real cookies, fingerprint, and browsing history. The scraper just drives
 a new tab in your existing Chrome session.
 
+Now writes enrichment results directly to Supabase leads table.
+
 Setup (one-time):
     1. Close all Chrome windows
     2. Relaunch Chrome with remote debugging enabled:
@@ -13,9 +15,10 @@ Setup (one-time):
     Or use the included launch_chrome.bat
 
 Usage:
-    python scraper_cdp.py --limit 10       # test with 10 leads
-    python scraper_cdp.py                   # all 1500 sample leads
-    python scraper_cdp.py --site fastpeople # specific site only
+    python scraper_cdp.py --limit 10                  # test 10 leads from Supabase
+    python scraper_cdp.py --limit 100 --state CA      # 100 pending CA leads
+    python scraper_cdp.py --site radaris               # specific site only
+    python scraper_cdp.py --from-file                  # use sample_leads.json (legacy)
 """
 from __future__ import annotations
 
@@ -36,6 +39,7 @@ from config import (
 )
 from parsers import PARSERS
 from matcher import best_match
+from db import LeadsDB
 
 # ── Logging ────────────────────────────────────────────────────────────
 LOG_DIR.mkdir(parents=True, exist_ok=True)
@@ -221,10 +225,23 @@ async def scrape_lead_all_sites(page: Page, lead: dict, sites: list[dict]) -> di
     return {}
 
 
-async def run(limit: int | None, site_filter: str | None):
-    leads = load_sample()
-    if limit:
-        leads = leads[:limit]
+async def run(limit: int, site_filter: str | None, state: str | None, from_file: bool):
+    # ── Load leads from Supabase or file ──────────────────────────────
+    db = None
+    if from_file:
+        leads = load_sample()
+        if limit:
+            leads = leads[:limit]
+        log.info(f"Loaded {len(leads)} leads from sample file")
+    else:
+        db = LeadsDB()
+        leads = db.get_pending_leads(limit=limit or 100, state=state)
+        log.info(f"Loaded {len(leads)} pending leads from Supabase" +
+                 (f" (state={state.upper()})" if state else ""))
+
+    if not leads:
+        log.info("No pending leads to process.")
+        return
 
     active_sites = [s for s in SITES if s["enabled"]]
     if site_filter:
@@ -233,21 +250,10 @@ async def run(limit: int | None, site_filter: str | None):
     log.info(f"Sites: {[s['name'] for s in active_sites]}")
     log.info(f"Leads to process: {len(leads)}")
 
-    # resume support
-    progress = load_progress()
-    pending = []
-    for i, lead in enumerate(leads):
-        key = _lead_key(lead)
-        if key in progress and progress[key].get("enrichment_status") in ("enriched", "partial"):
-            continue
-        pending.append((i, lead))
-
-    if len(pending) < len(leads):
-        log.info(f"Resuming — skipping {len(leads) - len(pending)} already-enriched records")
-
-    results: list[dict] = list(progress.values()) if progress else []
+    results: list[dict] = []
+    db_updates: list[dict] = []
     stats = {
-        "total": len(pending),
+        "total": len(leads),
         "processed": 0,
         "enriched": 0,
         "not_found": 0,
@@ -257,44 +263,65 @@ async def run(limit: int | None, site_filter: str | None):
     }
 
     log.info(f"Connecting to Chrome at {CDP_ENDPOINT} ...")
-    log.info("Make sure Chrome is running with: chrome.exe --remote-debugging-port=9222")
 
     try:
         async with async_playwright() as pw:
             browser = await pw.chromium.connect_over_cdp(CDP_ENDPOINT)
-            # use a new tab in the existing browser
             context = browser.contexts[0]
             page = await context.new_page()
 
-            for idx, lead in pending:
+            for i, lead in enumerate(leads):
                 name = f"{lead['first_name']} {lead['last_name']} ({lead['facility_state']})"
-                log.info(f"[{stats['processed']+1}/{stats['total']}] {name}")
+                log.info(f"[{i+1}/{len(leads)}] {name}")
 
                 enrichment = await scrape_lead_all_sites(page, lead, active_sites)
                 lead_out = {**lead}
+                db_record = {"id": lead.get("id")}
 
                 if enrichment and not enrichment.get("_blocked"):
                     found = [f for f in ("personal_phone", "personal_email", "personal_address") if enrichment.get(f)]
                     if found:
                         stats["enriched"] += 1
                         lead_out.update(enrichment)
-                        lead_out["enrichment_status"] = "enriched" if len(found) >= 2 else "partial"
+                        status = "enriched" if len(found) >= 2 else "partial"
+                        lead_out["enrichment_status"] = status
                         for f in found:
                             stats[f"found_{f}"] = stats.get(f"found_{f}", 0) + 1
+                        # prepare DB update
+                        db_record.update({
+                            "personal_phone": enrichment.get("personal_phone"),
+                            "personal_email": enrichment.get("personal_email"),
+                            "personal_address": enrichment.get("personal_address"),
+                            "personal_city": enrichment.get("personal_city"),
+                            "personal_state": enrichment.get("personal_state"),
+                            "personal_zip": enrichment.get("personal_zip"),
+                            "enrichment_source": enrichment.get("enrichment_source"),
+                            "enrichment_confidence": enrichment.get("match_confidence"),
+                            "enrichment_status": status,
+                        })
                     else:
                         stats["not_found"] += 1
                         lead_out["enrichment_status"] = "not_found"
+                        db_record["enrichment_status"] = "not_found"
                 elif enrichment and enrichment.get("_blocked"):
                     stats["blocked"] += 1
                     lead_out["enrichment_status"] = "blocked"
                 else:
                     stats["not_found"] += 1
                     lead_out["enrichment_status"] = "not_found"
+                    db_record["enrichment_status"] = "not_found"
 
                 stats["processed"] += 1
                 results.append(lead_out)
+                if db and db_record.get("id"):
+                    db_updates.append(db_record)
 
+                # Save to Supabase + file every 25 records
                 if stats["processed"] % 25 == 0:
+                    if db and db_updates:
+                        result = db.bulk_update_enrichment(db_updates)
+                        log.info(f"  DB: wrote {result['updated']} records to Supabase")
+                        db_updates.clear()
                     save_results(results)
                     save_stats(stats)
                     log.info(
@@ -310,14 +337,15 @@ async def run(limit: int | None, site_filter: str | None):
         if "connect" in str(e).lower():
             log.error(
                 f"Could not connect to Chrome at {CDP_ENDPOINT}.\n"
-                "Please launch Chrome with remote debugging:\n"
-                "  1. Close all Chrome windows\n"
-                "  2. Run: chrome.exe --remote-debugging-port=9222\n"
-                "  Or use: launch_chrome.bat"
+                "Launch Chrome with: chrome.exe --remote-debugging-port=9222"
             )
         else:
             log.error(f"Fatal error: {e}")
-        return
+
+    # ── Final flush ───────────────────────────────────────────────────
+    if db and db_updates:
+        result = db.bulk_update_enrichment(db_updates)
+        log.info(f"  DB: final flush — wrote {result['updated']} records to Supabase")
 
     stats["finished_at"] = datetime.now(timezone.utc).isoformat()
     stats["match_rate"] = f"{stats['enriched']/stats['total']*100:.1f}%" if stats["total"] > 0 else "N/A"
@@ -336,15 +364,19 @@ async def run(limit: int | None, site_filter: str | None):
     log.info(f"  Emails found    : {stats.get('found_personal_email', 0)}")
     log.info(f"  Addresses found : {stats.get('found_personal_address', 0)}")
     log.info(f"  Results         : {ENRICHED_FILE}")
+    if db:
+        log.info(f"  Supabase        : leads table updated")
     log.info("=" * 60)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="CDP scraper — uses your running Chrome browser")
-    parser.add_argument("--limit", type=int, help="Only process first N leads")
-    parser.add_argument("--site", type=str, help="Filter to a specific site")
+    parser = argparse.ArgumentParser(description="CDP scraper — reads from Supabase, writes enrichment back")
+    parser.add_argument("--limit", type=int, default=100, help="Number of leads to process (default: 100)")
+    parser.add_argument("--site", type=str, help="Filter to a specific site (e.g. 'radaris')")
+    parser.add_argument("--state", type=str, help="Filter leads by state (e.g. 'CA', 'TX')")
+    parser.add_argument("--from-file", action="store_true", help="Use sample_leads.json instead of Supabase")
     args = parser.parse_args()
-    asyncio.run(run(args.limit, args.site))
+    asyncio.run(run(args.limit, args.site, args.state, args.from_file))
 
 
 if __name__ == "__main__":

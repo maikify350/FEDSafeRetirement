@@ -26,11 +26,6 @@ const verticalMenuData = (): VerticalMenuDataType[] => [
     icon: 'tabler-folders'
   },
   {
-    label: 'New Collection',
-    href: '/collections/new',
-    icon: 'tabler-folder-plus'
-  },
-  {
     isSection: true,
     label: 'ACCOUNT'
   },
@@ -38,6 +33,11 @@ const verticalMenuData = (): VerticalMenuDataType[] => [
     label: 'Settings',
     href: '/settings',
     icon: 'tabler-settings'
+  },
+  {
+    label: 'Configuration',
+    href: '/configuration',
+    icon: 'tabler-adjustments-horizontal'
   },
   {
     label: 'User Management',

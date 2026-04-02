@@ -17,8 +17,8 @@ STATS_FILE        = OUTPUT_DIR / "enrichment_stats.json"
 
 # ── Scraper tunables ───────────────────────────────────────────────────
 CONCURRENT_BROWSERS = 3          # parallel browser instances (headless only)
-REQUEST_DELAY_MIN   = 3.0        # seconds between requests (per browser)
-REQUEST_DELAY_MAX   = 7.0        # randomised upper bound — stay under the radar
+REQUEST_DELAY_MIN   = 8.0        # seconds between requests — slower to avoid Radaris 403
+REQUEST_DELAY_MAX   = 15.0       # randomised upper bound — stay under the radar
 PAGE_TIMEOUT        = 15_000     # ms — how long to wait for page load
 MAX_RETRIES         = 2          # retries per lead on transient failure
 HEADLESS            = True       # set False to watch the browser

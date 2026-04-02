@@ -10,7 +10,7 @@
 - **Stack:** Next.js 16 + Vuexy v5.x (MUI) + Supabase + TailwindCSS v4
 - **Data:** 472,576 USPS federal employee records (FOIA 2025)
 - **Workspace:** `c:\WIP\FEDSafeRetirement_App\App`
-- **Supabase Project ID:** `gqarlkfmpgaotbezpkbs`
+- **Supabase Project ID:** `ypteqfmxsjolpfzbkbxo`
 
 ---
 
@@ -74,6 +74,26 @@ Use `.webp` format exclusively for all content images. SVG is acceptable only fo
 ### 6. Responsive Design
 
 All layouts must be responsive using Tailwind breakpoints (`sm:`, `md:`, `lg:`, `xl:`).
+
+### 7. Confirmation Dialogs — NEVER use alert()/confirm()
+
+All confirmations must use the reusable `ConfirmDialog` component. Never use `window.alert()`, `window.confirm()`, or `window.prompt()`.
+
+### 8. Required Fields — Red Asterisk Labels
+
+Required fields display a **bold red asterisk** using `RequiredLabel` component. Validation enforced in save handler.
+
+### 9. Grid Preferences Persistence
+
+Column visibility, order, sizing, density, and page size all persist per-user via `useGridPreferences` hook (localStorage + Supabase JSONB).
+
+### 10. "+Add" Button Positioning
+
+The primary action button ("+Add Lead", "+Add User", etc.) is always pinned to the far right of the toolbar with 10px right padding.
+
+### 11. Export Field Picker
+
+All CSV/JSON exports go through `ExportFieldPickerDialog` which lets users pick/reorder fields. Selections persist to localStorage.
 
 ---
 
@@ -141,6 +161,19 @@ Select-String -Path "*.ts" -Pattern "searchTerm"
 
 ---
 
+## Communication Rules
+
+### Progress Updates — MANDATORY
+
+**Always provide periodic progress updates on long-running tasks.** When running background processes, batch operations, scraping, builds, deployments, or any task that takes more than ~30 seconds:
+
+- Report progress at regular intervals (every 25% or every meaningful milestone)
+- Include: what's done, what's remaining, any issues encountered
+- If a task is running in background, check on it and report status proactively
+- Never go silent during multi-minute operations — keep the user informed
+
+---
+
 ## Development Workflow
 
 1. **Check TODO.md** before starting any work
@@ -187,8 +220,8 @@ The following skills are available globally at `C:\Users\HomePC\.gemini\skills\`
 ## Supabase Connection
 
 ```
-URL:        https://gqarlkfmpgaotbezpkbs.supabase.co
-Project ID: gqarlkfmpgaotbezpkbs
+URL:        https://ypteqfmxsjolpfzbkbxo.supabase.co
+Project ID: ypteqfmxsjolpfzbkbxo
 ```
 
 API keys and connection strings are in `App/.env`.

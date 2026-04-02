@@ -1,6 +1,6 @@
 # FEDSafe Retirement — UI/UX Specification
 
-> **Version:** 1.0 · **Date:** 2026-04-01 · **UI Library:** Vuexy v5.x (MUI + Next.js)
+> **Version:** 2.0 · **Date:** 2026-04-01 · **UI Library:** Vuexy v5.x (MUI + Next.js)
 
 ---
 
@@ -65,15 +65,14 @@ All layouts MUST be responsive. Use Tailwind breakpoints:
 │  📊 Dashboard            │
 │                          │
 │  LEADS                   │
-│  ├─ 👥 Lead Search       │
-│  └─ 📋 Lead Import       │
+│  └─ 👥 Lead Search       │
 │                          │
 │  CAMPAIGNS               │
-│  ├─ 📁 Collections       │
-│  └─ ➕ New Collection     │
+│  └─ 📁 Collections       │
 │                          │
 │  ACCOUNT                 │
 │  ├─ ⚙️ Settings          │
+│  ├─ 🔧 Configuration     │
 │  └─ 👤 User Management   │
 │     (Admin only)         │
 ├─────────────────────────┤
@@ -310,7 +309,95 @@ Follow Tailwind's 4px grid: `p-1` (4px), `p-2` (8px), `p-4` (16px), `p-6` (24px)
 
 ---
 
-## 7. Accessibility Requirements
+## 7. UI/UX Rules — NON-NEGOTIABLE
+
+### 7.1 Confirmation Dialogs
+
+> [!CAUTION]
+> **NEVER use `window.alert()`, `window.confirm()`, or `window.prompt()`.** Always use the reusable `ConfirmDialog` component at `src/components/ConfirmDialog.tsx`.
+
+```tsx
+// ✅ CORRECT — styled ConfirmDialog
+<ConfirmDialog
+  open={confirm}
+  onClose={() => setConfirm(false)}
+  onConfirm={handleDelete}
+  title='Delete Record'
+  message='This cannot be undone.'
+  confirmLabel='Delete'
+  confirmColor='error'
+  icon='tabler-trash'
+/>
+
+// ❌ FORBIDDEN
+window.confirm('Are you sure?')
+window.alert('Done!')
+```
+
+### 7.2 Required Field Labels
+
+Required fields display a **bold red asterisk** after the label text using the `RequiredLabel` component:
+
+```tsx
+const RequiredLabel = ({ children }: { children: string }) => (
+  <span>{children}<span style={{ color: '#ef4444', fontWeight: 700, marginLeft: 2 }}>*</span></span>
+)
+
+<CustomTextField label={<RequiredLabel>First Name</RequiredLabel>} />
+```
+
+Validation is enforced client-side in the save handler with an error message.
+
+### 7.3 Favorites System Pattern
+
+- **Database:** Boolean `is_favorite` column with partial index `WHERE is_favorite = true`
+- **Grid:** Star icon column with optimistic toggle (gold when active)
+- **Edit Dialog:** Star in header, left of Cancel button
+- **Filters:** Favorites pill in filter bar + "Clear All" with ConfirmDialog
+- **API:** Toggle endpoint (PATCH) + bulk clear endpoint (DELETE)
+
+### 7.4 Bulk Actions & Selection Bar
+
+- **Column 1** is always a checkbox selector in all grids
+- When rows are selected, a floating bar appears at bottom center:
+  - Shows "N selected" count
+  - Export actions (CSV/JSON via field picker)
+  - Custom bulk actions (e.g., "Push to ACT")
+  - Clear selection button
+- The `EntityListView` accepts `bulkActions` prop:
+  ```tsx
+  bulkActions={[
+    { label: 'Push to ACT', icon: 'tabler-send', onClick: (rows) => { ... } },
+  ]}
+  ```
+
+### 7.5 Export Field Picker
+
+- Export always goes through `ExportFieldPickerDialog`
+- User can select/deselect fields, drag-to-reorder, choose CSV/JSON
+- Selections persist per storageKey to localStorage
+- The `EntityListView` accepts `exportFields` prop (array of `{ key, label }`)
+
+### 7.6 Column Resizing
+
+- All data grid columns are resizable by dragging the right edge of the header
+- Double-click resize handle to reset column width
+- Column widths persist via `useGridPreferences` hook (columnSizing)
+
+### 7.7 Button Positioning
+
+- The primary "+Add" button is **always pinned to the far right** of the toolbar with 10px right padding
+- This is enforced globally in `EntityListView.tsx`
+
+### 7.8 Audit Footer
+
+- All entity edit dialogs use `EntityEditDialog` which includes the `AuditFooter`
+- Format: "Created by {user} on {date} • Last modified by {user} on {date}"
+- Audit fields: `cre_dt`, `mod_dt`, `cre_by`, `mod_by` (NON-NEGOTIABLE naming)
+
+---
+
+## 8. Accessibility Requirements
 
 - All interactive elements have visible focus rings
 - ARIA labels on icon-only buttons

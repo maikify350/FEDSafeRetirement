@@ -70,18 +70,35 @@ const Logo = ({ color }: { color?: CSSProperties['color'] }) => {
   }, [isHovered, layout, isBreakpointReached])
 
   return (
-    <div className='flex items-center'>
-      <VuexyLogo className='text-2xl text-primary' />
-      <LogoText
-        color={color}
-        ref={logoTextRef}
-        isHovered={isHovered}
-        isCollapsed={layout === 'collapsed'}
-        transitionDuration={transitionDuration}
-        isBreakpointReached={isBreakpointReached}
-      >
-        {themeConfig.templateName}
-      </LogoText>
+    <div className='flex flex-col items-center'>
+      <div className='flex items-center'>
+        <LogoText
+          color={color}
+          ref={logoTextRef}
+          isHovered={isHovered}
+          isCollapsed={layout === 'collapsed'}
+          transitionDuration={transitionDuration}
+          isBreakpointReached={isBreakpointReached}
+        >
+          {themeConfig.templateName}
+        </LogoText>
+      </div>
+      {/* App logo below the title */}
+      {(isBreakpointReached || layout !== 'collapsed' || isHovered) && (
+        <img
+          src='/images/logo-150x150.jpg'
+          alt='FEDSafe Retirement'
+          style={{
+            width: 80,
+            height: 80,
+            borderRadius: '50%',
+            marginTop: 8,
+            objectFit: 'cover',
+            border: '2px solid var(--mui-palette-primary-main)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+          }}
+        />
+      )}
     </div>
   )
 }

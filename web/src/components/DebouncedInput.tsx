@@ -1,0 +1,49 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import type { TextFieldProps } from '@mui/material/TextField'
+import CustomTextField from '@core/components/mui/TextField'
+
+type DebouncedInputProps = {
+  value: string | number
+  onChange: (value: string | number) => void
+  debounce?: number
+} & Omit<TextFieldProps, 'onChange'>
+
+/**
+ * A text field that debounces its onChange callback.
+ * Useful for search inputs on data tables to avoid filtering on every keystroke.
+ *
+ * @example
+ * <DebouncedInput
+ *   value={globalFilter}
+ *   onChange={value => setGlobalFilter(String(value))}
+ *   placeholder='Search...'
+ *   debounce={300}
+ * />
+ */
+const DebouncedInput = ({
+  value: initialValue,
+  onChange,
+  debounce = 500,
+  ...props
+}: DebouncedInputProps) => {
+  const [value, setValue] = useState(initialValue)
+
+  useEffect(() => {
+    setValue(initialValue)
+  }, [initialValue])
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      onChange(value)
+    }, debounce)
+
+    return () => clearTimeout(timeout)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value])
+
+  return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
+}
+
+export default DebouncedInput
