@@ -29,6 +29,9 @@ import { isConditionActive, type ColFilterValue } from '@/lib/columnFilter'
 import LeadEditDialog from './LeadEditDialog'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import PushToActDialog from '@/components/PushToActDialog'
+import SaveToCollectionDialog, { type FilterCriteria } from '@/components/SaveToCollectionDialog'
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
 
 // ── Lead type ───────────────────────────────────────────────────────────────
 interface Lead {
@@ -126,13 +129,62 @@ export default function LeadsView() {
   const [clearingFavs, setClearingFavs] = useState(false)
   const [actDialogOpen, setActDialogOpen] = useState(false)
   const [actPushCount, setActPushCount] = useState(0)
+  const [saveCollectionOpen, setSaveCollectionOpen] = useState(false)
+  const [saveSnackbar, setSaveSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' })
 
   // Fetch collections for the combobox filter
-  useEffect(() => {
+  const refreshCollections = useCallback(() => {
     fetch('/api/collections').then(r => r.json()).then(data => {
       if (Array.isArray(data)) setCollections(data.map((c: any) => ({ id: c.id, name: c.name })))
     }).catch(() => {})
   }, [])
+
+  useEffect(() => { refreshCollections() }, [refreshCollections])
+
+  // When user picks a collection → load its filter_criteria and apply
+  const handleCollectionChange = useCallback(async (collId: string) => {
+    setCollectionFilter(collId)
+    setCurrentPage(0)
+    if (!collId) return
+    try {
+      const res = await fetch(`/api/collections/${collId}`)
+      const coll = await res.json()
+      const fc = coll?.filter_criteria as FilterCriteria | null
+      if (fc) {
+        if (fc.state)    setStateFilter(fc.state)
+        if (fc.gender)   setGenderFilter(fc.gender)
+        if (typeof fc.favorite === 'boolean') setFavoriteFilter(fc.favorite)
+        if (typeof fc.search === 'string')    setGlobalFilter(fc.search)
+        if (Array.isArray(fc.columnFilters))  setColumnFilters(fc.columnFilters)
+        setSaveSnackbar({ open: true, message: `Filters from "${coll.name}" applied`, severity: 'success' })
+      }
+    } catch { /* ignore */ }
+  }, [])
+
+  // Build the filter_criteria object for saving
+  const currentFilterCriteria = useMemo<FilterCriteria>(() => ({
+    state:         stateFilter,
+    gender:        genderFilter,
+    favorite:      favoriteFilter,
+    search:        globalFilter,
+    columnFilters,
+    sorting,
+  }), [stateFilter, genderFilter, favoriteFilter, globalFilter, columnFilters, sorting])
+
+  // Build human-readable filter summary chips
+  const filterSummaryChips = useMemo(() => {
+    const chips: string[] = []
+    if (stateFilter !== 'all') chips.push(`State: ${stateFilter}`)
+    if (genderFilter !== 'all') chips.push(`Gender: ${genderFilter === 'M' ? 'Male' : 'Female'}`)
+    if (favoriteFilter) chips.push('Favorites only')
+    if (globalFilter.trim()) chips.push(`Search: "${globalFilter.trim()}"`)
+    const activeColFilters = columnFilters.filter(cf => {
+      const val = cf.value as ColFilterValue
+      return val?.conditions?.some(isConditionActive)
+    })
+    if (activeColFilters.length > 0) chips.push(`${activeColFilters.length} column filter${activeColFilters.length > 1 ? 's' : ''}`)
+    return chips
+  }, [stateFilter, genderFilter, favoriteFilter, globalFilter, columnFilters])
 
   // Debounced search
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -491,6 +543,20 @@ export default function LeadsView() {
               />
             )}
 
+            {/* Save current filters to a collection */}
+            <Divider orientation='vertical' flexItem sx={{ mx: 0.5 }} />
+            <Tooltip title={filterSummaryChips.length > 0 ? 'Save current filters to a collection' : 'Apply filters first to save them'}>
+              <span>
+                <IconButton
+                  size='small'
+                  onClick={() => setSaveCollectionOpen(true)}
+                  sx={{ color: 'primary.main' }}
+                >
+                  <i className='tabler-bookmark-plus text-lg' />
+                </IconButton>
+              </span>
+            </Tooltip>
+
             {collections.length > 0 && (
               <>
                 <Divider orientation='vertical' flexItem sx={{ mx: 0.5 }} />
@@ -499,7 +565,7 @@ export default function LeadsView() {
                   <Select
                     value={collectionFilter}
                     label='Collection'
-                    onChange={(e) => { setCollectionFilter(e.target.value); setCurrentPage(0) }}
+                    onChange={(e) => handleCollectionChange(e.target.value)}
                     sx={{ height: 28, fontSize: 13 }}
                   >
                     <MenuItem value=''><em>All Leads</em></MenuItem>
@@ -560,6 +626,32 @@ export default function LeadsView() {
         onClose={() => setActDialogOpen(false)}
         count={actPushCount}
       />
+
+      {/* Save filters to collection dialog */}
+      <SaveToCollectionDialog
+        open={saveCollectionOpen}
+        onClose={() => setSaveCollectionOpen(false)}
+        filterCriteria={currentFilterCriteria}
+        filterSummary={filterSummaryChips}
+        totalLeads={totalRows}
+        collections={collections}
+        onSaved={({ name, isNew }) => {
+          refreshCollections()
+          setSaveSnackbar({ open: true, message: `Filters ${isNew ? 'saved to new' : 'updated in'} collection "${name}"`, severity: 'success' })
+        }}
+      />
+
+      {/* Success / error toast */}
+      <Snackbar
+        open={saveSnackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSaveSnackbar(s => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={saveSnackbar.severity} variant='filled' onClose={() => setSaveSnackbar(s => ({ ...s, open: false }))}>
+          {saveSnackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   )
 }
