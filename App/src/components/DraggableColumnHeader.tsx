@@ -18,6 +18,7 @@ import classnames from 'classnames'
 import {
   FILTER_OPS,
   DEFAULT_FILTER_VALUE,
+  isConditionActive,
   type ColFilterValue,
   type FilterCondition,
   type FilterOp,
@@ -110,6 +111,24 @@ function FilterPopover({
     onClose()
   }
 
+  // Track how many condition rows are visible (start at 1, grow to 4)
+  const [visibleCount, setVisibleCount] = useState<number>(() => {
+    const active = (raw?.conditions ?? DEFAULT_FILTER_VALUE.conditions)
+      .filter(isConditionActive).length
+    return Math.max(1, active)
+  })
+
+  const removeCondition = (idx: 0 | 1 | 2 | 3) => {
+    // Shift remaining conditions up, fill last slot with empty default
+    setDraft(d => {
+      const next = [...d.conditions] as ColFilterValue['conditions']
+      for (let i = idx; i < 3; i++) next[i] = next[i + 1]
+      next[3] = { op: 'contains', value: '' }
+      return { ...d, conditions: next }
+    })
+    setVisibleCount(v => Math.max(1, v - 1))
+  }
+
   // Position below anchor
   const rect = anchorRef.current?.getBoundingClientRect()
   const top = rect ? rect.bottom + window.scrollY + 2 : 0
@@ -117,59 +136,78 @@ function FilterPopover({
 
   return (
     <div ref={popRef} style={{ ...popoverStyle, top, left }} onClick={e => e.stopPropagation()}>
-      {/* Header row: title + single AND/OR pill toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--mui-palette-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+
+      {/* Match ALL / ANY radio — plain English */}
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--mui-palette-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
           Column Filter
         </div>
-        <div style={{ display: 'flex', background: 'var(--mui-palette-action-hover)', borderRadius: 4, padding: '2px', gap: '2px' }}>
-          {(['and', 'or'] as const).map(combo => (
-            <label key={combo} style={{
-              cursor: 'pointer', fontSize: '0.68rem', fontWeight: 700,
-              padding: '2px 8px', borderRadius: 3,
-              background: draft.combinator === combo ? 'var(--mui-palette-primary-main)' : 'transparent',
-              color: draft.combinator === combo ? '#fff' : 'var(--mui-palette-text-secondary)',
-              transition: 'all 0.15s',
-              userSelect: 'none',
-            }}>
-              <input
-                type='radio'
-                name='global-combinator'
-                checked={draft.combinator === combo}
-                onChange={() => setDraft(d => ({ ...d, combinator: combo }))}
-                style={{ display: 'none' }}
-              />
-              {combo.toUpperCase()}
-            </label>
-          ))}
-        </div>
+        {(['and', 'or'] as const).map(combo => (
+          <label key={combo} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 4 }}>
+            <input
+              type='radio'
+              name='global-combinator'
+              checked={draft.combinator === combo}
+              onChange={() => setDraft(d => ({ ...d, combinator: combo }))}
+              style={{ accentColor: 'var(--mui-palette-primary-main)', margin: 0, width: 14, height: 14 }}
+            />
+            <span style={{ fontSize: '0.8rem', color: 'var(--mui-palette-text-primary)' }}>
+              {combo === 'and' ? 'Match ALL conditions' : 'Match ANY condition'}
+            </span>
+          </label>
+        ))}
       </div>
 
-      {/* 4 condition rows with AND/OR connector badges between them */}
-      <ConditionRow condition={draft.conditions[0]} onChange={c => setCondition(0, c)} />
-      {([0, 1, 2] as const).map(i => (
+      <div style={{ height: 1, background: 'var(--mui-palette-divider)', marginBottom: 8 }} />
+
+      {/* Condition rows */}
+      {Array.from({ length: visibleCount }, (_, i) => i as 0 | 1 | 2 | 3).map((i) => (
         <div key={i}>
-          {/* Connector showing the active combinator */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '5px 0' }}>
-            <div style={{ flex: 1, height: 1, background: 'var(--mui-palette-divider)' }} />
-            <span style={{
-              fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.05em',
-              padding: '1px 7px', borderRadius: 10,
-              background: 'var(--mui-palette-primary-lightOpacity)',
-              color: 'var(--mui-palette-primary-main)',
-              border: '1px solid var(--mui-palette-primary-light)',
-              userSelect: 'none',
-            }}>
-              {draft.combinator.toUpperCase()}
-            </span>
-            <div style={{ flex: 1, height: 1, background: 'var(--mui-palette-divider)' }} />
+          {/* AND/OR connector badge between rows */}
+          {i > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '5px 0' }}>
+              <div style={{ flex: 1, height: 1, background: 'var(--mui-palette-divider)' }} />
+              <span style={{
+                fontSize: '0.63rem', fontWeight: 700, padding: '1px 7px', borderRadius: 10,
+                background: 'var(--mui-palette-primary-lightOpacity)',
+                color: 'var(--mui-palette-primary-main)',
+                border: '1px solid var(--mui-palette-primary-light)',
+              }}>
+                {draft.combinator.toUpperCase()}
+              </span>
+              <div style={{ flex: 1, height: 1, background: 'var(--mui-palette-divider)' }} />
+            </div>
+          )}
+          {/* Condition row + remove button */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ flex: 1 }}>
+              <ConditionRow condition={draft.conditions[i]} onChange={c => setCondition(i, c)} />
+            </div>
+            {visibleCount > 1 && (
+              <button
+                onClick={() => removeCondition(i)}
+                title='Remove condition'
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px', color: 'var(--mui-palette-text-secondary)', fontSize: '1rem', lineHeight: 1, flexShrink: 0 }}
+              >
+                ×
+              </button>
+            )}
           </div>
-          <ConditionRow condition={draft.conditions[i + 1]} onChange={c => setCondition((i + 1) as 1 | 2 | 3, c)} />
         </div>
       ))}
 
+      {/* + Add condition */}
+      {visibleCount < 4 && (
+        <button
+          onClick={() => setVisibleCount(v => Math.min(4, v + 1))}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0 2px', color: 'var(--mui-palette-primary-main)', fontSize: '0.78rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}
+        >
+          <span style={{ fontSize: '1rem', lineHeight: 1 }}>+</span> Add condition
+        </button>
+      )}
+
       {/* Action buttons */}
-      <div style={{ display: 'flex', gap: 6, marginTop: 10, justifyContent: 'flex-end' }}>
+      <div style={{ display: 'flex', gap: 6, marginTop: 10, justifyContent: 'flex-end', borderTop: '1px solid var(--mui-palette-divider)', paddingTop: 8 }}>
         <button onClick={clear} style={btnStyle('secondary')}>Clear</button>
         <button onClick={apply} style={btnStyle('primary')}>Apply</button>
       </div>
