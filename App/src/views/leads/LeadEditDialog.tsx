@@ -333,32 +333,30 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
         </CustomTextField>
       </div>
 
-      {/* Personal Address row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 8 }}>
-        <AddressAutocomplete
-          value={form.personal_address}
-          onChange={(v) => { setForm(prev => ({ ...prev, personal_address: v })); setDirty(true) }}
-          onPlaceSelected={(place) => {
-            setForm(prev => ({
-              ...prev,
-              personal_address: place.street,
-              personal_city: place.city,
-              personal_state: place.state,
-              personal_zip: place.zipCode,
-            }))
-            setDirty(true)
-          }}
-          label='Home Address'
-          placeholder='Start typing to search...'
-          size='medium'
-        />
+      {/* Personal Address — street alone, then city/state/zip on one row */}
+      <AddressAutocomplete
+        value={form.personal_address}
+        onChange={(v) => { setForm(prev => ({ ...prev, personal_address: v })); setDirty(true) }}
+        onPlaceSelected={(place) => {
+          setForm(prev => ({
+            ...prev,
+            personal_address: place.street,
+            personal_city: place.city,
+            personal_state: place.state,
+            personal_zip: place.zipCode,
+          }))
+          setDirty(true)
+        }}
+        label='Street Address'
+        placeholder='Start typing to search...'
+        size='medium'
+      />
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 16, marginTop: 8, marginBottom: 8 }}>
         <CustomTextField
           fullWidth label='City'
           value={form.personal_city} onChange={handleChange('personal_city')}
           disabled={saving}
         />
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 8 }}>
         <CustomTextField
           fullWidth label='State'
           value={form.personal_state} onChange={handleChange('personal_state')}
