@@ -10,7 +10,7 @@
 - **Stack:** Next.js 16 + Vuexy v5.x (MUI) + Supabase + TailwindCSS v4
 - **Data:** 472,576 USPS federal employee records (FOIA 2025)
 - **Workspace:** `c:\WIP\FEDSafeRetirement_App\App`
-- **Supabase Project ID:** `ypteqfmxsjolpfzbkbxo`
+- **Supabase Project ID:** `gqarlkfmpgaotbezpkbs`
 
 ---
 
@@ -220,8 +220,8 @@ The following skills are available globally at `C:\Users\HomePC\.gemini\skills\`
 ## Supabase Connection
 
 ```
-URL:        https://ypteqfmxsjolpfzbkbxo.supabase.co
-Project ID: ypteqfmxsjolpfzbkbxo
+URL:        https://gqarlkfmpgaotbezpkbs.supabase.co
+Project ID: gqarlkfmpgaotbezpkbs
 ```
 
 API keys and connection strings are in `App/.env`.
