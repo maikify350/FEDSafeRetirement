@@ -317,15 +317,17 @@ export function DraggableColumnHeader<T>({ header, showFilters }: Props<T>) {
             })}
             onClick={header.column.getToggleSortingHandler()}
           >
-            <span
-              {...attributes}
-              {...listeners}
-              style={{ cursor: 'grab', display: 'inline-flex', alignItems: 'center', opacity: 0.4, fontSize: '0.9rem' }}
-              onClick={e => e.stopPropagation()}
-              title='Drag to reorder'
-            >
-              <i className='tabler-grip-vertical' />
-            </span>
+            {!['action', 'apply', 'select'].includes(header.column.id) && (
+              <span
+                {...attributes}
+                {...listeners}
+                style={{ cursor: 'grab', display: 'inline-flex', alignItems: 'center', opacity: 0.4, fontSize: '0.9rem' }}
+                onClick={e => e.stopPropagation()}
+                title='Drag to reorder'
+              >
+                <i className='tabler-grip-vertical' />
+              </span>
+            )}
 
             {flexRender(header.column.columnDef.header, header.getContext())}
 
