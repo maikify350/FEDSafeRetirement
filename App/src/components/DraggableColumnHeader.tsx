@@ -117,30 +117,39 @@ function FilterPopover({
 
   return (
     <div ref={popRef} style={{ ...popoverStyle, top, left }} onClick={e => e.stopPropagation()}>
-      <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--mui-palette-text-secondary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-        Column Filter
+      {/* Header row: title + single AND/OR pill toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--mui-palette-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          Column Filter
+        </div>
+        <div style={{ display: 'flex', background: 'var(--mui-palette-action-hover)', borderRadius: 4, padding: '2px', gap: '2px' }}>
+          {(['and', 'or'] as const).map(combo => (
+            <label key={combo} style={{
+              cursor: 'pointer', fontSize: '0.68rem', fontWeight: 700,
+              padding: '2px 8px', borderRadius: 3,
+              background: draft.combinator === combo ? 'var(--mui-palette-primary-main)' : 'transparent',
+              color: draft.combinator === combo ? '#fff' : 'var(--mui-palette-text-secondary)',
+              transition: 'all 0.15s',
+              userSelect: 'none',
+            }}>
+              <input
+                type='radio'
+                name='global-combinator'
+                checked={draft.combinator === combo}
+                onChange={() => setDraft(d => ({ ...d, combinator: combo }))}
+                style={{ display: 'none' }}
+              />
+              {combo.toUpperCase()}
+            </label>
+          ))}
+        </div>
       </div>
 
+      {/* 4 condition rows with plain dividers */}
       <ConditionRow condition={draft.conditions[0]} onChange={c => setCondition(0, c)} />
-
-      {/* Combinator between conditions */}
       {([0, 1, 2] as const).map(i => (
         <div key={i}>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center', margin: '6px 0' }}>
-            {(['and', 'or'] as const).map(combo => (
-              <label key={combo} style={{ display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer', fontSize: '0.72rem', fontWeight: draft.combinator === combo ? 700 : 400, color: draft.combinator === combo ? 'var(--mui-palette-primary-main)' : 'var(--mui-palette-text-secondary)' }}>
-                <input
-                  type='radio'
-                  name={`combinator-${i}`}
-                  checked={draft.combinator === combo}
-                  onChange={() => setDraft(d => ({ ...d, combinator: combo }))}
-                  style={{ accentColor: 'var(--mui-palette-primary-main)', margin: 0 }}
-                />
-                {combo.toUpperCase()}
-              </label>
-            ))}
-            <div style={{ flex: 1, height: 1, background: 'var(--mui-palette-divider)' }} />
-          </div>
+          <div style={{ height: 1, background: 'var(--mui-palette-divider)', margin: '6px 0' }} />
           <ConditionRow condition={draft.conditions[i + 1]} onChange={c => setCondition((i + 1) as 1 | 2 | 3, c)} />
         </div>
       ))}
