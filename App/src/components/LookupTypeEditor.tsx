@@ -457,14 +457,15 @@ export default function LookupTypeEditor({
       const oldIdx = prev.findIndex(i => i.id === active.id)
       const newIdx = prev.findIndex(i => i.id === over.id)
       const reordered = arrayMove(prev, oldIdx, newIdx)
-      // Fire-and-forget reorder saves
-      reordered.forEach((item, idx) => {
-        fetch(`/api/lookups/item/${item.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sort_order: idx }),
-        })
+      
+      // Fire-and-forget single bulk reorder save
+      const payload = reordered.map((item, idx) => ({ id: item.id, sort_order: idx }))
+      fetch('/api/lookups/reorder', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       })
+      
       return reordered
     })
   }, [])

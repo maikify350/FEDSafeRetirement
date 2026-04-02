@@ -12,6 +12,7 @@ export interface GridPrefs {
   columnVisibility?: Record<string, boolean>
   columnOrder?:      string[]
   columnSizing?:     Record<string, number>
+  sorting?:          { id: string; desc: boolean }[]
   density?:          'compact' | 'normal' | 'comfortable'
   pageSize?:         number
   showFilters?:      boolean
@@ -39,20 +40,20 @@ async function fetchAllPrefs(userId: string): Promise<AllPrefs> {
   if (!pendingFetch[userId]) {
     const supabase = createClient()
 
-    pendingFetch[userId] = supabase
-      .from('users')
-      .select('settings')
-      .eq('id', userId)
-      .single()
-      .then(({ data }) => {
-        prefsCache[userId] = (data?.settings as AllPrefs) ?? {}
-        delete pendingFetch[userId]
-        return prefsCache[userId]
-      })
-      .catch(() => {
-        delete pendingFetch[userId]
-        return {}
-      })
+    pendingFetch[userId] = Promise.resolve(
+      supabase
+        .from('users')
+        .select('settings')
+        .eq('id', userId)
+        .single()
+    ).then(({ data }) => {
+      prefsCache[userId] = (data?.settings as AllPrefs) ?? {}
+      delete pendingFetch[userId]
+      return prefsCache[userId]
+    }).catch(() => {
+      delete pendingFetch[userId]
+      return {} as AllPrefs
+    })
   }
 
   return pendingFetch[userId]

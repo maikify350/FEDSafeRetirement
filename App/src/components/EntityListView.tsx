@@ -42,6 +42,7 @@ import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
 import TablePagination from '@mui/material/TablePagination'
 import MenuItem from '@mui/material/MenuItem'
+import CircularProgress from '@mui/material/CircularProgress'
 import Box from '@mui/material/Box'
 import Popover from '@mui/material/Popover'
 import FormControlLabel from '@mui/material/FormControlLabel'
@@ -94,6 +95,8 @@ export interface EntityListViewProps<TData extends { id: string }> {
   // ── Server-side pagination
   totalRows?: number                            // if provided, enables server-side pagination
   currentPage?: number
+  isLoading?: boolean                           // if provided, shows a loading overlay
+  defaultSorting?: SortingState                 // initial sort state (shows arrow on first load)
   onPageChange?: (page: number, pageSize: number) => void
   onSortChange?: (sorting: SortingState) => void
   onColumnFilterChange?: (filters: ColumnFiltersState) => void
@@ -138,6 +141,8 @@ export default function EntityListView<TData extends { id: string }>({
   data,
   totalRows,
   currentPage = 0,
+  isLoading = false,
+  defaultSorting = [],
   onPageChange,
   onSortChange,
   onColumnFilterChange,
@@ -197,6 +202,7 @@ export default function EntityListView<TData extends { id: string }>({
   const [gridPrefs, setGridPrefs] = useGridPreferences(storageKey, {
     columnVisibility: defaultColVisibility,
     columnOrder:      [],
+    sorting:          defaultSorting,
     density:          'normal',
     pageSize:         25,
     showFilters:      false,
@@ -206,6 +212,7 @@ export default function EntityListView<TData extends { id: string }>({
   const columnVisibility = gridPrefs.columnVisibility ?? defaultColVisibility
   const columnOrder      = gridPrefs.columnOrder      ?? []
   const columnSizing     = gridPrefs.columnSizing     ?? {}
+  const persistedSorting = gridPrefs.sorting          ?? defaultSorting
   const density          = (gridPrefs.density          ?? 'normal') as 'compact' | 'normal' | 'comfortable'
   const pageSize         = gridPrefs.pageSize         ?? 25
   const showFilters      = gridPrefs.showFilters      ?? false
@@ -222,6 +229,8 @@ export default function EntityListView<TData extends { id: string }>({
     setGridPrefs(prev => ({ ...prev, showFilters: v }))
   const setColumnSizing = (updater: Record<string,number> | ((p: Record<string,number>) => Record<string,number>)) =>
     setGridPrefs(prev => ({ ...prev, columnSizing: typeof updater === 'function' ? updater(prev.columnSizing ?? {}) : updater }))
+  const persistSorting = (s: SortingState) =>
+    setGridPrefs(prev => ({ ...prev, sorting: s }))
 
   // Merge new default columns
   const prevDefaultRef = useRef<Record<string,boolean>>({})
@@ -241,7 +250,7 @@ export default function EntityListView<TData extends { id: string }>({
 
   // ── Ephemeral UI state ────────────────────────────────────────────────────
   const [columnFilters, setColumnFilters]       = useState<ColumnFiltersState>([])
-  const [sorting, setSorting]                   = useState<SortingState>([])
+  const [sorting, setSorting]                   = useState<SortingState>(persistedSorting)
   const [rowSelection, setRowSelection]         = useState({})
   const [colPickerAnchor, setColPickerAnchor]   = useState<HTMLButtonElement | null>(null)
   const [exportAnchor, setExportAnchor]         = useState<HTMLButtonElement | null>(null)
@@ -250,21 +259,6 @@ export default function EntityListView<TData extends { id: string }>({
   const dragColId                               = useRef<string | null>(null)
 
   const densityPy = density === 'compact' ? '2px' : density === 'comfortable' ? '14px' : '6px'
-
-  // ── Propagate filter/sort changes to parent for server-side mode ─────────
-  useEffect(() => {
-    if (isServerSide && onColumnFilterChange) {
-      onColumnFilterChange(columnFilters)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [columnFilters])
-
-  useEffect(() => {
-    if (isServerSide && onSortChange) {
-      onSortChange(sorting)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sorting])
 
   // ── Two-phase column order ────────────────────────────────────────────────
   const cleanedColumnOrder = useMemo(
@@ -281,15 +275,19 @@ export default function EntityListView<TData extends { id: string }>({
     filterFns: { fuzzy: fuzzyFilter, [MULTI_FILTER_KEY]: multiConditionFilterFn } as any,
     defaultColumn: { filterFn: MULTI_FILTER_KEY as any },
     state: {
-      globalFilter: isServerSide ? undefined : searchValue,
+      globalFilter: searchValue,
       rowSelection,
       columnVisibility,
       columnOrder: resolvedColumnOrder,
       columnSizing,
-      columnFilters: isServerSide ? [] : columnFilters,  // In server-side mode, filtering is done by parent
-      sorting: isServerSide ? [] : sorting,
-      ...(isServerSide ? { pagination: { pageIndex: 0, pageSize } } : {}),
+      columnFilters,
+      sorting,
+      pagination: { pageIndex: currentPage, pageSize },
     },
+    manualPagination: isServerSide,
+    manualSorting: isServerSide,
+    manualFiltering: isServerSide,
+    enableSortingRemoval: false,
     initialState: { pagination: { pageSize } },
     globalFilterFn: fuzzyFilter as any,
     enableRowSelection: true,
@@ -299,8 +297,17 @@ export default function EntityListView<TData extends { id: string }>({
       setColumnSizing(typeof updater === 'function' ? updater(columnSizing) : updater),
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: isServerSide ? undefined : onSearchChange,
-    onColumnFiltersChange: setColumnFilters,
-    onSortingChange: setSorting,
+    onColumnFiltersChange: (updater) => {
+      const next = typeof updater === 'function' ? updater(columnFilters) : updater
+      setColumnFilters(next)
+      if (isServerSide && onColumnFilterChange) onColumnFilterChange(next)
+    },
+    onSortingChange: (updater) => {
+      const next = typeof updater === 'function' ? updater(sorting) : updater
+      setSorting(next)
+      persistSorting(next)
+      if (isServerSide && onSortChange) onSortChange(next)
+    },
     onColumnVisibilityChange: (updater) =>
       setColumnVisibility(typeof updater === 'function' ? updater(columnVisibility) : updater),
     onColumnOrderChange: (updater) => {
@@ -575,8 +582,18 @@ export default function EntityListView<TData extends { id: string }>({
 
         {/* ── Table ─────────────────────────────────────────────────────────── */}
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <div style={{ flex: 1, minHeight: 0, overflowX: 'auto', overflowY: 'auto' }}>
-            <table className={tableStyles.table}>
+          <div style={{ flex: 1, minHeight: 0, overflowX: 'auto', overflowY: 'auto', position: 'relative' }}>
+            {isLoading && (
+              <Box sx={{
+                position: 'absolute', inset: 0, zIndex: 10,
+                display: 'flex', justifyContent: 'center', alignItems: 'flex-start', pt: 10,
+                backgroundColor: 'var(--mui-palette-background-paper)', opacity: 0.6,
+                backdropFilter: 'blur(2px)'
+              }}>
+                <CircularProgress size={40} disableShrink />
+              </Box>
+            )}
+            <table className={tableStyles.table} style={{ width: table.getCenterTotalSize() || '100%', tableLayout: 'fixed' }}>
               <SortableContext items={draggableColIds} strategy={horizontalListSortingStrategy}>
                 <thead style={{ position: 'sticky', top: 0, zIndex: 2, backgroundColor: 'var(--mui-palette-background-paper)' }}>
                   {table.getHeaderGroups().map(hg => (

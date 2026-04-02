@@ -269,9 +269,13 @@ export function DraggableColumnHeader<T>({ header, showFilters }: Props<T>) {
             {flexRender(header.column.columnDef.header, header.getContext())}
 
             {{
-              asc: <i className='tabler-chevron-up text-xl' />,
-              desc: <i className='tabler-chevron-down text-xl' />,
-            }[header.column.getIsSorted() as 'asc' | 'desc'] ?? null}
+              asc: <i className='tabler-chevron-up text-xl text-primary' />,
+              desc: <i className='tabler-chevron-down text-xl text-primary' />,
+            }[header.column.getIsSorted() as 'asc' | 'desc'] ??
+              (header.column.getCanSort()
+                ? <i className='tabler-arrows-sort text-xl' style={{ opacity: 0.25 }} />
+                : null
+              )}
           </div>
 
           {showFilters && <FilterInput column={header.column} />}

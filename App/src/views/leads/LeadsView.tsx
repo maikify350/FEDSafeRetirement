@@ -114,7 +114,7 @@ export default function LeadsView() {
   const [currentPage, setCurrentPage] = useState(0)
   const [pageSize, setPageSizeState] = useState(25)
   const [globalFilter, setGlobalFilter] = useState('')
-  const [sorting, setSorting] = useState<SortingState>([])
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'last_name', desc: false }])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [stateFilter, setStateFilter] = useState<string>('all')
   const [genderFilter, setGenderFilter] = useState<string>('all')
@@ -170,7 +170,7 @@ export default function LeadsView() {
         ...(favoriteFilter ? { favorite: 'true' } : {}),
       })
 
-      const res = await fetch(`/api/leads?${params}`)
+      const res = await fetch(`/api/leads?${params}`, { cache: 'no-store' })
       const json = await res.json()
 
       if (json.error) {
@@ -411,6 +411,8 @@ export default function LeadsView() {
         data={leads as LeadWithAction[]}
         totalRows={totalRows}
         currentPage={currentPage}
+        isLoading={loading}
+        defaultSorting={[{ id: 'last_name', desc: false }]}
         onPageChange={handlePageChange}
         onSortChange={handleSortChange}
         onColumnFilterChange={handleFilterChange}
