@@ -7,13 +7,16 @@
  * The dialog shell (draggable, header, footer, save/cancel) comes from EntityEditDialog.
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import Divider from '@mui/material/Divider'
+import IconButton from '@mui/material/IconButton'
+import Tooltip from '@mui/material/Tooltip'
 import CustomTextField from '@core/components/mui/TextField'
 import EntityEditDialog from '@/components/EntityEditDialog'
 import AddressAutocomplete from '@/components/AddressAutocomplete'
+import FacilityMapDialog from '@/components/FacilityMapDialog'
 
 // Required field label with bold red asterisk
 const RequiredLabel = ({ children }: { children: string }) => (
@@ -41,6 +44,12 @@ interface Lead {
   date_of_birth: string | null
   source_file: string | null
   is_favorite: boolean
+  personal_address: string | null
+  personal_city: string | null
+  personal_state: string | null
+  personal_zip: string | null
+  personal_email: string | null
+  personal_phone: string | null
   cre_dt: string | null
   cre_by: string | null
   mod_by: string | null
@@ -55,10 +64,11 @@ interface Props {
 }
 
 // ── Section Header ──────────────────────────────────────────────────────────
-const SectionHeader = ({ icon, children }: { icon: string; children: React.ReactNode }) => (
+const SectionHeader = ({ icon, children, action }: { icon: string; children: React.ReactNode; action?: React.ReactNode }) => (
   <Box className='flex items-center gap-2 mb-4 mt-2'>
     <i className={`${icon} text-xl text-primary`} />
-    <Typography variant='h6' fontWeight={700} color='text.primary'>{children}</Typography>
+    <Typography variant='h6' fontWeight={700} color='text.primary' sx={{ flex: 1 }}>{children}</Typography>
+    {action}
   </Box>
 )
 
@@ -97,6 +107,12 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
     facility_zip_code: '',
     entered_on_duty_date: '',
     years_of_service: '',
+    personal_address: '',
+    personal_city: '',
+    personal_state: '',
+    personal_zip: '',
+    personal_email: '',
+    personal_phone: '',
   })
 
   const [saving, setSaving] = useState(false)
@@ -104,6 +120,8 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
   const [success, setSuccess] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [localFavorite, setLocalFavorite] = useState(false)
+  const [mapOpen, setMapOpen] = useState(false)
+  const [mapPersonalOpen, setMapPersonalOpen] = useState(false)
 
   // Sync local favorite state with lead data
   useEffect(() => {
@@ -143,6 +161,12 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
         facility_zip_code: lead.facility_zip_code ?? '',
         entered_on_duty_date: lead.entered_on_duty_date ?? '',
         years_of_service: lead.years_of_service?.toString() ?? '',
+        personal_address: lead.personal_address ?? '',
+        personal_city: lead.personal_city ?? '',
+        personal_state: lead.personal_state ?? '',
+        personal_zip: lead.personal_zip ?? '',
+        personal_email: lead.personal_email ?? '',
+        personal_phone: lead.personal_phone ?? '',
       })
       setDirty(false)
       setError('')
@@ -186,6 +210,12 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
         facility_state: form.facility_state || null,
         facility_zip_code: form.facility_zip_code || null,
         entered_on_duty_date: form.entered_on_duty_date || null,
+        personal_address: form.personal_address || null,
+        personal_city: form.personal_city || null,
+        personal_state: form.personal_state || null,
+        personal_zip: form.personal_zip || null,
+        personal_email: form.personal_email || null,
+        personal_phone: form.personal_phone || null,
       }
 
       const res = await fetch(`/api/leads/${lead.id}`, {
@@ -265,6 +295,70 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
           disabled={saving}
         />
       </div>
+
+      {/* Personal Address row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 8 }}>
+        <AddressAutocomplete
+          value={form.personal_address}
+          onChange={(v) => { setForm(prev => ({ ...prev, personal_address: v })); setDirty(true) }}
+          onPlaceSelected={(place) => {
+            setForm(prev => ({
+              ...prev,
+              personal_address: place.street,
+              personal_city: place.city,
+              personal_state: place.state,
+              personal_zip: place.zipCode,
+            }))
+            setDirty(true)
+          }}
+          label='Home Address'
+          placeholder='Start typing to search...'
+          size='medium'
+        />
+        <CustomTextField
+          fullWidth label='City'
+          value={form.personal_city} onChange={handleChange('personal_city')}
+          disabled={saving}
+        />
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 8 }}>
+        <CustomTextField
+          fullWidth label='State'
+          value={form.personal_state} onChange={handleChange('personal_state')}
+          disabled={saving}
+        />
+        <CustomTextField
+          fullWidth label='Zip'
+          value={form.personal_zip} onChange={handleChange('personal_zip')}
+          disabled={saving}
+        />
+        {(form.personal_address || form.personal_city || form.personal_state || form.personal_zip) && (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Tooltip title='View on Google Maps'>
+              <IconButton
+                size='small'
+                onClick={() => setMapPersonalOpen(true)}
+                sx={{
+                  color: '#4285F4',
+                  bgcolor: 'rgba(66,133,244,0.08)',
+                  border: '1px solid rgba(66,133,244,0.3)',
+                  borderRadius: 1.5,
+                  p: '4px 10px',
+                  gap: 0.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  '&:hover': { bgcolor: 'rgba(66,133,244,0.15)', borderColor: '#4285F4' },
+                  transition: 'all 0.15s',
+                }}
+              >
+                <i className='tabler-map-pin' style={{ fontSize: 15 }} />
+                <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'inherit' }}>Map</span>
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
+      </div>
+
       <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
         <CustomTextField
           fullWidth label='Gender' value={form.gender} onChange={handleChange('gender')}
@@ -333,7 +427,39 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
       <Divider sx={{ my: 3 }} />
 
       {/* ── Facility Information ──────────────────────────────────────────── */}
-      <SectionHeader icon='tabler-building'>Facility Information</SectionHeader>
+      <SectionHeader
+        icon='tabler-building'
+        action={
+          (form.facility_address || form.facility_city || form.facility_state || form.facility_zip_code) ? (
+            <Tooltip title='View on Google Maps'>
+              <IconButton
+                size='small'
+                onClick={() => setMapOpen(true)}
+                sx={{
+                  color: '#4285F4',
+                  bgcolor: 'rgba(66,133,244,0.08)',
+                  border: '1px solid rgba(66,133,244,0.3)',
+                  borderRadius: 1.5,
+                  p: '4px 8px',
+                  gap: 0.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  '&:hover': {
+                    bgcolor: 'rgba(66,133,244,0.15)',
+                    borderColor: '#4285F4',
+                  },
+                  transition: 'all 0.15s',
+                }}
+              >
+                <i className='tabler-map-pin' style={{ fontSize: 15 }} />
+                <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'inherit' }}>Map</span>
+              </IconButton>
+            </Tooltip>
+          ) : null
+        }
+      >Facility Information</SectionHeader>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 16, marginBottom: 16 }}>
         <CustomTextField
           fullWidth label='Facility Name'
@@ -378,6 +504,28 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
           disabled={saving}
         />
       </div>
+
+      {/* Facility map dialog */}
+      <FacilityMapDialog
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        facilityName={form.facility_name || null}
+        address={form.facility_address || null}
+        city={form.facility_city || null}
+        state={form.facility_state || null}
+        zip={form.facility_zip_code || null}
+      />
+
+      {/* Personal address map dialog */}
+      <FacilityMapDialog
+        open={mapPersonalOpen}
+        onClose={() => setMapPersonalOpen(false)}
+        facilityName={`${form.first_name} ${form.last_name}`.trim() || null}
+        address={form.personal_address || null}
+        city={form.personal_city || null}
+        state={form.personal_state || null}
+        zip={form.personal_zip || null}
+      />
     </EntityEditDialog>
   )
 }

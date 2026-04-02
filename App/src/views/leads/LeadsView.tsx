@@ -31,6 +31,7 @@ import LeadEditDialog from './LeadEditDialog'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import PushToActDialog from '@/components/PushToActDialog'
 import SaveToCollectionDialog, { type FilterCriteria } from '@/components/SaveToCollectionDialog'
+import FacilityMapDialog from '@/components/FacilityMapDialog'
 import Snackbar from '@mui/material/Snackbar'
 import Alert from '@mui/material/Alert'
 
@@ -124,6 +125,7 @@ export default function LeadsView() {
   const [genderFilter, setGenderFilter] = useState<string>('all')
   const [favoriteFilter, setFavoriteFilter] = useState(false)
   const [editLead, setEditLead] = useState<Lead | null>(null)
+  const [mapLead, setMapLead] = useState<Lead | null>(null)
   const [collections, setCollections] = useState<{id: string; name: string}[]>([])
   const [collectionFilter, setCollectionFilter] = useState<string>('')
   const [clearFavConfirm, setClearFavConfirm] = useState(false)
@@ -367,8 +369,38 @@ export default function LeadsView() {
         ),
       }),
       columnHelper.accessor('facility_name', {
-        header: 'Facility', size: 200,
-        cell: ({ row }) => <Typography className='text-sm' noWrap>{row.original.facility_name || '—'}</Typography>,
+        header: 'Facility', size: 220,
+        cell: ({ row }) => {
+          const lead = row.original
+          const hasAddress = !!(lead.facility_address || lead.facility_city || lead.facility_state || lead.facility_zip_code)
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+              <Typography className='text-sm' noWrap sx={{ flex: 1, minWidth: 0 }}>
+                {lead.facility_name || '—'}
+              </Typography>
+              {hasAddress && (
+                <Tooltip title='View on Google Maps'>
+                  <IconButton
+                    size='small'
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation()
+                      setMapLead(lead)
+                    }}
+                    sx={{
+                      p: '2px',
+                      flexShrink: 0,
+                      color: 'text.disabled',
+                      '&:hover': { color: '#4285F4' },
+                      transition: 'color 0.15s',
+                    }}
+                  >
+                    <i className='tabler-map-pin' style={{ fontSize: 15 }} />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
+          )
+        },
       }),
       columnHelper.accessor('facility_city', {
         header: 'City', size: 140,
@@ -627,6 +659,17 @@ export default function LeadsView() {
         onClose={() => setEditLead(null)}
         lead={editLead}
         onSaved={handleEditSaved}
+      />
+
+      {/* Facility map dialog */}
+      <FacilityMapDialog
+        open={!!mapLead}
+        onClose={() => setMapLead(null)}
+        facilityName={mapLead?.facility_name ?? null}
+        address={mapLead?.facility_address ?? null}
+        city={mapLead?.facility_city ?? null}
+        state={mapLead?.facility_state ?? null}
+        zip={mapLead?.facility_zip_code ?? null}
       />
 
       {/* Clear All Favorites confirmation */}

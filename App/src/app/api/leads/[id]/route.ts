@@ -42,6 +42,8 @@ export async function PUT(
     'facility_name', 'facility_address', 'facility_city',
     'facility_state', 'facility_zip_code',
     'entered_on_duty_date', 'years_of_service',
+    'personal_address', 'personal_city', 'personal_state', 'personal_zip',
+    'personal_email', 'personal_phone',
   ]
 
   const updates: Record<string, any> = {}
