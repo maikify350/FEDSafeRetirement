@@ -144,12 +144,24 @@ export default function CollectionsView() {
         )
       },
     }),
+    columnHelper.accessor('cre_dt', {
+      header: 'Created', size: 130,
+      cell: ({ row }) => <Typography className='text-sm'>{formatDate(row.original.cre_dt)}</Typography>,
+    }),
+    columnHelper.accessor('cre_by', {
+      header: 'Created By', size: 160,
+      cell: ({ row }) => {
+        const u = row.original.users
+        return <Typography className='text-sm'>{u ? `${u.first_name} ${u.last_name}` : row.original.cre_by || '—'}</Typography>
+      },
+    }),
     {
       id: 'apply',
       header: '',
       size: 130,
       enableSorting: false,
       enableColumnFilter: false,
+      enableHiding: false,
       cell: ({ row }: any) => {
         const hasFilters = filterSummary(row.original.filter_criteria).length > 0
         if (!hasFilters) return null
@@ -169,17 +181,6 @@ export default function CollectionsView() {
         )
       },
     },
-    columnHelper.accessor('cre_dt', {
-      header: 'Created', size: 130,
-      cell: ({ row }) => <Typography className='text-sm'>{formatDate(row.original.cre_dt)}</Typography>,
-    }),
-    columnHelper.accessor('cre_by', {
-      header: 'Created By', size: 160,
-      cell: ({ row }) => {
-        const u = row.original.users
-        return <Typography className='text-sm'>{u ? `${u.first_name} ${u.last_name}` : row.original.cre_by || '—'}</Typography>
-      },
-    }),
   ], [])
 
   const handleSaved = useCallback(() => {
