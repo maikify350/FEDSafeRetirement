@@ -276,8 +276,37 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
       } : undefined}
     >
       {/* ── Personal Information ─────────────────────────────────────────── */}
-      <SectionHeader icon='tabler-user'>Personal Information</SectionHeader>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 1fr', gap: 16, marginBottom: 16 }}>
+      <SectionHeader
+        icon='tabler-user'
+        action={
+          (form.personal_address || form.personal_city || form.personal_state || form.personal_zip) ? (
+            <Tooltip title='View on Google Maps'>
+              <IconButton
+                size='small'
+                onClick={() => setMapPersonalOpen(true)}
+                sx={{
+                  color: '#4285F4',
+                  bgcolor: 'rgba(66,133,244,0.08)',
+                  border: '1px solid rgba(66,133,244,0.3)',
+                  borderRadius: 1.5,
+                  p: '4px 8px',
+                  gap: 0.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  '&:hover': { bgcolor: 'rgba(66,133,244,0.15)', borderColor: '#4285F4' },
+                  transition: 'all 0.15s',
+                }}
+              >
+                <i className='tabler-map-pin' style={{ fontSize: 15 }} />
+                <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'inherit' }}>Map</span>
+              </IconButton>
+            </Tooltip>
+          ) : null
+        }
+      >Personal Information</SectionHeader>
+
+      {/* Name row: First | MI | Last | Gender */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 1fr 110px', gap: 16, marginBottom: 16 }}>
         <CustomTextField
           fullWidth label={<RequiredLabel>First Name</RequiredLabel>}
           value={form.first_name} onChange={handleChange('first_name')}
@@ -294,6 +323,14 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
           value={form.last_name} onChange={handleChange('last_name')}
           disabled={saving}
         />
+        <CustomTextField
+          fullWidth label='Gender' value={form.gender} onChange={handleChange('gender')}
+          disabled={saving} select SelectProps={{ native: true }}
+        >
+          <option value=''>—</option>
+          <option value='M'>Male</option>
+          <option value='F'>Female</option>
+        </CustomTextField>
       </div>
 
       {/* Personal Address row */}
@@ -321,7 +358,7 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
           disabled={saving}
         />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 8 }}>
         <CustomTextField
           fullWidth label='State'
           value={form.personal_state} onChange={handleChange('personal_state')}
@@ -332,42 +369,9 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
           value={form.personal_zip} onChange={handleChange('personal_zip')}
           disabled={saving}
         />
-        {(form.personal_address || form.personal_city || form.personal_state || form.personal_zip) && (
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Tooltip title='View on Google Maps'>
-              <IconButton
-                size='small'
-                onClick={() => setMapPersonalOpen(true)}
-                sx={{
-                  color: '#4285F4',
-                  bgcolor: 'rgba(66,133,244,0.08)',
-                  border: '1px solid rgba(66,133,244,0.3)',
-                  borderRadius: 1.5,
-                  p: '4px 10px',
-                  gap: 0.5,
-                  display: 'flex',
-                  alignItems: 'center',
-                  '&:hover': { bgcolor: 'rgba(66,133,244,0.15)', borderColor: '#4285F4' },
-                  transition: 'all 0.15s',
-                }}
-              >
-                <i className='tabler-map-pin' style={{ fontSize: 15 }} />
-                <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'inherit' }}>Map</span>
-              </IconButton>
-            </Tooltip>
-          </Box>
-        )}
       </div>
 
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
-        <CustomTextField
-          fullWidth label='Gender' value={form.gender} onChange={handleChange('gender')}
-          disabled={saving} select SelectProps={{ native: true }}
-        >
-          <option value=''>Unknown</option>
-          <option value='M'>Male</option>
-          <option value='F'>Female</option>
-        </CustomTextField>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
         <CustomTextField
           fullWidth label='Date of Birth' type='date'
           value={form.date_of_birth} onChange={handleChange('date_of_birth')}
