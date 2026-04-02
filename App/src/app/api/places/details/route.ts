@@ -22,7 +22,9 @@ export async function GET(req: Request) {
   try {
     const url = new URL('https://maps.googleapis.com/maps/api/place/details/json')
     url.searchParams.set('place_id', placeId)
-    url.searchParams.set('fields', 'address_components')
+    // Request both address_components AND formatted_address so we can recover
+    // the street number if the address_components don't include it
+    url.searchParams.set('fields', 'address_components,formatted_address')
     url.searchParams.set('language', 'en')
     url.searchParams.set('key', apiKey)
 
@@ -43,13 +45,21 @@ export async function GET(req: Request) {
 
     for (const c of components) {
       const hasType = (t: string) => c.types.includes(t)
-      if (hasType('street_number'))              streetNumber = c.long_name
-      else if (hasType('route'))                 route = c.long_name
-      else if (hasType('locality'))              city = c.long_name
-      else if (hasType('sublocality') && !city)  city = c.long_name
+      if (hasType('street_number'))                   streetNumber = c.long_name
+      else if (hasType('route'))                      route = c.long_name
+      else if (hasType('locality'))                   city = c.long_name
+      else if (hasType('sublocality') && !city)       city = c.long_name
       else if (hasType('administrative_area_level_1')) state = c.short_name
-      else if (hasType('postal_code'))           zipCode = c.long_name
-      else if (hasType('country'))               country = c.short_name
+      else if (hasType('postal_code'))                zipCode = c.long_name
+      else if (hasType('country'))                    country = c.short_name
+    }
+
+    // Fallback: if address_components returned no street_number (can happen for
+    // some Google Place results), extract it from formatted_address instead.
+    // e.g. "1234 Main St, Springfield, IL 62701, USA" → streetNumber = "1234"
+    if (!streetNumber && route && data.result.formatted_address) {
+      const match = (data.result.formatted_address as string).match(/^(\d+[-\w]*)\s/)
+      if (match) streetNumber = match[1]
     }
 
     return NextResponse.json({
