@@ -580,18 +580,20 @@ export default function LeadsView() {
             {collections.length > 0 && (
               <>
                 <Divider orientation='vertical' flexItem sx={{ mx: 0.5 }} />
-                <FormControl size='small' sx={{ minWidth: 160 }}>
-                  <InputLabel>Collection</InputLabel>
-                  <Select
-                    value={collectionFilter}
-                    label='Collection'
-                    onChange={(e) => handleCollectionChange(e.target.value)}
-                    sx={{ height: 28, fontSize: 13 }}
-                  >
-                    <MenuItem value=''><em>All Leads</em></MenuItem>
-                    {collections.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
-                  </Select>
-                </FormControl>
+                <Select
+                  size='small'
+                  displayEmpty
+                  value={collectionFilter}
+                  onChange={(e) => handleCollectionChange(e.target.value)}
+                  renderValue={(val) => val
+                    ? (collections.find(c => c.id === val)?.name ?? 'Collection')
+                    : <span style={{ color: 'var(--mui-palette-text-secondary)' }}>Collection</span>
+                  }
+                  sx={{ height: 28, fontSize: 13, minWidth: 160 }}
+                >
+                  <MenuItem value=''><em>All Leads</em></MenuItem>
+                  {collections.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
+                </Select>
               </>
             )}
           </Box>
