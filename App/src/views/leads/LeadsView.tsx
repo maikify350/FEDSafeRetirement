@@ -102,7 +102,7 @@ const LEAD_EXPORT_FIELDS = [
   { key: 'last_name', label: 'Last Name' },
   { key: 'middle_initial', label: 'MI' },
   { key: 'gender', label: 'Gender' },
-  { key: 'date_of_birth', label: 'Date of Birth' },
+
   { key: 'occupation_title', label: 'Occupation Title' },
   { key: 'grade_level', label: 'Grade Level' },
   { key: 'annual_salary', label: 'Annual Salary' },

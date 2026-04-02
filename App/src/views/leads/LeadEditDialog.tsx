@@ -369,14 +369,7 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-        <CustomTextField
-          fullWidth label='Date of Birth' type='date'
-          value={form.date_of_birth} onChange={handleChange('date_of_birth')}
-          disabled={saving}
-          slotProps={{ inputLabel: { shrink: true } }}
-        />
-      </div>
+
 
       <Divider sx={{ my: 3 }} />
 
