@@ -8,6 +8,7 @@
  */
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import Checkbox from '@mui/material/Checkbox'
@@ -140,6 +141,25 @@ export default function LeadsView() {
   }, [])
 
   useEffect(() => { refreshCollections() }, [refreshCollections])
+
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Auto-apply collection from ?collection= query param (e.g. from "Apply in Leads" button)
+  useEffect(() => {
+    const collId = searchParams.get('collection')
+    if (collId) {
+      // Wait for collections to load, then apply
+      const apply = async () => {
+        await handleCollectionChange(collId)
+        // Clean URL without triggering navigation
+        router.replace('/leads', { scroll: false })
+      }
+      apply()
+    }
+  // Only run once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // When user picks a collection → load its filter_criteria and apply
   const handleCollectionChange = useCallback(async (collId: string) => {
