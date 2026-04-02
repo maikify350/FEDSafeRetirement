@@ -131,7 +131,7 @@ function FilterPopover({
               <label key={combo} style={{ display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer', fontSize: '0.72rem', fontWeight: draft.combinator === combo ? 700 : 400, color: draft.combinator === combo ? 'var(--mui-palette-primary-main)' : 'var(--mui-palette-text-secondary)' }}>
                 <input
                   type='radio'
-                  name='combinator'
+                  name={`combinator-${i}`}
                   checked={draft.combinator === combo}
                   onChange={() => setDraft(d => ({ ...d, combinator: combo }))}
                   style={{ accentColor: 'var(--mui-palette-primary-main)', margin: 0 }}
