@@ -392,7 +392,7 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
           disabled={saving}
         />
       </div>
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-4'>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px 1fr', gap: 16, marginBottom: 16 }}>
         <CustomTextField
           fullWidth label='Annual Salary' type='number'
           value={form.annual_salary} onChange={handleChange('annual_salary')}
@@ -410,12 +410,10 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
           }}
         />
         <CustomTextField
-          fullWidth label='Years of Service' type='number'
+          fullWidth label='Yrs' type='number'
           value={form.years_of_service} onChange={handleChange('years_of_service')}
           disabled={saving}
         />
-      </div>
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
         <CustomTextField
           fullWidth label='Entered on Duty Date' type='date'
           value={form.entered_on_duty_date} onChange={handleChange('entered_on_duty_date')}
