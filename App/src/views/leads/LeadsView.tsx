@@ -250,7 +250,7 @@ export default function LeadsView() {
           </IconButton>
         )
       },
-      size: 50, enableSorting: false, enableColumnFilter: false,
+      size: 40, enableSorting: false, enableColumnFilter: false,
     }
 
     return [
@@ -324,7 +324,7 @@ export default function LeadsView() {
         cell: ({ row }) => <Typography className='text-sm'>{formatDate(row.original.entered_on_duty_date)}</Typography>,
       }),
       columnHelper.accessor('years_of_service', {
-        header: 'Years of Service', size: 130,
+        header: 'Years', size: 130,
         cell: ({ row }) => {
           const yos = row.original.years_of_service
           if (yos === null || yos === undefined) return <Typography className='text-sm'>—</Typography>

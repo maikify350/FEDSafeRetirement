@@ -262,7 +262,7 @@ export default function EntityListView<TData extends { id: string }>({
 
   // ── Two-phase column order ────────────────────────────────────────────────
   const cleanedColumnOrder = useMemo(
-    () => columnOrder.filter((id: string) => !['select', 'action'].includes(id)),
+    () => columnOrder.filter((id: string) => !['select', 'favorite', 'action'].includes(id)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [columnOrder.join(',')]
   )
@@ -330,11 +330,12 @@ export default function EntityListView<TData extends { id: string }>({
   useEffect(() => {
     const allIds = leafIds ? leafIds.split(',') : []
     if (!allIds.length) return
-    const dataIds = allIds.filter(id => !['select', 'action'].includes(id))
+    const dataIds = allIds.filter(id => !['select', 'favorite', 'action'].includes(id))
     const storedData = cleanedColumnOrder.filter(id => allIds.includes(id))
     const missing    = dataIds.filter(id => !storedData.includes(id))
     const full = [
       ...(allIds.includes('select') ? ['select'] : []),
+      ...(allIds.includes('favorite') ? ['favorite'] : []),
       ...storedData,
       ...missing,
       ...(allIds.includes('action') ? ['action'] : []),
@@ -345,7 +346,8 @@ export default function EntityListView<TData extends { id: string }>({
 
   // ── Column sort key ───────────────────────────────────────────────────────
   const colSortKey = (colId: string): number => {
-    if (colId === 'select') return -1
+    if (colId === 'select') return -2
+    if (colId === 'favorite') return -1
     if (colId === 'action') return 1_000_000
     const idx = resolvedColumnOrder.indexOf(colId)
     return idx === -1 ? 999_999 : idx
@@ -354,7 +356,7 @@ export default function EntityListView<TData extends { id: string }>({
   const draggableColIds = table
     .getAllLeafColumns()
     .map(c => c.id)
-    .filter(id => !['select', 'action'].includes(id))
+    .filter(id => !['select', 'favorite', 'action'].includes(id))
     .sort((a, b) => colSortKey(a) - colSortKey(b))
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -485,7 +487,7 @@ export default function EntityListView<TData extends { id: string }>({
               <Divider sx={{ mb: 1 }} />
               <Box sx={{ overflowY: 'auto', flex: 1 }}>
               {table.getAllLeafColumns()
-                .filter(col => !['select', 'action'].includes(col.id))
+                .filter(col => !['select', 'favorite', 'action'].includes(col.id))
                 .sort((a, b) => colSortKey(a.id) - colSortKey(b.id))
                 .map((col: any) => (
                   <div
@@ -599,7 +601,7 @@ export default function EntityListView<TData extends { id: string }>({
                       {[...hg.headers]
                         .sort((a, b) => colSortKey(a.column.id) - colSortKey(b.column.id))
                         .map(h =>
-                          ['select', 'action'].includes(h.column.id)
+                          ['select', 'favorite', 'action'].includes(h.column.id)
                             ? <th key={h.id} style={{ width: h.getSize() }}>{h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}</th>
                             : <DraggableColumnHeader key={h.id} header={h} showFilters={showFilters} />
                         )}
