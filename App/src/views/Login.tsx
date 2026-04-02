@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // Next Imports
 import { useRouter } from 'next/navigation'
@@ -72,6 +72,15 @@ const LoginV2 = ({ mode }: { mode: SystemMode }) => {
   const [error, setError] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
 
+  // Restore saved email on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('fedsafe-remembered-email')
+    if (saved) {
+      setEmail(saved)
+      setRememberMe(true)
+    }
+  }, [])
+
   // Vars
   const darkImg = '/images/pages/auth-mask-dark.png'
   const lightImg = '/images/pages/auth-mask-light.png'
@@ -112,8 +121,14 @@ const LoginV2 = ({ mode }: { mode: SystemMode }) => {
 
       if (signInError) {
         setError(signInError.message)
-
         return
+      }
+
+      // Save or clear remembered email
+      if (rememberMe) {
+        localStorage.setItem('fedsafe-remembered-email', email)
+      } else {
+        localStorage.removeItem('fedsafe-remembered-email')
       }
 
       // Update last_login_at in public.users

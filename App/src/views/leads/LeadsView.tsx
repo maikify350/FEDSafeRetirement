@@ -227,8 +227,8 @@ export default function LeadsView() {
   const columns = useMemo(() => {
     const selectCol = {
       id: 'select',
-      header: ({ table }: any) => <Checkbox checked={table.getIsAllRowsSelected()} indeterminate={table.getIsSomeRowsSelected()} onChange={table.getToggleAllRowsSelectedHandler()} />,
-      cell: ({ row }: any) => <Checkbox checked={row.getIsSelected()} onChange={row.getToggleSelectedHandler()} onClick={(e: React.MouseEvent) => e.stopPropagation()} />,
+      header: ({ table }: any) => <Checkbox size='small' sx={{ p: '2px' }} checked={table.getIsAllRowsSelected()} indeterminate={table.getIsSomeRowsSelected()} onChange={table.getToggleAllRowsSelectedHandler()} />,
+      cell: ({ row }: any) => <Checkbox size='small' sx={{ p: '2px' }} checked={row.getIsSelected()} onChange={row.getToggleSelectedHandler()} onClick={(e: React.MouseEvent) => e.stopPropagation()} />,
       size: 50, enableSorting: false, enableColumnFilter: false,
     }
 

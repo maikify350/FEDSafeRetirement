@@ -188,7 +188,7 @@ export default function EntityListView<TData extends { id: string }>({
                 e.stopPropagation()
                 onRowEdit(row.original)
               }}
-              sx={{ color: 'primary.main' }}
+              sx={{ color: 'primary.main', p: '2px' }}
             >
               <i className='tabler-pencil text-lg' />
             </IconButton>
@@ -203,7 +203,7 @@ export default function EntityListView<TData extends { id: string }>({
     columnVisibility: defaultColVisibility,
     columnOrder:      [],
     sorting:          defaultSorting,
-    density:          'normal',
+    density:          'compact',
     pageSize:         25,
     showFilters:      false,
     viewMode:         'list',
@@ -258,7 +258,7 @@ export default function EntityListView<TData extends { id: string }>({
   const [exportDialogRows, setExportDialogRows] = useState<TData[]>([])
   const dragColId                               = useRef<string | null>(null)
 
-  const densityPy = density === 'compact' ? '2px' : density === 'comfortable' ? '14px' : '6px'
+  const densityPy = density === 'compact' ? '1px' : '4px'
 
   // ── Two-phase column order ────────────────────────────────────────────────
   const cleanedColumnOrder = useMemo(
@@ -462,12 +462,10 @@ export default function EntityListView<TData extends { id: string }>({
               <Tooltip title='Row Density'>
                 <IconButton
                   size='small'
-                  onClick={() => setDensity(density === 'compact' ? 'normal' : density === 'normal' ? 'comfortable' : 'compact')}
+                  onClick={() => setDensity(density === 'compact' ? 'comfortable' : 'compact')}
                   sx={{ px: 1, borderRadius: 0 }}
                 >
-                  <i className={`text-xl ${
-                    density === 'compact' ? 'tabler-layout-rows' : density === 'comfortable' ? 'tabler-row-insert-bottom' : 'tabler-layout-list'
-                  }`} />
+                  <i className={`text-xl ${density === 'compact' ? 'tabler-layout-rows' : 'tabler-layout-list'}`} />
                 </IconButton>
               </Tooltip>
             </Box>
