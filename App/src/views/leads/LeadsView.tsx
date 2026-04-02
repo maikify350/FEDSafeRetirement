@@ -56,6 +56,12 @@ interface Lead {
   date_of_birth: string | null
   source_file: string | null
   is_favorite: boolean
+  personal_address: string | null
+  personal_city: string | null
+  personal_state: string | null
+  personal_zip: string | null
+  personal_email: string | null
+  personal_phone: string | null
   cre_dt: string | null
   cre_by: string | null
   mod_by: string | null
