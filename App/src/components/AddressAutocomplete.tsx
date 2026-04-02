@@ -124,12 +124,30 @@ export default function AddressAutocomplete({
     try {
       const res = await fetch(`/api/places/details?placeId=${encodeURIComponent(prediction.place_id)}`)
       const place: PlaceResult = await res.json()
-      // Override street with the short form (e.g. "123 Main St" not full description)
-      if (place.street) onChange(place.street)
-      setInputValue(place.street || prediction.description)
-      onPlaceSelected(place)
+
+      // If parsed street is missing the street number, try to extract it from
+      // the prediction description (e.g. "123 Main St, City, ST 12345" → "123")
+      let street = place.street || ''
+      if (street && !/^\d/.test(street)) {
+        // street has no leading number — check if description starts with one
+        const numMatch = prediction.description.match(/^(\d+[-\d]*)\s/)
+        if (numMatch) {
+          street = `${numMatch[1]} ${street}`
+        }
+      }
+      // Fall back to description first segment if street is still empty
+      if (!street) {
+        street = prediction.description.split(',')[0].trim()
+      }
+
+      if (street) onChange(street)
+      setInputValue(street || prediction.description)
+      onPlaceSelected({ ...place, street })
     } catch {
-      // If details fail, still keep the typed text — don't lose what user selected
+      // If details fail, keep the typed text — use first segment of description as street
+      const fallbackStreet = prediction.description.split(',')[0].trim()
+      onChange(fallbackStreet)
+      setInputValue(fallbackStreet)
     }
   }, [onChange, onPlaceSelected])
 
