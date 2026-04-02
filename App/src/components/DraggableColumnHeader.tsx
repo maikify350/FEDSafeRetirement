@@ -290,8 +290,11 @@ function FilterInput({ column }: { column: Header<any, unknown>['column'] }) {
 
 // ─── Main export ───────────────────────────────────────────────────────────────
 export function DraggableColumnHeader<T>({ header, showFilters }: Props<T>) {
+  const isFixedCol = ['action', 'apply', 'select'].includes(header.column.id)
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: header.column.id,
+    disabled: isFixedCol,
   })
 
   const style: React.CSSProperties = {
@@ -299,7 +302,7 @@ export function DraggableColumnHeader<T>({ header, showFilters }: Props<T>) {
     transition,
     width: header.getSize(),
     opacity: isDragging ? 0.5 : 1,
-    cursor: header.column.getCanSort() ? 'pointer' : 'grab',
+    cursor: isFixedCol ? 'default' : (header.column.getCanSort() ? 'pointer' : 'grab'),
     position: 'relative',
     zIndex: isDragging ? 10 : undefined,
     whiteSpace: 'nowrap',
