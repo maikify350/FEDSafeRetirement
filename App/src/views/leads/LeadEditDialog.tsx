@@ -360,8 +360,11 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
         <CustomTextField
           fullWidth label='State'
           value={form.personal_state} onChange={handleChange('personal_state')}
-          disabled={saving}
-        />
+          disabled={saving} select SelectProps={{ native: true }}
+        >
+          <option value=''>Select State</option>
+          {usStates.map(st => <option key={st.value} value={st.value}>{st.value} — {st.label}</option>)}
+        </CustomTextField>
         <CustomTextField
           fullWidth label='Zip'
           value={form.personal_zip} onChange={handleChange('personal_zip')}
