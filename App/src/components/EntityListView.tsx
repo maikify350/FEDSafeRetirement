@@ -180,6 +180,7 @@ export default function EntityListView<TData extends { id: string }>({
         size: 60,
         enableSorting: false,
         enableColumnFilter: false,
+        enableHiding: false,
         cell: ({ row }: any) => (
           <Tooltip title='Edit'>
             <IconButton
