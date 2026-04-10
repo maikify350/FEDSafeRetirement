@@ -551,16 +551,14 @@ export default function EntityListView<TData extends { id: string }>({
                 }}>
                   <i className='tabler-settings-2 mr-2 text-lg' /> Export with Field Picker…
                 </MenuItem>
-              ) : (
-                <>
-                  <MenuItem onClick={() => { onExportCsv(selectedRows.length > 0 ? selectedRows : data); setExportAnchor(null) }}>
-                    <i className='tabler-file-type-csv mr-2 text-lg' /> Export CSV
-                  </MenuItem>
-                  <MenuItem onClick={() => { onExportJson(selectedRows.length > 0 ? selectedRows : data); setExportAnchor(null) }}>
-                    <i className='tabler-braces mr-2 text-lg' /> Export JSON
-                  </MenuItem>
-                </>
-              )}
+              ) : [
+                <MenuItem key='csv' onClick={() => { onExportCsv(selectedRows.length > 0 ? selectedRows : data); setExportAnchor(null) }}>
+                  <i className='tabler-file-type-csv mr-2 text-lg' /> Export CSV
+                </MenuItem>,
+                <MenuItem key='json' onClick={() => { onExportJson(selectedRows.length > 0 ? selectedRows : data); setExportAnchor(null) }}>
+                  <i className='tabler-braces mr-2 text-lg' /> Export JSON
+                </MenuItem>,
+              ]}
               {selectedRows.length > 0 && (
                 <Typography variant='caption' color='text.secondary' sx={{ display: 'block', px: 2, py: 0.5 }}>
                   {selectedRows.length} selected rows will be exported
