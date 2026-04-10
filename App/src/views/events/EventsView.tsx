@@ -25,7 +25,7 @@ import Autocomplete from '@mui/material/Autocomplete'
 
 import ConfirmDialog from '@/components/ConfirmDialog'
 
-// ── US States — full name + abbreviation ─────────────────────────────────────
+// ── US States ─────────────────────────────────────────────────────────────────
 const US_STATES: { abbr: string; name: string }[] = [
   { abbr: 'AL', name: 'Alabama' },        { abbr: 'AK', name: 'Alaska' },
   { abbr: 'AZ', name: 'Arizona' },        { abbr: 'AR', name: 'Arkansas' },
@@ -54,17 +54,16 @@ const US_STATES: { abbr: string; name: string }[] = [
   { abbr: 'WI', name: 'Wisconsin' },      { abbr: 'WY', name: 'Wyoming' },
   { abbr: 'DC', name: 'District of Columbia' },
 ]
-
 const STATE_BY_ABBR = Object.fromEntries(US_STATES.map(s => [s.abbr, s.name]))
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 interface AssignedUser {
   id: string
   first_name: string
   last_name: string
   email: string
+  color: string | null
 }
-
 interface EventRecord {
   id: string
   event_seq: number
@@ -78,20 +77,13 @@ interface EventRecord {
   cre_dt: string
   assignedto: AssignedUser | null
 }
+interface CityPrediction { place_id: string; description: string; city: string }
 
-interface CityPrediction {
-  place_id: string
-  description: string
-  city: string
-}
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const userFullName = (u: AssignedUser) => `${u.first_name} ${u.last_name}`.trim()
+const userInitials = (u: AssignedUser) => `${u.first_name?.[0]||''}${u.last_name?.[0]||''}`.toUpperCase()
+const agentColor   = (u: AssignedUser | null) => u?.color || '#94a3b8'
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-function userFullName(u: AssignedUser) {
-  return `${u.first_name} ${u.last_name}`.trim()
-}
-function userInitials(u: AssignedUser) {
-  return `${u.first_name?.[0] || ''}${u.last_name?.[0] || ''}`.toUpperCase()
-}
 function fmtDate(d: string | null) {
   if (!d) return null
   return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -99,292 +91,212 @@ function fmtDate(d: string | null) {
 function fmtTime(t: string | null) {
   if (!t) return null
   const [h, m] = t.split(':').map(Number)
-  const period = h >= 12 ? 'PM' : 'AM'
-  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${period}`
+  return `${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`
 }
 function fmtDuration(min: number | null) {
   if (!min) return null
   if (min < 60) return `${min}m`
-  const h = Math.floor(min / 60), m = min % 60
+  const h = Math.floor(min/60), m = min%60
   return m ? `${h}h ${m}m` : `${h}h`
 }
 
-const STATE_CHIP_COLORS: Record<string, string> = {}
+const STATE_CHIP_COLORS: Record<string,string> = {}
 const PALETTE = ['#6366f1','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6']
 let _ci = 0
 function stateChipColor(abbr: string) {
   if (!STATE_CHIP_COLORS[abbr]) STATE_CHIP_COLORS[abbr] = PALETTE[_ci++ % PALETTE.length]
   return STATE_CHIP_COLORS[abbr]
 }
+const nativeInputSx = { '& input[type="date"], & input[type="time"]': { colorScheme: 'light dark' } }
 
-const nativeInputSx = {
-  '& input[type="date"], & input[type="time"]': { colorScheme: 'light dark' },
-}
-
-// ── City Autocomplete Field ─────────────────────────────────────────────────
-function CityAutocomplete({
-  value, onChange, stateName, error, helperText,
-}: {
-  value: string
-  onChange: (v: string) => void
-  stateName: string   // full name, e.g. "Virginia"
-  error?: boolean
-  helperText?: string
+// ── City Autocomplete ─────────────────────────────────────────────────────────
+function CityAutocomplete({ value, onChange, stateName, error, helperText }: {
+  value: string; onChange: (v: string)=>void; stateName: string; error?: boolean; helperText?: string
 }) {
-  const [options, setOptions] = useState<CityPrediction[]>([])
-  const [loading, setLoading] = useState(false)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [options, setOptions]   = useState<CityPrediction[]>([])
+  const [loading, setLoading]   = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout>|null>(null)
 
   const fetchCities = useCallback((input: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     if (!input || input.length < 2) { setOptions([]); return }
-
     debounceRef.current = setTimeout(async () => {
       setLoading(true)
       try {
-        const params = new URLSearchParams({ input })
-        if (stateName) params.set('state', stateName)
-        const res = await fetch(`/api/places/cities?${params}`)
+        const p = new URLSearchParams({ input })
+        if (stateName) p.set('state', stateName)
+        const res = await fetch(`/api/places/cities?${p}`)
         const data = await res.json()
         setOptions(data.predictions ?? [])
-      } catch { setOptions([]) }
-      finally { setLoading(false) }
+      } catch { setOptions([]) } finally { setLoading(false) }
     }, 300)
   }, [stateName])
 
-  // Reset options when state changes
   useEffect(() => { setOptions([]) }, [stateName])
 
   return (
     <Autocomplete
-      freeSolo
-      filterOptions={x => x}
-      options={options}
-      getOptionLabel={o => (typeof o === 'string' ? o : o.city)}
+      freeSolo filterOptions={x=>x} options={options}
+      getOptionLabel={o => typeof o === 'string' ? o : o.city}
       inputValue={value}
-      onInputChange={(_, v, reason) => {
-        if (reason === 'input') { onChange(v); fetchCities(v) }
-      }}
-      onChange={(_, v) => {
-        if (v && typeof v !== 'string') onChange((v as CityPrediction).city)
-      }}
+      onInputChange={(_,v,reason) => { if (reason==='input') { onChange(v); fetchCities(v) }}}
+      onChange={(_,v) => { if (v && typeof v !== 'string') onChange((v as CityPrediction).city) }}
       loading={loading}
-      noOptionsText={
-        !stateName ? 'Select a state first' :
-        value.length < 2 ? 'Type to search cities…' : 'No cities found'
-      }
+      noOptionsText={!stateName ? 'Select a state first' : value.length<2 ? 'Type to search…' : 'No cities found'}
       renderOption={(props, option) => (
         <li {...props} key={option.place_id}>
-          <i className='tabler-building-community' style={{ fontSize: 14, marginRight: 8, opacity: 0.5 }} />
-          <span>
-            <strong>{option.city}</strong>
-            <span style={{ opacity: 0.55, fontSize: 12, marginLeft: 6 }}>
-              {option.description.split(',').slice(1).join(',').trim()}
-            </span>
+          <i className='tabler-building-community' style={{fontSize:14,marginRight:8,opacity:.5}} />
+          <span><strong>{option.city}</strong>
+            <span style={{opacity:.55,fontSize:12,marginLeft:6}}>{option.description.split(',').slice(1).join(',').trim()}</span>
           </span>
         </li>
       )}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          label='City *'
-          placeholder={stateName ? `Search cities in ${stateName}…` : 'Select a state first'}
-          disabled={!stateName}
-          error={error}
-          helperText={helperText}
-          InputProps={{
-            ...params.InputProps,
-            endAdornment: (
-              <>
-                {loading && <CircularProgress size={14} sx={{ mr: 1 }} />}
-                {params.InputProps.endAdornment}
-              </>
-            ),
-          }}
+      renderInput={params => (
+        <TextField {...params} label='City *' placeholder={stateName?`Search cities in ${stateName}…`:'Select a state first'}
+          disabled={!stateName} error={error} helperText={helperText}
+          InputProps={{...params.InputProps, endAdornment:<>{loading&&<CircularProgress size={14} sx={{mr:1}}/>}{params.InputProps.endAdornment}</>}}
         />
       )}
     />
   )
 }
 
-// ── Add Event Dialog ─────────────────────────────────────────────────────────
-function AddEventDialog({
-  open, users, onClose, onSaved,
-}: {
-  open: boolean
+// ── Event Form (shared by Add + Edit dialogs) ────────────────────────────────
+interface EventFormState {
+  description: string; notes: string; assignedtoFk: string
+  stateAbbr: string; city: string; eventDate: string; eventTime: string; duration: string
+}
+const EMPTY_FORM: EventFormState = { description:'', notes:'', assignedtoFk:'', stateAbbr:'', city:'', eventDate:'', eventTime:'', duration:'' }
+
+function EventForm({ form, setForm, users, errors, setErrors, saving }: {
+  form: EventFormState
+  setForm: React.Dispatch<React.SetStateAction<EventFormState>>
   users: AssignedUser[]
-  onClose: () => void
-  onSaved: (event: EventRecord) => void
+  errors: Record<string,string>
+  setErrors: React.Dispatch<React.SetStateAction<Record<string,string>>>
+  saving: boolean
 }) {
-  const [description, setDescription]   = useState('')
-  const [notes, setNotes]               = useState('')
-  const [assignedtoFk, setAssignedtoFk] = useState('')
-  const [stateAbbr, setStateAbbr]       = useState('')   // "VA"
-  const [city, setCity]                 = useState('')
-  const [eventDate, setEventDate]       = useState('')
-  const [eventTime, setEventTime]       = useState('')
-  const [duration, setDuration]         = useState('')
-  const [saving, setSaving]             = useState(false)
-  const [errors, setErrors]             = useState<Record<string, string>>({})
-
-  const selectedStateName = stateAbbr ? (STATE_BY_ABBR[stateAbbr] ?? '') : ''
-
-  useEffect(() => {
-    if (!open) {
-      setDescription(''); setNotes(''); setAssignedtoFk('')
-      setStateAbbr(''); setCity(''); setEventDate('')
-      setEventTime(''); setDuration(''); setErrors({})
-    }
-  }, [open])
-
-  const clrErr = (key: string) => setErrors(prev => ({ ...prev, [key]: '' }))
-
-  const validate = () => {
-    const e: Record<string, string> = {}
-    if (!description.trim())  e.description = 'Description is required'
-    if (!stateAbbr)           e.stateAbbr   = 'State is required'
-    if (!city.trim())         e.city        = 'City is required'
-    if (duration !== '' && (isNaN(Number(duration)) || Number(duration) < 1))
-      e.duration = 'Must be a positive number'
-    setErrors(e)
-    return Object.keys(e).length === 0
+  const clrErr = (k: string) => setErrors(prev => ({...prev, [k]:''}))
+  const set = (k: keyof EventFormState) => (e: React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement>) => {
+    setForm(prev => ({...prev, [k]: e.target.value})); clrErr(k)
   }
+  const selectedStateName = form.stateAbbr ? (STATE_BY_ABBR[form.stateAbbr] ?? '') : ''
+
+  return (
+    <>
+      {errors._api && (
+        <Box sx={{bgcolor:'error.lighter',border:'1px solid',borderColor:'error.light',borderRadius:1.5,px:2,py:1.5}}>
+          <Typography color='error' variant='body2' fontWeight={500}>{errors._api}</Typography>
+        </Box>
+      )}
+      <TextField label='Description *' value={form.description} onChange={set('description')}
+        fullWidth error={!!errors.description} helperText={errors.description} autoFocus
+        placeholder='Brief description of the event' />
+      <Box sx={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:2}}>
+        <TextField label='Event Date' type='date' value={form.eventDate} onChange={set('eventDate')}
+          InputLabelProps={{shrink:true}} sx={nativeInputSx} fullWidth />
+        <TextField label='Event Time' type='time' value={form.eventTime} onChange={set('eventTime')}
+          InputLabelProps={{shrink:true}} sx={nativeInputSx} fullWidth />
+        <TextField label='Duration (min)' type='number' value={form.duration} onChange={set('duration')}
+          fullWidth error={!!errors.duration} helperText={errors.duration}
+          placeholder='e.g. 90' inputProps={{min:1}}
+          InputProps={{endAdornment:<InputAdornment position='end'>min</InputAdornment>}} />
+      </Box>
+      <FormControl fullWidth error={!!errors.stateAbbr}>
+        <InputLabel>State *</InputLabel>
+        <Select value={form.stateAbbr} label='State *'
+          onChange={e => { setForm(prev=>({...prev, stateAbbr: e.target.value, city:''})); clrErr('stateAbbr') }}>
+          {US_STATES.map(s=>(
+            <MenuItem key={s.abbr} value={s.abbr}>
+              <Box sx={{display:'flex',alignItems:'center',gap:1.5}}>
+                <Typography variant='caption' color='text.disabled' sx={{minWidth:24,fontWeight:700}}>{s.abbr}</Typography>
+                {s.name}
+              </Box>
+            </MenuItem>
+          ))}
+        </Select>
+        {errors.stateAbbr && <FormHelperText>{errors.stateAbbr}</FormHelperText>}
+      </FormControl>
+      <CityAutocomplete value={form.city} onChange={v=>{setForm(prev=>({...prev,city:v}));clrErr('city')}}
+        stateName={selectedStateName} error={!!errors.city} helperText={errors.city} />
+      <FormControl fullWidth>
+        <InputLabel>Assign To (optional)</InputLabel>
+        <Select value={form.assignedtoFk} onChange={e=>setForm(prev=>({...prev,assignedtoFk:e.target.value}))} label='Assign To (optional)'>
+          <MenuItem value=''>
+            <Typography color='text.secondary' variant='body2'>— Unassigned —</Typography>
+          </MenuItem>
+          {users.map(u=>(
+            <MenuItem key={u.id} value={u.id}>
+              <Box sx={{display:'flex',alignItems:'center',gap:1.5}}>
+                <Avatar sx={{width:26,height:26,fontSize:11,bgcolor:agentColor(u)}}>{userInitials(u)}</Avatar>
+                <Typography variant='body2' fontWeight={600}>{userFullName(u)}</Typography>
+              </Box>
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <TextField label='Notes' value={form.notes} onChange={set('notes')}
+        fullWidth multiline rows={3} placeholder='Optional notes about this event' />
+    </>
+  )
+}
+
+function validateEventForm(form: EventFormState) {
+  const e: Record<string,string> = {}
+  if (!form.description.trim()) e.description = 'Description is required'
+  if (!form.stateAbbr)          e.stateAbbr   = 'State is required'
+  if (!form.city.trim())        e.city        = 'City is required'
+  if (form.duration !== '' && (isNaN(Number(form.duration)) || Number(form.duration) < 1))
+    e.duration = 'Must be a positive number'
+  return e
+}
+
+function formToPayload(form: EventFormState) {
+  return {
+    description: form.description, notes: form.notes || null,
+    assignedto_fk: form.assignedtoFk || null,
+    state_fk: form.stateAbbr, city: form.city,
+    event_date: form.eventDate || null, event_time: form.eventTime || null,
+    duration: form.duration ? Number(form.duration) : null,
+  }
+}
+
+// ── Add Event Dialog ──────────────────────────────────────────────────────────
+function AddEventDialog({ open, users, onClose, onSaved }: {
+  open: boolean; users: AssignedUser[]; onClose: ()=>void; onSaved: (ev: EventRecord)=>void
+}) {
+  const [form, setForm]     = useState<EventFormState>(EMPTY_FORM)
+  const [saving, setSaving] = useState(false)
+  const [errors, setErrors] = useState<Record<string,string>>({})
+  useEffect(() => { if (!open) { setForm(EMPTY_FORM); setErrors({}) } }, [open])
 
   const handleSave = async () => {
-    if (!validate()) return
+    const errs = validateEventForm(form)
+    if (Object.keys(errs).length) { setErrors(errs); return }
     setSaving(true)
     try {
-      const res = await fetch('/api/events', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          description, notes: notes || null,
-          assignedto_fk: assignedtoFk || null,
-          state_fk: stateAbbr, city,
-          event_date: eventDate || null,
-          event_time: eventTime || null,
-          duration: duration ? Number(duration) : null,
-        }),
-      })
+      const res = await fetch('/api/events', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(formToPayload(form)) })
       const data = await res.json()
-      if (!res.ok) { setErrors({ _api: data.error || 'Save failed' }); return }
+      if (!res.ok) { setErrors({_api: data.error||'Save failed'}); return }
       onSaved(data)
-    } catch { setErrors({ _api: 'Network error' }) } finally { setSaving(false) }
+    } catch { setErrors({_api:'Network error'}) } finally { setSaving(false) }
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 2.5 } }}>
-      <DialogTitle sx={{ pb: 1, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Box sx={{
-          width: 36, height: 36, borderRadius: 2,
-          bgcolor: 'primary.lighter', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <i className='tabler-calendar-plus' style={{ fontSize: 18, color: 'var(--mui-palette-primary-main)' }} />
+    <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth PaperProps={{sx:{borderRadius:2.5}}}>
+      <DialogTitle sx={{pb:1,display:'flex',alignItems:'center',gap:1.5}}>
+        <Box sx={{width:36,height:36,borderRadius:2,bgcolor:'primary.lighter',display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <i className='tabler-calendar-plus' style={{fontSize:18,color:'var(--mui-palette-primary-main)'}} />
         </Box>
         <Typography variant='h6' fontWeight={700}>Add New Event</Typography>
       </DialogTitle>
-
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: '16px !important' }}>
-        {errors._api && (
-          <Box sx={{ bgcolor: 'error.lighter', border: '1px solid', borderColor: 'error.light', borderRadius: 1.5, px: 2, py: 1.5 }}>
-            <Typography color='error' variant='body2' fontWeight={500}>{errors._api}</Typography>
-          </Box>
-        )}
-
-        {/* Description */}
-        <TextField
-          label='Description *'
-          value={description}
-          onChange={e => { setDescription(e.target.value); clrErr('description') }}
-          fullWidth error={!!errors.description} helperText={errors.description}
-          autoFocus placeholder='Brief description of the event'
-        />
-
-        {/* Date · Time · Duration */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
-          <TextField
-            label='Event Date' type='date' value={eventDate}
-            onChange={e => setEventDate(e.target.value)}
-            InputLabelProps={{ shrink: true }} sx={nativeInputSx} fullWidth
-          />
-          <TextField
-            label='Event Time' type='time' value={eventTime}
-            onChange={e => setEventTime(e.target.value)}
-            InputLabelProps={{ shrink: true }} sx={nativeInputSx} fullWidth
-          />
-          <TextField
-            label='Duration (min)' type='number' value={duration}
-            onChange={e => { setDuration(e.target.value); clrErr('duration') }}
-            fullWidth error={!!errors.duration} helperText={errors.duration}
-            placeholder='e.g. 90' inputProps={{ min: 1 }}
-            InputProps={{ endAdornment: <InputAdornment position='end'>min</InputAdornment> }}
-          />
-        </Box>
-
-        {/* State — full name dropdown */}
-        <FormControl fullWidth error={!!errors.stateAbbr}>
-          <InputLabel>State *</InputLabel>
-          <Select
-            value={stateAbbr}
-            onChange={e => { setStateAbbr(e.target.value); setCity(''); clrErr('stateAbbr') }}
-            label='State *'
-          >
-            {US_STATES.map(s => (
-              <MenuItem key={s.abbr} value={s.abbr}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Typography variant='caption' color='text.disabled' sx={{ minWidth: 24, fontWeight: 700 }}>
-                    {s.abbr}
-                  </Typography>
-                  {s.name}
-                </Box>
-              </MenuItem>
-            ))}
-          </Select>
-          {errors.stateAbbr && <FormHelperText>{errors.stateAbbr}</FormHelperText>}
-        </FormControl>
-
-        {/* City — Google Places autocomplete */}
-        <CityAutocomplete
-          value={city}
-          onChange={v => { setCity(v); clrErr('city') }}
-          stateName={selectedStateName}
-          error={!!errors.city}
-          helperText={errors.city}
-        />
-
-        {/* Assign To — name only (no email) */}
-        <FormControl fullWidth>
-          <InputLabel>Assign To (optional)</InputLabel>
-          <Select value={assignedtoFk} onChange={e => setAssignedtoFk(e.target.value)} label='Assign To (optional)'>
-            <MenuItem value=''>
-              <Typography color='text.secondary' variant='body2'>— Unassigned —</Typography>
-            </MenuItem>
-            {users.map(u => (
-              <MenuItem key={u.id} value={u.id}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Avatar sx={{ width: 26, height: 26, fontSize: 11, bgcolor: 'primary.main' }}>
-                    {userInitials(u)}
-                  </Avatar>
-                  <Typography variant='body2' fontWeight={600}>{userFullName(u)}</Typography>
-                </Box>
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        {/* Notes */}
-        <TextField
-          label='Notes' value={notes} onChange={e => setNotes(e.target.value)}
-          fullWidth multiline rows={3} placeholder='Optional notes about this event'
-        />
+      <DialogContent sx={{display:'flex',flexDirection:'column',gap:2.5,pt:'16px !important'}}>
+        <EventForm form={form} setForm={setForm} users={users} errors={errors} setErrors={setErrors} saving={saving} />
       </DialogContent>
-
-      <DialogActions sx={{ px: 3, pb: 2.5 }}>
+      <DialogActions sx={{px:3,pb:2.5}}>
         <Button onClick={onClose} variant='tonal' color='secondary' disabled={saving}>Cancel</Button>
-        <Button
-          onClick={handleSave} variant='contained' disabled={saving}
-          startIcon={saving ? <CircularProgress size={14} /> : <i className='tabler-check' />}
-        >
+        <Button onClick={handleSave} variant='contained' disabled={saving}
+          startIcon={saving ? <CircularProgress size={14}/> : <i className='tabler-check'/>}>
           {saving ? 'Saving…' : 'Save Event'}
         </Button>
       </DialogActions>
@@ -392,51 +304,275 @@ function AddEventDialog({
   )
 }
 
-// ── Grid columns ─────────────────────────────────────────────────────────────
-const COLS = [
-  { label: '#',           w: '56px'  },
-  { label: 'Description', w: '1.5fr' },
-  { label: 'Date',        w: '130px' },
-  { label: 'Time',        w: '96px'  },
-  { label: 'Duration',    w: '96px'  },
-  { label: 'State',       w: '140px' },
-  { label: 'City',        w: '130px' },
-  { label: 'Assigned To', w: '1fr'   },
-  { label: 'Notes',       w: '1.2fr' },
-  { label: '',            w: '52px'  },
-]
-const GRID_COLS = COLS.map(c => c.w).join(' ')
+// ── Edit Event Dialog ─────────────────────────────────────────────────────────
+function EditEventDialog({ event, users, onClose, onSaved }: {
+  event: EventRecord | null; users: AssignedUser[]; onClose: ()=>void; onSaved: (ev: EventRecord)=>void
+}) {
+  const [form, setForm]     = useState<EventFormState>(EMPTY_FORM)
+  const [saving, setSaving] = useState(false)
+  const [errors, setErrors] = useState<Record<string,string>>({})
 
-// ── Main View ────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (event) {
+      setForm({
+        description:  event.description,
+        notes:        event.notes || '',
+        assignedtoFk: event.assignedto?.id || '',
+        stateAbbr:    event.state_fk,
+        city:         event.city,
+        eventDate:    event.event_date || '',
+        eventTime:    event.event_time ? event.event_time.slice(0,5) : '',
+        duration:     event.duration ? String(event.duration) : '',
+      })
+      setErrors({})
+    }
+  }, [event])
+
+  const handleSave = async () => {
+    if (!event) return
+    const errs = validateEventForm(form)
+    if (Object.keys(errs).length) { setErrors(errs); return }
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/events?id=${event.id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(formToPayload(form)) })
+      const data = await res.json()
+      if (!res.ok) { setErrors({_api: data.error||'Save failed'}); return }
+      onSaved(data)
+    } catch { setErrors({_api:'Network error'}) } finally { setSaving(false) }
+  }
+
+  return (
+    <Dialog open={!!event} onClose={onClose} maxWidth='sm' fullWidth PaperProps={{sx:{borderRadius:2.5}}}>
+      <DialogTitle sx={{pb:1,display:'flex',alignItems:'center',gap:1.5}}>
+        <Box sx={{width:36,height:36,borderRadius:2,bgcolor:'primary.lighter',display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <i className='tabler-calendar-edit' style={{fontSize:18,color:'var(--mui-palette-primary-main)'}} />
+        </Box>
+        <Box>
+          <Typography variant='h6' fontWeight={700}>Edit Event</Typography>
+          {event && <Typography variant='caption' color='text.secondary'>#{event.event_seq}</Typography>}
+        </Box>
+      </DialogTitle>
+      <DialogContent sx={{display:'flex',flexDirection:'column',gap:2.5,pt:'16px !important'}}>
+        <EventForm form={form} setForm={setForm} users={users} errors={errors} setErrors={setErrors} saving={saving} />
+      </DialogContent>
+      <DialogActions sx={{px:3,pb:2.5}}>
+        <Button onClick={onClose} variant='tonal' color='secondary' disabled={saving}>Cancel</Button>
+        <Button onClick={handleSave} variant='contained' disabled={saving}
+          startIcon={saving ? <CircularProgress size={14}/> : <i className='tabler-check'/>}>
+          {saving ? 'Saving…' : 'Save Changes'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
+// ── Year Calendar Dialog ──────────────────────────────────────────────────────
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
+const DOW    = ['Su','Mo','Tu','We','Th','Fr','Sa']
+
+function getDaysInMonth(year: number, month: number) { return new Date(year, month+1, 0).getDate() }
+function getFirstDow(year: number, month: number)    { return new Date(year, month, 1).getDay() }
+
+function YearCalendarDialog({ open, events, onClose, onEventClick }: {
+  open: boolean; events: EventRecord[]; onClose: ()=>void; onEventClick: (ev: EventRecord)=>void
+}) {
+  const [year, setYear] = useState(() => new Date().getFullYear())
+
+  // Build a map: "YYYY-MM-DD" → EventRecord[]
+  const eventsByDate = useMemo(() => {
+    const map: Record<string, EventRecord[]> = {}
+    events.forEach(ev => {
+      if (!ev.event_date) return
+      if (!map[ev.event_date]) map[ev.event_date] = []
+      map[ev.event_date].push(ev)
+    })
+    return map
+  }, [events])
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth='lg' fullWidth PaperProps={{sx:{borderRadius:2.5,overflow:'hidden'}}}>
+      <DialogTitle sx={{display:'flex',alignItems:'center',justifyContent:'space-between',pb:1,borderBottom:'1px solid',borderColor:'divider'}}>
+        <Box sx={{display:'flex',alignItems:'center',gap:1.5}}>
+          <Box sx={{width:34,height:34,borderRadius:2,bgcolor:'primary.lighter',display:'flex',alignItems:'center',justifyContent:'center'}}>
+            <i className='tabler-calendar-month' style={{fontSize:18,color:'var(--mui-palette-primary-main)'}} />
+          </Box>
+          <Typography variant='h6' fontWeight={700}>Event Calendar</Typography>
+        </Box>
+        <Box sx={{display:'flex',alignItems:'center',gap:1}}>
+          <IconButton size='small' onClick={()=>setYear(y=>y-1)}><i className='tabler-chevron-left'/></IconButton>
+          <Typography variant='h6' fontWeight={700} sx={{minWidth:52,textAlign:'center'}}>{year}</Typography>
+          <IconButton size='small' onClick={()=>setYear(y=>y+1)}><i className='tabler-chevron-right'/></IconButton>
+          <IconButton size='small' onClick={onClose} sx={{ml:1}}><i className='tabler-x'/></IconButton>
+        </Box>
+      </DialogTitle>
+
+      <DialogContent sx={{p:2.5}}>
+        {/* 4×3 month grid */}
+        <Box sx={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:2}}>
+          {MONTHS.map((monthName, mIdx) => {
+            const days = getDaysInMonth(year, mIdx)
+            const firstDow = getFirstDow(year, mIdx)
+            const cells: (number|null)[] = [
+              ...Array(firstDow).fill(null),
+              ...Array.from({length: days},(_,i)=>i+1),
+            ]
+            // Pad to complete last week
+            while (cells.length % 7 !== 0) cells.push(null)
+
+            return (
+              <Box key={mIdx} sx={{border:'1px solid',borderColor:'divider',borderRadius:1.5,overflow:'hidden'}}>
+                {/* Month header */}
+                <Box sx={{bgcolor:'action.hover',px:1.5,py:0.75,borderBottom:'1px solid',borderColor:'divider'}}>
+                  <Typography variant='caption' fontWeight={700} textTransform='uppercase' letterSpacing={0.5}>
+                    {monthName}
+                  </Typography>
+                </Box>
+                {/* DOW headers */}
+                <Box sx={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',px:0.5,pt:0.5}}>
+                  {DOW.map(d=>(
+                    <Typography key={d} variant='caption' textAlign='center' color='text.disabled'
+                      sx={{fontSize:9,fontWeight:700,lineHeight:'18px'}}>
+                      {d}
+                    </Typography>
+                  ))}
+                </Box>
+                {/* Day cells */}
+                <Box sx={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',px:0.5,pb:0.5,gap:'1px'}}>
+                  {cells.map((day, ci) => {
+                    if (!day) return <Box key={ci} sx={{height:28}} />
+                    const dateKey = `${year}-${String(mIdx+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
+                    const dayEvents = eventsByDate[dateKey] || []
+                    const isToday = dateKey === new Date().toISOString().slice(0,10)
+
+                    return (
+                      <Box key={ci} sx={{
+                        height:28, display:'flex', flexDirection:'column',
+                        alignItems:'center', justifyContent:'flex-start', pt:'2px',
+                        borderRadius:1, position:'relative',
+                        bgcolor: isToday ? 'primary.lighter' : undefined,
+                      }}>
+                        <Typography variant='caption' sx={{
+                          fontSize:10, lineHeight:1, fontWeight: isToday ? 700 : 400,
+                          color: isToday ? 'primary.main' : 'text.primary',
+                        }}>
+                          {day}
+                        </Typography>
+                        {/* Colored dots for events */}
+                        {dayEvents.length > 0 && (
+                          <Box sx={{display:'flex',gap:'1px',mt:'1px',flexWrap:'wrap',justifyContent:'center',maxWidth:'100%'}}>
+                            {dayEvents.slice(0,3).map(ev => (
+                              <Tooltip key={ev.id} title={
+                                <Box>
+                                  <Typography variant='caption' fontWeight={700}>{ev.description}</Typography>
+                                  {ev.event_time && <Typography variant='caption' display='block'>{fmtTime(ev.event_time)}</Typography>}
+                                  {ev.assignedto && <Typography variant='caption' display='block'>{userFullName(ev.assignedto)}</Typography>}
+                                  <Typography variant='caption' display='block'>{ev.city}, {ev.state_fk}</Typography>
+                                </Box>
+                              } arrow>
+                                <Box
+                                  onClick={() => { onEventClick(ev) }}
+                                  sx={{
+                                    width:6, height:6, borderRadius:'50%',
+                                    bgcolor: agentColor(ev.assignedto),
+                                    cursor:'pointer', flexShrink:0,
+                                    '&:hover': { transform:'scale(1.5)', zIndex:10 },
+                                    transition:'transform .15s',
+                                  }}
+                                />
+                              </Tooltip>
+                            ))}
+                            {dayEvents.length > 3 && (
+                              <Typography variant='caption' sx={{fontSize:7,lineHeight:'6px',color:'text.disabled'}}>
+                                +{dayEvents.length-3}
+                              </Typography>
+                            )}
+                          </Box>
+                        )}
+                      </Box>
+                    )
+                  })}
+                </Box>
+              </Box>
+            )
+          })}
+        </Box>
+
+        {/* Legend — agent colors */}
+        <Box sx={{mt:2.5,pt:2,borderTop:'1px solid',borderColor:'divider'}}>
+          <Typography variant='caption' color='text.secondary' fontWeight={600} sx={{mb:1,display:'block'}}>
+            AGENT LEGEND
+          </Typography>
+          <Box sx={{display:'flex',flexWrap:'wrap',gap:2}}>
+            {/* Collect unique assigned agents from events */}
+            {Array.from(
+              new Map(
+                events.filter(ev=>ev.assignedto).map(ev=>[ev.assignedto!.id, ev.assignedto!])
+              ).values()
+            ).map(agent=>(
+              <Box key={agent.id} sx={{display:'flex',alignItems:'center',gap:0.75}}>
+                <Box sx={{width:10,height:10,borderRadius:'50%',bgcolor:agentColor(agent),flexShrink:0}} />
+                <Typography variant='caption'>{userFullName(agent)}</Typography>
+              </Box>
+            ))}
+            {events.some(ev=>!ev.assignedto) && (
+              <Box sx={{display:'flex',alignItems:'center',gap:0.75}}>
+                <Box sx={{width:10,height:10,borderRadius:'50%',bgcolor:'#94a3b8',flexShrink:0}} />
+                <Typography variant='caption' color='text.secondary'>Unassigned</Typography>
+              </Box>
+            )}
+          </Box>
+        </Box>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ── Grid columns ──────────────────────────────────────────────────────────────
+const COLS = [
+  {label:'#',           w:'56px'},
+  {label:'Description', w:'1.5fr'},
+  {label:'Date',        w:'130px'},
+  {label:'Time',        w:'96px'},
+  {label:'Duration',    w:'96px'},
+  {label:'State',       w:'140px'},
+  {label:'City',        w:'130px'},
+  {label:'Assigned To', w:'1fr'},
+  {label:'Notes',       w:'1.2fr'},
+  {label:'',            w:'88px'},   // edit + delete
+]
+const GRID_COLS = COLS.map(c=>c.w).join(' ')
+
+// ── Main View ─────────────────────────────────────────────────────────────────
 export default function EventsView() {
   const [events, setEvents]       = useState<EventRecord[]>([])
   const [users, setUsers]         = useState<AssignedUser[]>([])
   const [loading, setLoading]     = useState(true)
   const [search, setSearch]       = useState('')
   const [addOpen, setAddOpen]     = useState(false)
-  const [delTarget, setDelTarget] = useState<EventRecord | null>(null)
+  const [editEvent, setEditEvent] = useState<EventRecord|null>(null)
+  const [calOpen, setCalOpen]     = useState(false)
+  const [delTarget, setDelTarget] = useState<EventRecord|null>(null)
   const [deleting, setDeleting]   = useState(false)
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
     try {
       const [er, ur] = await Promise.all([
-        fetch('/api/events').then(r => r.json()),
-        fetch('/api/agents').then(r => r.json()),
+        fetch('/api/events').then(r=>r.json()),
+        fetch('/api/agents').then(r=>r.json()),
       ])
       if (Array.isArray(er)) setEvents(er)
       if (Array.isArray(ur)) setUsers(ur)
     } finally { setLoading(false) }
   }, [])
-
   useEffect(() => { fetchAll() }, [fetchAll])
 
   const handleDeleteConfirm = async () => {
     if (!delTarget) return
     setDeleting(true)
     try {
-      await fetch(`/api/events?id=${delTarget.id}`, { method: 'DELETE' })
-      setEvents(prev => prev.filter(e => e.id !== delTarget.id))
+      await fetch(`/api/events?id=${delTarget.id}`, {method:'DELETE'})
+      setEvents(prev=>prev.filter(e=>e.id!==delTarget.id))
       setDelTarget(null)
     } finally { setDeleting(false) }
   }
@@ -447,157 +583,137 @@ export default function EventsView() {
     return events.filter(ev =>
       ev.description.toLowerCase().includes(q) ||
       ev.state_fk.toLowerCase().includes(q) ||
-      (STATE_BY_ABBR[ev.state_fk] ?? '').toLowerCase().includes(q) ||
+      (STATE_BY_ABBR[ev.state_fk]??'').toLowerCase().includes(q) ||
       ev.city.toLowerCase().includes(q) ||
       (ev.assignedto ? userFullName(ev.assignedto).toLowerCase().includes(q) : false) ||
-      (ev.notes || '').toLowerCase().includes(q)
+      (ev.notes||'').toLowerCase().includes(q)
     )
   }, [events, search])
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1600, mx: 'auto' }}>
+    <Box sx={{p:{xs:2,md:4},maxWidth:1600,mx:'auto'}}>
 
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4, flexWrap: 'wrap', gap: 2 }}>
+      <Box sx={{display:'flex',alignItems:'center',justifyContent:'space-between',mb:4,flexWrap:'wrap',gap:2}}>
         <Box>
-          <Typography variant='h4' fontWeight={700} sx={{ mb: 0.5 }}>Events</Typography>
-          <Typography variant='body2' color='text.secondary'>
-            Manage and assign events by state and city territory
-          </Typography>
+          <Typography variant='h4' fontWeight={700} sx={{mb:.5}}>Events</Typography>
+          <Typography variant='body2' color='text.secondary'>Manage and assign events by state and city territory</Typography>
         </Box>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <TextField
-            size='small' placeholder='Search events…' value={search}
-            onChange={e => setSearch(e.target.value)} sx={{ minWidth: 240 }}
+        <Box sx={{display:'flex',alignItems:'center',gap:2}}>
+          <TextField size='small' placeholder='Search events…' value={search} onChange={e=>setSearch(e.target.value)} sx={{minWidth:240}}
             InputProps={{
-              startAdornment: <InputAdornment position='start'><i className='tabler-search' style={{ fontSize: 16, opacity: 0.5 }} /></InputAdornment>,
-              endAdornment: search ? (
-                <InputAdornment position='end'>
-                  <IconButton size='small' onClick={() => setSearch('')}>
-                    <i className='tabler-x' style={{ fontSize: 14 }} />
-                  </IconButton>
-                </InputAdornment>
-              ) : undefined,
+              startAdornment:<InputAdornment position='start'><i className='tabler-search' style={{fontSize:16,opacity:.5}}/></InputAdornment>,
+              endAdornment: search ? <InputAdornment position='end'><IconButton size='small' onClick={()=>setSearch('')}><i className='tabler-x' style={{fontSize:14}}/></IconButton></InputAdornment> : undefined,
             }}
           />
-          <Button variant='contained' startIcon={<i className='tabler-plus' />} onClick={() => setAddOpen(true)}>
+          {/* Calendar toggle */}
+          <Tooltip title='View Year Calendar'>
+            <IconButton
+              onClick={()=>setCalOpen(true)}
+              sx={{
+                bgcolor:'action.hover', borderRadius:1.5,
+                border:'1px solid', borderColor:'divider',
+                '&:hover':{bgcolor:'primary.lighter', borderColor:'primary.main', color:'primary.main'},
+                transition:'all .15s',
+              }}
+            >
+              <i className='tabler-calendar-month' style={{fontSize:20}}/>
+            </IconButton>
+          </Tooltip>
+          <Button variant='contained' startIcon={<i className='tabler-plus'/>} onClick={()=>setAddOpen(true)}>
             + Add Event
           </Button>
         </Box>
       </Box>
 
       {/* Grid */}
-      <Card variant='outlined' sx={{ borderRadius: 2.5, overflow: 'hidden' }}>
-        {/* Header row */}
-        <Box sx={{
-          display: 'grid', gridTemplateColumns: GRID_COLS,
-          alignItems: 'center', px: 2, py: 1.25,
-          bgcolor: 'action.hover', borderBottom: '1px solid', borderColor: 'divider', gap: 1,
-        }}>
-          {COLS.map((c, i) => (
+      <Card variant='outlined' sx={{borderRadius:2.5,overflow:'hidden'}}>
+        <Box sx={{display:'grid',gridTemplateColumns:GRID_COLS,alignItems:'center',px:2,py:1.25,
+          bgcolor:'action.hover',borderBottom:'1px solid',borderColor:'divider',gap:1}}>
+          {COLS.map((c,i)=>(
             <Typography key={i} variant='caption' fontWeight={700} color='text.secondary'
-              textTransform='uppercase' letterSpacing={0.5} noWrap>
-              {c.label}
-            </Typography>
+              textTransform='uppercase' letterSpacing={.5} noWrap>{c.label}</Typography>
           ))}
         </Box>
 
-        {/* Data rows */}
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 10 }}>
-            <CircularProgress />
-          </Box>
+          <Box sx={{display:'flex',justifyContent:'center',alignItems:'center',py:10}}><CircularProgress/></Box>
         ) : filtered.length === 0 ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, gap: 2 }}>
-            <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <i className='tabler-calendar-off' style={{ fontSize: 30, opacity: 0.35 }} />
+          <Box sx={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',py:10,gap:2}}>
+            <Box sx={{width:64,height:64,borderRadius:'50%',bgcolor:'action.hover',display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <i className='tabler-calendar-off' style={{fontSize:30,opacity:.35}}/>
             </Box>
             <Typography color='text.secondary' fontWeight={500}>
               {search ? 'No events match your search' : 'No events yet'}
             </Typography>
-            {!search && (
-              <Button variant='contained' startIcon={<i className='tabler-plus' />} onClick={() => setAddOpen(true)}>
-                Add First Event
-              </Button>
-            )}
+            {!search && <Button variant='contained' startIcon={<i className='tabler-plus'/>} onClick={()=>setAddOpen(true)}>Add First Event</Button>}
           </Box>
         ) : (
-          filtered.map((ev, idx) => (
+          filtered.map((ev,idx)=>(
             <Box key={ev.id} sx={{
-              display: 'grid', gridTemplateColumns: GRID_COLS,
-              alignItems: 'center', px: 2, py: 1.5, gap: 1,
-              borderBottom: idx < filtered.length - 1 ? '1px solid' : 'none',
-              borderColor: 'divider', transition: 'background .1s ease',
-              '&:hover': { bgcolor: 'action.hover' },
+              display:'grid',gridTemplateColumns:GRID_COLS,alignItems:'center',
+              px:2,py:1.5,gap:1,
+              borderBottom: idx<filtered.length-1 ? '1px solid' : 'none',
+              borderColor:'divider',transition:'background .1s ease',
+              '&:hover':{bgcolor:'action.hover'},
             }}>
-              {/* # */}
-              <Typography variant='body2' color='text.disabled' fontWeight={700}>{ev.event_seq}</Typography>
+              {/* # — colored by agent */}
+              <Box sx={{display:'flex',alignItems:'center',gap:.75}}>
+                <Box sx={{width:4,height:24,borderRadius:2,bgcolor:agentColor(ev.assignedto),flexShrink:0}}/>
+                <Typography variant='body2' color='text.disabled' fontWeight={700}>{ev.event_seq}</Typography>
+              </Box>
 
-              {/* Description */}
               <Typography variant='body2' fontWeight={600} noWrap>{ev.description}</Typography>
 
-              {/* Date */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <Box sx={{display:'flex',alignItems:'center',gap:.75}}>
                 {ev.event_date
-                  ? <><i className='tabler-calendar' style={{ fontSize: 13, opacity: 0.4 }} /><Typography variant='body2' noWrap>{fmtDate(ev.event_date)}</Typography></>
-                  : <Typography variant='body2' color='text.disabled'>—</Typography>
-                }
+                  ? <><i className='tabler-calendar' style={{fontSize:13,opacity:.4}}/><Typography variant='body2' noWrap>{fmtDate(ev.event_date)}</Typography></>
+                  : <Typography variant='body2' color='text.disabled'>—</Typography>}
               </Box>
 
-              {/* Time */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <Box sx={{display:'flex',alignItems:'center',gap:.75}}>
                 {ev.event_time
-                  ? <><i className='tabler-clock' style={{ fontSize: 13, opacity: 0.4 }} /><Typography variant='body2' noWrap>{fmtTime(ev.event_time)}</Typography></>
-                  : <Typography variant='body2' color='text.disabled'>—</Typography>
-                }
+                  ? <><i className='tabler-clock' style={{fontSize:13,opacity:.4}}/><Typography variant='body2' noWrap>{fmtTime(ev.event_time)}</Typography></>
+                  : <Typography variant='body2' color='text.disabled'>—</Typography>}
               </Box>
 
-              {/* Duration */}
               {ev.duration
                 ? <Chip label={fmtDuration(ev.duration)} size='small'
-                    icon={<i className='tabler-hourglass' style={{ fontSize: 11 }} />}
-                    sx={{ fontSize: 11, height: 22, bgcolor: 'action.selected' }} />
-                : <Typography variant='body2' color='text.disabled'>—</Typography>
-              }
+                    icon={<i className='tabler-hourglass' style={{fontSize:11}}/>}
+                    sx={{fontSize:11,height:22,bgcolor:'action.selected'}} />
+                : <Typography variant='body2' color='text.disabled'>—</Typography>}
 
-              {/* State — show full name */}
-              <Chip
-                label={STATE_BY_ABBR[ev.state_fk] ?? ev.state_fk}
-                size='small'
-                sx={{
-                  fontSize: 11, height: 22, fontWeight: 600, maxWidth: '100%',
-                  bgcolor: stateChipColor(ev.state_fk) + '18',
-                  color: stateChipColor(ev.state_fk), border: 'none',
-                }}
-              />
+              <Chip label={STATE_BY_ABBR[ev.state_fk]??ev.state_fk} size='small'
+                sx={{fontSize:11,height:22,fontWeight:600,maxWidth:'100%',
+                  bgcolor:stateChipColor(ev.state_fk)+'18',color:stateChipColor(ev.state_fk),border:'none'}} />
 
-              {/* City */}
               <Typography variant='body2' noWrap>{ev.city}</Typography>
 
-              {/* Assigned To — name only */}
               {ev.assignedto ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Avatar sx={{ width: 24, height: 24, fontSize: 10, bgcolor: 'primary.main', flexShrink: 0 }}>
+                <Box sx={{display:'flex',alignItems:'center',gap:1}}>
+                  <Avatar sx={{width:24,height:24,fontSize:10,bgcolor:agentColor(ev.assignedto),flexShrink:0}}>
                     {userInitials(ev.assignedto)}
                   </Avatar>
                   <Typography variant='body2' fontWeight={600} noWrap>{userFullName(ev.assignedto)}</Typography>
                 </Box>
-              ) : (
-                <Typography variant='body2' color='text.disabled'>—</Typography>
-              )}
+              ) : <Typography variant='body2' color='text.disabled'>—</Typography>}
 
-              {/* Notes */}
               <Typography variant='body2' color='text.secondary' noWrap>
-                {ev.notes || <span style={{ opacity: 0.3 }}>—</span>}
+                {ev.notes || <span style={{opacity:.3}}>—</span>}
               </Typography>
 
-              {/* Delete */}
-              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              {/* Edit + Delete */}
+              <Box sx={{display:'flex',alignItems:'center',justifyContent:'flex-end',gap:.5}}>
+                <Tooltip title='Edit event'>
+                  <IconButton size='small' onClick={()=>setEditEvent(ev)}
+                    sx={{opacity:.5,'&:hover':{opacity:1,color:'primary.main'}}}>
+                    <i className='tabler-pencil' style={{fontSize:15}}/>
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title='Delete event'>
-                  <IconButton size='small' color='error' onClick={() => setDelTarget(ev)}
-                    sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}>
-                    <i className='tabler-trash' style={{ fontSize: 16 }} />
+                  <IconButton size='small' color='error' onClick={()=>setDelTarget(ev)}
+                    sx={{opacity:.5,'&:hover':{opacity:1}}}>
+                    <i className='tabler-trash' style={{fontSize:15}}/>
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -605,30 +721,29 @@ export default function EventsView() {
           ))
         )}
 
-        {/* Footer */}
         {!loading && filtered.length > 0 && (
-          <Box sx={{ px: 2, py: 1, bgcolor: 'action.hover', borderTop: '1px solid', borderColor: 'divider' }}>
+          <Box sx={{px:2,py:1,bgcolor:'action.hover',borderTop:'1px solid',borderColor:'divider'}}>
             <Typography variant='caption' color='text.secondary'>
-              Showing {filtered.length} of {events.length} event{events.length !== 1 ? 's' : ''}
+              Showing {filtered.length} of {events.length} event{events.length!==1?'s':''}
             </Typography>
           </Box>
         )}
       </Card>
 
-      <AddEventDialog
-        open={addOpen} users={users}
-        onClose={() => setAddOpen(false)}
-        onSaved={ev => { setEvents(prev => [...prev, ev]); setAddOpen(false) }}
-      />
+      {/* Dialogs */}
+      <AddEventDialog open={addOpen} users={users} onClose={()=>setAddOpen(false)}
+        onSaved={ev=>{setEvents(prev=>[...prev,ev]);setAddOpen(false)}} />
 
-      <ConfirmDialog
-        open={!!delTarget} onClose={() => setDelTarget(null)}
-        onConfirm={handleDeleteConfirm}
+      <EditEventDialog event={editEvent} users={users} onClose={()=>setEditEvent(null)}
+        onSaved={updated=>{setEvents(prev=>prev.map(e=>e.id===updated.id?updated:e));setEditEvent(null)}} />
+
+      <YearCalendarDialog open={calOpen} events={events} onClose={()=>setCalOpen(false)}
+        onEventClick={ev=>{setCalOpen(false);setEditEvent(ev)}} />
+
+      <ConfirmDialog open={!!delTarget} onClose={()=>setDelTarget(null)} onConfirm={handleDeleteConfirm}
         title='Delete Event'
-        message={delTarget ? `Are you sure you want to delete "${delTarget.description}"? This action cannot be undone.` : ''}
-        confirmLabel='Delete' cancelLabel='Cancel' confirmColor='error'
-        icon='tabler-trash' loading={deleting}
-      />
+        message={delTarget?`Are you sure you want to delete "${delTarget.description}"? This action cannot be undone.`:''}
+        confirmLabel='Delete' cancelLabel='Cancel' confirmColor='error' icon='tabler-trash' loading={deleting} />
     </Box>
   )
 }

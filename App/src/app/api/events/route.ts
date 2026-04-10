@@ -1,6 +1,7 @@
 /**
- * GET    /api/events          — List all events (with assigned user info)
+ * GET    /api/events          — List all events (with assigned user info + color)
  * POST   /api/events          — Create new event
+ * PATCH  /api/events?id=...   — Update event
  * DELETE /api/events?id=...   — Delete event by UUID
  */
 
@@ -19,13 +20,12 @@ const EVENT_SELECT = `
   duration,
   cre_dt,
   assignedto:users!events_assignedto_fk_fkey (
-    id, first_name, last_name, email
+    id, first_name, last_name, email, color
   )
 `
 
 export async function GET() {
   const supabase = await createClient()
-
   const { data, error } = await supabase
     .from('events')
     .select(EVENT_SELECT)
@@ -38,14 +38,10 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const body = await req.json()
-
   const { description, notes, assignedto_fk, state_fk, city, event_date, event_time, duration } = body
 
   if (!description?.trim() || !state_fk?.trim() || !city?.trim()) {
-    return NextResponse.json(
-      { error: 'description, state_fk, and city are required' },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: 'description, state_fk, and city are required' }, { status: 400 })
   }
 
   const { data, error } = await supabase
@@ -56,9 +52,9 @@ export async function POST(req: NextRequest) {
       assignedto_fk: assignedto_fk || null,
       state_fk: state_fk.trim().toUpperCase(),
       city: city.trim(),
-      event_date: event_date || null,       // "YYYY-MM-DD" or null
-      event_time: event_time || null,       // "HH:MM" or null
-      duration: duration ? Number(duration) : null,  // integer minutes
+      event_date: event_date || null,
+      event_time: event_time || null,
+      duration: duration ? Number(duration) : null,
     })
     .select(EVENT_SELECT)
     .single()
@@ -67,11 +63,40 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(data, { status: 201 })
 }
 
+export async function PATCH(req: NextRequest) {
+  const supabase = await createClient()
+  const { searchParams } = new URL(req.url)
+  const id = searchParams.get('id')
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+
+  const body = await req.json()
+  const { description, notes, assignedto_fk, state_fk, city, event_date, event_time, duration } = body
+
+  const updates: Record<string, unknown> = {}
+  if (description !== undefined) updates.description = description.trim()
+  if (notes       !== undefined) updates.notes       = notes?.trim() || null
+  if (assignedto_fk !== undefined) updates.assignedto_fk = assignedto_fk || null
+  if (state_fk    !== undefined) updates.state_fk   = state_fk.trim().toUpperCase()
+  if (city        !== undefined) updates.city        = city.trim()
+  if (event_date  !== undefined) updates.event_date  = event_date || null
+  if (event_time  !== undefined) updates.event_time  = event_time || null
+  if (duration    !== undefined) updates.duration    = duration ? Number(duration) : null
+
+  const { data, error } = await supabase
+    .from('events')
+    .update(updates)
+    .eq('id', id)
+    .select(EVENT_SELECT)
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(data)
+}
+
 export async function DELETE(req: NextRequest) {
   const supabase = await createClient()
   const { searchParams } = new URL(req.url)
   const id = searchParams.get('id')
-
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
   const { error } = await supabase.from('events').delete().eq('id', id)

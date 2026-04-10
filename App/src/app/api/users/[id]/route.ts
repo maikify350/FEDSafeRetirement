@@ -26,7 +26,7 @@ export async function PUT(
   const { data: { user } } = await supabase.auth.getUser()
 
   const updates: Record<string, any> = {}
-  const allowed = ['first_name', 'last_name', 'phone', 'role', 'avatar_url']
+  const allowed = ['first_name', 'last_name', 'phone', 'role', 'avatar_url', 'color']
   for (const key of allowed) { if (key in body) updates[key] = body[key] }
   updates.mod_by = user?.email ?? 'system'
 
