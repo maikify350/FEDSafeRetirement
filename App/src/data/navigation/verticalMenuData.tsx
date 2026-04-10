@@ -27,6 +27,15 @@ const verticalMenuData = (): VerticalMenuDataType[] => [
   },
   {
     isSection: true,
+    label: 'AGENTS'
+  },
+  {
+    label: 'Events',
+    href: '/events',
+    icon: 'tabler-calendar-event'
+  },
+  {
+    isSection: true,
     label: 'ACCOUNT'
   },
   {
