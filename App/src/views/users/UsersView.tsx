@@ -24,6 +24,7 @@ interface User {
   last_name: string
   phone: string | null
   role: string
+  color: string | null
   avatar_url: string | null
   last_login_at: string | null
   cre_dt: string
@@ -148,6 +149,10 @@ export default function UsersView() {
         onClose={() => setEditUser(null)}
         user={editUser}
         onSaved={handleSaved}
+        usedColors={users
+          .filter(u => u.role === 'agent' && u.color && u.id !== editUser?.id)
+          .map(u => u.color as string)
+        }
       />
     </>
   )

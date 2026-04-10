@@ -31,6 +31,7 @@ interface Props {
   onClose: () => void
   user: User | null
   onSaved?: () => void
+  usedColors?: string[]   // colors already assigned to OTHER agents
 }
 
 const SectionHeader = ({ icon, children }: { icon: string; children: React.ReactNode }) => (
@@ -48,7 +49,7 @@ const COLOR_PRESETS = [
   '#a78bfa','#fb7185','#34d399','#fbbf24',
 ]
 
-export default function UserEditDialog({ open, onClose, user, onSaved }: Props) {
+export default function UserEditDialog({ open, onClose, user, onSaved, usedColors = [] }: Props) {
   const [form, setForm] = useState({ first_name: '', last_name: '', phone: '', role: 'viewer', color: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -150,23 +151,37 @@ export default function UserEditDialog({ open, onClose, user, onSaved }: Props) 
 
           {/* Preset swatches */}
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-            {COLOR_PRESETS.map(hex => (
-              <Tooltip key={hex} title={hex}>
-                <Box
-                  onClick={() => handleColorPick(hex)}
-                  sx={{
-                    width: 30, height: 30, borderRadius: 1.5,
-                    bgcolor: hex, cursor: 'pointer',
-                    border: form.color === hex ? '3px solid white' : '2px solid transparent',
-                    boxShadow: form.color === hex
-                      ? `0 0 0 2px ${hex}, 0 2px 8px ${hex}80`
-                      : '0 1px 3px rgba(0,0,0,.2)',
-                    transition: 'transform .1s, box-shadow .1s',
-                    '&:hover': { transform: 'scale(1.18)' },
-                  }}
-                />
-              </Tooltip>
-            ))}
+            {COLOR_PRESETS.map(hex => {
+              const isCurrent = form.color === hex
+              const isTaken   = !isCurrent && usedColors.map(c => c.toLowerCase()).includes(hex.toLowerCase())
+              return (
+                <Tooltip
+                  key={hex}
+                  title={isTaken ? 'Already assigned to another agent' : hex}
+                >
+                  <Box
+                    onClick={() => !isTaken && handleColorPick(hex)}
+                    sx={{
+                      width: 30, height: 30, borderRadius: 1.5,
+                      bgcolor: isTaken ? hex + '40' : hex,   // faded if taken
+                      cursor: isTaken ? 'not-allowed' : 'pointer',
+                      border: isCurrent ? '3px solid white' : '2px solid transparent',
+                      boxShadow: isCurrent
+                        ? `0 0 0 2px ${hex}, 0 2px 8px ${hex}80`
+                        : isTaken ? 'none' : '0 1px 3px rgba(0,0,0,.2)',
+                      transition: 'transform .1s, box-shadow .1s',
+                      '&:hover': !isTaken ? { transform: 'scale(1.18)' } : {},
+                      position: 'relative', overflow: 'hidden',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    {isTaken && (
+                      <i className='tabler-lock' style={{ fontSize: 13, color: 'rgba(255,255,255,.7)', position: 'absolute' }} />
+                    )}
+                  </Box>
+                </Tooltip>
+              )
+            })}
           </Box>
 
           {/* Custom hex input + native color picker */}
