@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
@@ -21,17 +21,41 @@ import Chip from '@mui/material/Chip'
 import InputAdornment from '@mui/material/InputAdornment'
 import Card from '@mui/material/Card'
 import Avatar from '@mui/material/Avatar'
+import Autocomplete from '@mui/material/Autocomplete'
 
 import ConfirmDialog from '@/components/ConfirmDialog'
 
-// ── US States ───────────────────────────────────────────────────────────────
-const US_STATES = [
-  'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA',
-  'HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
-  'MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ',
-  'NM','NY','NC','ND','OH','OK','OR','PA','RI','SC',
-  'SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC',
+// ── US States — full name + abbreviation ─────────────────────────────────────
+const US_STATES: { abbr: string; name: string }[] = [
+  { abbr: 'AL', name: 'Alabama' },        { abbr: 'AK', name: 'Alaska' },
+  { abbr: 'AZ', name: 'Arizona' },        { abbr: 'AR', name: 'Arkansas' },
+  { abbr: 'CA', name: 'California' },     { abbr: 'CO', name: 'Colorado' },
+  { abbr: 'CT', name: 'Connecticut' },    { abbr: 'DE', name: 'Delaware' },
+  { abbr: 'FL', name: 'Florida' },        { abbr: 'GA', name: 'Georgia' },
+  { abbr: 'HI', name: 'Hawaii' },         { abbr: 'ID', name: 'Idaho' },
+  { abbr: 'IL', name: 'Illinois' },       { abbr: 'IN', name: 'Indiana' },
+  { abbr: 'IA', name: 'Iowa' },           { abbr: 'KS', name: 'Kansas' },
+  { abbr: 'KY', name: 'Kentucky' },       { abbr: 'LA', name: 'Louisiana' },
+  { abbr: 'ME', name: 'Maine' },          { abbr: 'MD', name: 'Maryland' },
+  { abbr: 'MA', name: 'Massachusetts' },  { abbr: 'MI', name: 'Michigan' },
+  { abbr: 'MN', name: 'Minnesota' },      { abbr: 'MS', name: 'Mississippi' },
+  { abbr: 'MO', name: 'Missouri' },       { abbr: 'MT', name: 'Montana' },
+  { abbr: 'NE', name: 'Nebraska' },       { abbr: 'NV', name: 'Nevada' },
+  { abbr: 'NH', name: 'New Hampshire' },  { abbr: 'NJ', name: 'New Jersey' },
+  { abbr: 'NM', name: 'New Mexico' },     { abbr: 'NY', name: 'New York' },
+  { abbr: 'NC', name: 'North Carolina' }, { abbr: 'ND', name: 'North Dakota' },
+  { abbr: 'OH', name: 'Ohio' },           { abbr: 'OK', name: 'Oklahoma' },
+  { abbr: 'OR', name: 'Oregon' },         { abbr: 'PA', name: 'Pennsylvania' },
+  { abbr: 'RI', name: 'Rhode Island' },   { abbr: 'SC', name: 'South Carolina' },
+  { abbr: 'SD', name: 'South Dakota' },   { abbr: 'TN', name: 'Tennessee' },
+  { abbr: 'TX', name: 'Texas' },          { abbr: 'UT', name: 'Utah' },
+  { abbr: 'VT', name: 'Vermont' },        { abbr: 'VA', name: 'Virginia' },
+  { abbr: 'WA', name: 'Washington' },     { abbr: 'WV', name: 'West Virginia' },
+  { abbr: 'WI', name: 'Wisconsin' },      { abbr: 'WY', name: 'Wyoming' },
+  { abbr: 'DC', name: 'District of Columbia' },
 ]
+
+const STATE_BY_ABBR = Object.fromEntries(US_STATES.map(s => [s.abbr, s.name]))
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface AssignedUser {
@@ -48,11 +72,17 @@ interface EventRecord {
   notes: string | null
   state_fk: string
   city: string
-  event_date: string | null   // ISO date "YYYY-MM-DD"
-  event_time: string | null   // "HH:MM"
-  duration: number | null     // minutes
+  event_date: string | null
+  event_time: string | null
+  duration: number | null
   cre_dt: string
   assignedto: AssignedUser | null
+}
+
+interface CityPrediction {
+  place_id: string
+  description: string
+  city: string
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -62,44 +92,119 @@ function userFullName(u: AssignedUser) {
 function userInitials(u: AssignedUser) {
   return `${u.first_name?.[0] || ''}${u.last_name?.[0] || ''}`.toUpperCase()
 }
-
-/** Format "YYYY-MM-DD" → "Apr 10, 2026" */
 function fmtDate(d: string | null) {
   if (!d) return null
   return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
-
-/** Format "HH:MM" → "2:30 PM" */
 function fmtTime(t: string | null) {
   if (!t) return null
   const [h, m] = t.split(':').map(Number)
   const period = h >= 12 ? 'PM' : 'AM'
-  const h12 = h % 12 || 12
-  return `${h12}:${String(m).padStart(2, '0')} ${period}`
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${period}`
 }
-
-/** minutes → "1h 30m" */
 function fmtDuration(min: number | null) {
   if (!min) return null
   if (min < 60) return `${min}m`
-  const h = Math.floor(min / 60)
-  const m = min % 60
+  const h = Math.floor(min / 60), m = min % 60
   return m ? `${h}h ${m}m` : `${h}h`
 }
 
 const STATE_CHIP_COLORS: Record<string, string> = {}
 const PALETTE = ['#6366f1','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6']
 let _ci = 0
-function stateChipColor(state: string) {
-  if (!STATE_CHIP_COLORS[state]) STATE_CHIP_COLORS[state] = PALETTE[_ci++ % PALETTE.length]
-  return STATE_CHIP_COLORS[state]
+function stateChipColor(abbr: string) {
+  if (!STATE_CHIP_COLORS[abbr]) STATE_CHIP_COLORS[abbr] = PALETTE[_ci++ % PALETTE.length]
+  return STATE_CHIP_COLORS[abbr]
 }
 
-// ── Shared input style for native date/time inputs ───────────────────────────
 const nativeInputSx = {
-  '& input[type="date"], & input[type="time"]': {
-    colorScheme: 'light dark',
-  },
+  '& input[type="date"], & input[type="time"]': { colorScheme: 'light dark' },
+}
+
+// ── City Autocomplete Field ─────────────────────────────────────────────────
+function CityAutocomplete({
+  value, onChange, stateName, error, helperText,
+}: {
+  value: string
+  onChange: (v: string) => void
+  stateName: string   // full name, e.g. "Virginia"
+  error?: boolean
+  helperText?: string
+}) {
+  const [options, setOptions] = useState<CityPrediction[]>([])
+  const [loading, setLoading] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const fetchCities = useCallback((input: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (!input || input.length < 2) { setOptions([]); return }
+
+    debounceRef.current = setTimeout(async () => {
+      setLoading(true)
+      try {
+        const params = new URLSearchParams({ input })
+        if (stateName) params.set('state', stateName)
+        const res = await fetch(`/api/places/cities?${params}`)
+        const data = await res.json()
+        setOptions(data.predictions ?? [])
+      } catch { setOptions([]) }
+      finally { setLoading(false) }
+    }, 300)
+  }, [stateName])
+
+  // Reset options when state changes
+  useEffect(() => { setOptions([]) }, [stateName])
+
+  return (
+    <Autocomplete
+      freeSolo
+      filterOptions={x => x}
+      options={options}
+      getOptionLabel={o => (typeof o === 'string' ? o : o.city)}
+      inputValue={value}
+      onInputChange={(_, v, reason) => {
+        if (reason === 'input') { onChange(v); fetchCities(v) }
+      }}
+      onChange={(_, v) => {
+        if (v && typeof v !== 'string') onChange((v as CityPrediction).city)
+      }}
+      loading={loading}
+      noOptionsText={
+        !stateName ? 'Select a state first' :
+        value.length < 2 ? 'Type to search cities…' : 'No cities found'
+      }
+      renderOption={(props, option) => (
+        <li {...props} key={option.place_id}>
+          <i className='tabler-building-community' style={{ fontSize: 14, marginRight: 8, opacity: 0.5 }} />
+          <span>
+            <strong>{option.city}</strong>
+            <span style={{ opacity: 0.55, fontSize: 12, marginLeft: 6 }}>
+              {option.description.split(',').slice(1).join(',').trim()}
+            </span>
+          </span>
+        </li>
+      )}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label='City *'
+          placeholder={stateName ? `Search cities in ${stateName}…` : 'Select a state first'}
+          disabled={!stateName}
+          error={error}
+          helperText={helperText}
+          InputProps={{
+            ...params.InputProps,
+            endAdornment: (
+              <>
+                {loading && <CircularProgress size={14} sx={{ mr: 1 }} />}
+                {params.InputProps.endAdornment}
+              </>
+            ),
+          }}
+        />
+      )}
+    />
+  )
 }
 
 // ── Add Event Dialog ─────────────────────────────────────────────────────────
@@ -114,19 +219,21 @@ function AddEventDialog({
   const [description, setDescription]   = useState('')
   const [notes, setNotes]               = useState('')
   const [assignedtoFk, setAssignedtoFk] = useState('')
-  const [stateFk, setStateFk]           = useState('')
+  const [stateAbbr, setStateAbbr]       = useState('')   // "VA"
   const [city, setCity]                 = useState('')
-  const [eventDate, setEventDate]       = useState('')   // "YYYY-MM-DD"
-  const [eventTime, setEventTime]       = useState('')   // "HH:MM"
-  const [duration, setDuration]         = useState('')   // numeric string
+  const [eventDate, setEventDate]       = useState('')
+  const [eventTime, setEventTime]       = useState('')
+  const [duration, setDuration]         = useState('')
   const [saving, setSaving]             = useState(false)
   const [errors, setErrors]             = useState<Record<string, string>>({})
+
+  const selectedStateName = stateAbbr ? (STATE_BY_ABBR[stateAbbr] ?? '') : ''
 
   useEffect(() => {
     if (!open) {
       setDescription(''); setNotes(''); setAssignedtoFk('')
-      setStateFk(''); setCity(''); setEventDate(''); setEventTime('')
-      setDuration(''); setErrors({})
+      setStateAbbr(''); setCity(''); setEventDate('')
+      setEventTime(''); setDuration(''); setErrors({})
     }
   }, [open])
 
@@ -134,11 +241,11 @@ function AddEventDialog({
 
   const validate = () => {
     const e: Record<string, string> = {}
-    if (!description.trim())           e.description = 'Description is required'
-    if (!stateFk)                      e.stateFk     = 'State is required'
-    if (!city.trim())                  e.city        = 'City is required'
+    if (!description.trim())  e.description = 'Description is required'
+    if (!stateAbbr)           e.stateAbbr   = 'State is required'
+    if (!city.trim())         e.city        = 'City is required'
     if (duration !== '' && (isNaN(Number(duration)) || Number(duration) < 1))
-      e.duration = 'Duration must be a positive number'
+      e.duration = 'Must be a positive number'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -151,11 +258,9 @@ function AddEventDialog({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          description,
-          notes: notes || null,
+          description, notes: notes || null,
           assignedto_fk: assignedtoFk || null,
-          state_fk: stateFk,
-          city,
+          state_fk: stateAbbr, city,
           event_date: eventDate || null,
           event_time: eventTime || null,
           duration: duration ? Number(duration) : null,
@@ -191,83 +296,63 @@ function AddEventDialog({
           label='Description *'
           value={description}
           onChange={e => { setDescription(e.target.value); clrErr('description') }}
-          fullWidth
-          error={!!errors.description}
-          helperText={errors.description}
-          autoFocus
-          placeholder='Brief description of the event'
+          fullWidth error={!!errors.description} helperText={errors.description}
+          autoFocus placeholder='Brief description of the event'
         />
 
-        {/* Date · Time · Duration row */}
+        {/* Date · Time · Duration */}
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
-          {/* Event Date — native date picker */}
           <TextField
-            label='Event Date'
-            type='date'
-            value={eventDate}
+            label='Event Date' type='date' value={eventDate}
             onChange={e => setEventDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            inputProps={{ style: { cursor: 'pointer' } }}
-            sx={nativeInputSx}
-            size='medium'
-            fullWidth
+            InputLabelProps={{ shrink: true }} sx={nativeInputSx} fullWidth
           />
-
-          {/* Event Time — native time picker */}
           <TextField
-            label='Event Time'
-            type='time'
-            value={eventTime}
+            label='Event Time' type='time' value={eventTime}
             onChange={e => setEventTime(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            inputProps={{ style: { cursor: 'pointer' } }}
-            sx={nativeInputSx}
-            fullWidth
+            InputLabelProps={{ shrink: true }} sx={nativeInputSx} fullWidth
           />
-
-          {/* Duration (minutes) */}
           <TextField
-            label='Duration (min)'
-            type='number'
-            value={duration}
+            label='Duration (min)' type='number' value={duration}
             onChange={e => { setDuration(e.target.value); clrErr('duration') }}
-            fullWidth
-            error={!!errors.duration}
-            helperText={errors.duration}
-            placeholder='e.g. 90'
-            inputProps={{ min: 1 }}
-            InputProps={{
-              endAdornment: <InputAdornment position='end'>min</InputAdornment>,
-            }}
+            fullWidth error={!!errors.duration} helperText={errors.duration}
+            placeholder='e.g. 90' inputProps={{ min: 1 }}
+            InputProps={{ endAdornment: <InputAdornment position='end'>min</InputAdornment> }}
           />
         </Box>
 
-        {/* State & City row */}
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <FormControl fullWidth error={!!errors.stateFk}>
-            <InputLabel>State *</InputLabel>
-            <Select
-              value={stateFk}
-              onChange={e => { setStateFk(e.target.value); clrErr('stateFk') }}
-              label='State *'
-            >
-              {US_STATES.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
-            </Select>
-            {errors.stateFk && <FormHelperText>{errors.stateFk}</FormHelperText>}
-          </FormControl>
+        {/* State — full name dropdown */}
+        <FormControl fullWidth error={!!errors.stateAbbr}>
+          <InputLabel>State *</InputLabel>
+          <Select
+            value={stateAbbr}
+            onChange={e => { setStateAbbr(e.target.value); setCity(''); clrErr('stateAbbr') }}
+            label='State *'
+          >
+            {US_STATES.map(s => (
+              <MenuItem key={s.abbr} value={s.abbr}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Typography variant='caption' color='text.disabled' sx={{ minWidth: 24, fontWeight: 700 }}>
+                    {s.abbr}
+                  </Typography>
+                  {s.name}
+                </Box>
+              </MenuItem>
+            ))}
+          </Select>
+          {errors.stateAbbr && <FormHelperText>{errors.stateAbbr}</FormHelperText>}
+        </FormControl>
 
-          <TextField
-            label='City *'
-            value={city}
-            onChange={e => { setCity(e.target.value); clrErr('city') }}
-            fullWidth
-            error={!!errors.city}
-            helperText={errors.city}
-            placeholder='e.g. Chicago'
-          />
-        </Box>
+        {/* City — Google Places autocomplete */}
+        <CityAutocomplete
+          value={city}
+          onChange={v => { setCity(v); clrErr('city') }}
+          stateName={selectedStateName}
+          error={!!errors.city}
+          helperText={errors.city}
+        />
 
-        {/* Assigned Agent */}
+        {/* Assign To — name only (no email) */}
         <FormControl fullWidth>
           <InputLabel>Assign To (optional)</InputLabel>
           <Select value={assignedtoFk} onChange={e => setAssignedtoFk(e.target.value)} label='Assign To (optional)'>
@@ -277,11 +362,10 @@ function AddEventDialog({
             {users.map(u => (
               <MenuItem key={u.id} value={u.id}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Avatar sx={{ width: 26, height: 26, fontSize: 11, bgcolor: 'primary.main' }}>{userInitials(u)}</Avatar>
-                  <Box>
-                    <Typography variant='body2' fontWeight={600}>{userFullName(u)}</Typography>
-                    <Typography variant='caption' color='text.secondary'>{u.email}</Typography>
-                  </Box>
+                  <Avatar sx={{ width: 26, height: 26, fontSize: 11, bgcolor: 'primary.main' }}>
+                    {userInitials(u)}
+                  </Avatar>
+                  <Typography variant='body2' fontWeight={600}>{userFullName(u)}</Typography>
                 </Box>
               </MenuItem>
             ))}
@@ -290,22 +374,15 @@ function AddEventDialog({
 
         {/* Notes */}
         <TextField
-          label='Notes'
-          value={notes}
-          onChange={e => setNotes(e.target.value)}
-          fullWidth
-          multiline
-          rows={3}
-          placeholder='Optional notes about this event'
+          label='Notes' value={notes} onChange={e => setNotes(e.target.value)}
+          fullWidth multiline rows={3} placeholder='Optional notes about this event'
         />
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
         <Button onClick={onClose} variant='tonal' color='secondary' disabled={saving}>Cancel</Button>
         <Button
-          onClick={handleSave}
-          variant='contained'
-          disabled={saving}
+          onClick={handleSave} variant='contained' disabled={saving}
           startIcon={saving ? <CircularProgress size={14} /> : <i className='tabler-check' />}
         >
           {saving ? 'Saving…' : 'Save Event'}
@@ -315,15 +392,15 @@ function AddEventDialog({
   )
 }
 
-// ── Grid column definitions (header labels + widths) ─────────────────────────
+// ── Grid columns ─────────────────────────────────────────────────────────────
 const COLS = [
   { label: '#',           w: '56px'  },
   { label: 'Description', w: '1.5fr' },
   { label: 'Date',        w: '130px' },
   { label: 'Time',        w: '96px'  },
   { label: 'Duration',    w: '96px'  },
-  { label: 'State',       w: '80px'  },
-  { label: 'City',        w: '120px' },
+  { label: 'State',       w: '140px' },
+  { label: 'City',        w: '130px' },
   { label: 'Assigned To', w: '1fr'   },
   { label: 'Notes',       w: '1.2fr' },
   { label: '',            w: '52px'  },
@@ -370,6 +447,7 @@ export default function EventsView() {
     return events.filter(ev =>
       ev.description.toLowerCase().includes(q) ||
       ev.state_fk.toLowerCase().includes(q) ||
+      (STATE_BY_ABBR[ev.state_fk] ?? '').toLowerCase().includes(q) ||
       ev.city.toLowerCase().includes(q) ||
       (ev.assignedto ? userFullName(ev.assignedto).toLowerCase().includes(q) : false) ||
       (ev.notes || '').toLowerCase().includes(q)
@@ -379,7 +457,7 @@ export default function EventsView() {
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1600, mx: 'auto' }}>
 
-      {/* ── Page Header ── */}
+      {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4, flexWrap: 'wrap', gap: 2 }}>
         <Box>
           <Typography variant='h4' fontWeight={700} sx={{ mb: 0.5 }}>Events</Typography>
@@ -390,17 +468,10 @@ export default function EventsView() {
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <TextField
-            size='small'
-            placeholder='Search events…'
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            sx={{ minWidth: 240 }}
+            size='small' placeholder='Search events…' value={search}
+            onChange={e => setSearch(e.target.value)} sx={{ minWidth: 240 }}
             InputProps={{
-              startAdornment: (
-                <InputAdornment position='start'>
-                  <i className='tabler-search' style={{ fontSize: 16, opacity: 0.5 }} />
-                </InputAdornment>
-              ),
+              startAdornment: <InputAdornment position='start'><i className='tabler-search' style={{ fontSize: 16, opacity: 0.5 }} /></InputAdornment>,
               endAdornment: search ? (
                 <InputAdornment position='end'>
                   <IconButton size='small' onClick={() => setSearch('')}>
@@ -410,48 +481,36 @@ export default function EventsView() {
               ) : undefined,
             }}
           />
-          <Button
-            variant='contained'
-            startIcon={<i className='tabler-plus' />}
-            onClick={() => setAddOpen(true)}
-          >
+          <Button variant='contained' startIcon={<i className='tabler-plus' />} onClick={() => setAddOpen(true)}>
             + Add Event
           </Button>
         </Box>
       </Box>
 
-      {/* ── Grid / Table ── */}
+      {/* Grid */}
       <Card variant='outlined' sx={{ borderRadius: 2.5, overflow: 'hidden' }}>
-
-        {/* Table Header */}
+        {/* Header row */}
         <Box sx={{
-          display: 'grid',
-          gridTemplateColumns: GRID_COLS,
-          alignItems: 'center',
-          px: 2, py: 1.25,
-          bgcolor: 'action.hover',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          gap: 1,
+          display: 'grid', gridTemplateColumns: GRID_COLS,
+          alignItems: 'center', px: 2, py: 1.25,
+          bgcolor: 'action.hover', borderBottom: '1px solid', borderColor: 'divider', gap: 1,
         }}>
           {COLS.map((c, i) => (
-            <Typography key={i} variant='caption' fontWeight={700} color='text.secondary' textTransform='uppercase' letterSpacing={0.5} noWrap>
+            <Typography key={i} variant='caption' fontWeight={700} color='text.secondary'
+              textTransform='uppercase' letterSpacing={0.5} noWrap>
               {c.label}
             </Typography>
           ))}
         </Box>
 
-        {/* Rows */}
+        {/* Data rows */}
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 10 }}>
             <CircularProgress />
           </Box>
         ) : filtered.length === 0 ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, gap: 2 }}>
-            <Box sx={{
-              width: 64, height: 64, borderRadius: '50%',
-              bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
+            <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <i className='tabler-calendar-off' style={{ fontSize: 30, opacity: 0.35 }} />
             </Box>
             <Typography color='text.secondary' fontWeight={500}>
@@ -465,20 +524,13 @@ export default function EventsView() {
           </Box>
         ) : (
           filtered.map((ev, idx) => (
-            <Box
-              key={ev.id}
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: GRID_COLS,
-                alignItems: 'center',
-                px: 2, py: 1.5,
-                gap: 1,
-                borderBottom: idx < filtered.length - 1 ? '1px solid' : 'none',
-                borderColor: 'divider',
-                transition: 'background .1s ease',
-                '&:hover': { bgcolor: 'action.hover' },
-              }}
-            >
+            <Box key={ev.id} sx={{
+              display: 'grid', gridTemplateColumns: GRID_COLS,
+              alignItems: 'center', px: 2, py: 1.5, gap: 1,
+              borderBottom: idx < filtered.length - 1 ? '1px solid' : 'none',
+              borderColor: 'divider', transition: 'background .1s ease',
+              '&:hover': { bgcolor: 'action.hover' },
+            }}>
               {/* # */}
               <Typography variant='body2' color='text.disabled' fontWeight={700}>{ev.event_seq}</Typography>
 
@@ -487,56 +539,43 @@ export default function EventsView() {
 
               {/* Date */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                {ev.event_date ? (
-                  <>
-                    <i className='tabler-calendar' style={{ fontSize: 14, opacity: 0.4, flexShrink: 0 }} />
-                    <Typography variant='body2' noWrap>{fmtDate(ev.event_date)}</Typography>
-                  </>
-                ) : (
-                  <Typography variant='body2' color='text.disabled'>—</Typography>
-                )}
+                {ev.event_date
+                  ? <><i className='tabler-calendar' style={{ fontSize: 13, opacity: 0.4 }} /><Typography variant='body2' noWrap>{fmtDate(ev.event_date)}</Typography></>
+                  : <Typography variant='body2' color='text.disabled'>—</Typography>
+                }
               </Box>
 
               {/* Time */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                {ev.event_time ? (
-                  <>
-                    <i className='tabler-clock' style={{ fontSize: 14, opacity: 0.4, flexShrink: 0 }} />
-                    <Typography variant='body2' noWrap>{fmtTime(ev.event_time)}</Typography>
-                  </>
-                ) : (
-                  <Typography variant='body2' color='text.disabled'>—</Typography>
-                )}
+                {ev.event_time
+                  ? <><i className='tabler-clock' style={{ fontSize: 13, opacity: 0.4 }} /><Typography variant='body2' noWrap>{fmtTime(ev.event_time)}</Typography></>
+                  : <Typography variant='body2' color='text.disabled'>—</Typography>
+                }
               </Box>
 
               {/* Duration */}
-              {ev.duration ? (
-                <Chip
-                  label={fmtDuration(ev.duration)}
-                  size='small'
-                  icon={<i className='tabler-hourglass' style={{ fontSize: 12 }} />}
-                  sx={{ fontSize: 11, height: 22, bgcolor: 'action.selected' }}
-                />
-              ) : (
-                <Typography variant='body2' color='text.disabled'>—</Typography>
-              )}
+              {ev.duration
+                ? <Chip label={fmtDuration(ev.duration)} size='small'
+                    icon={<i className='tabler-hourglass' style={{ fontSize: 11 }} />}
+                    sx={{ fontSize: 11, height: 22, bgcolor: 'action.selected' }} />
+                : <Typography variant='body2' color='text.disabled'>—</Typography>
+              }
 
-              {/* State */}
+              {/* State — show full name */}
               <Chip
-                label={ev.state_fk}
+                label={STATE_BY_ABBR[ev.state_fk] ?? ev.state_fk}
                 size='small'
                 sx={{
-                  fontSize: 11, height: 22, fontWeight: 700,
+                  fontSize: 11, height: 22, fontWeight: 600, maxWidth: '100%',
                   bgcolor: stateChipColor(ev.state_fk) + '18',
-                  color: stateChipColor(ev.state_fk),
-                  border: 'none',
+                  color: stateChipColor(ev.state_fk), border: 'none',
                 }}
               />
 
               {/* City */}
               <Typography variant='body2' noWrap>{ev.city}</Typography>
 
-              {/* Assigned To */}
+              {/* Assigned To — name only */}
               {ev.assignedto ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Avatar sx={{ width: 24, height: 24, fontSize: 10, bgcolor: 'primary.main', flexShrink: 0 }}>
@@ -556,12 +595,8 @@ export default function EventsView() {
               {/* Delete */}
               <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Tooltip title='Delete event'>
-                  <IconButton
-                    size='small'
-                    color='error'
-                    onClick={() => setDelTarget(ev)}
-                    sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                  >
+                  <IconButton size='small' color='error' onClick={() => setDelTarget(ev)}
+                    sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}>
                     <i className='tabler-trash' style={{ fontSize: 16 }} />
                   </IconButton>
                 </Tooltip>
@@ -570,12 +605,9 @@ export default function EventsView() {
           ))
         )}
 
-        {/* Footer count */}
+        {/* Footer */}
         {!loading && filtered.length > 0 && (
-          <Box sx={{
-            px: 2, py: 1, bgcolor: 'action.hover',
-            borderTop: '1px solid', borderColor: 'divider',
-          }}>
+          <Box sx={{ px: 2, py: 1, bgcolor: 'action.hover', borderTop: '1px solid', borderColor: 'divider' }}>
             <Typography variant='caption' color='text.secondary'>
               Showing {filtered.length} of {events.length} event{events.length !== 1 ? 's' : ''}
             </Typography>
@@ -583,30 +615,19 @@ export default function EventsView() {
         )}
       </Card>
 
-      {/* ── Add Event Dialog ── */}
       <AddEventDialog
-        open={addOpen}
-        users={users}
+        open={addOpen} users={users}
         onClose={() => setAddOpen(false)}
-        onSaved={(ev) => { setEvents(prev => [...prev, ev]); setAddOpen(false) }}
+        onSaved={ev => { setEvents(prev => [...prev, ev]); setAddOpen(false) }}
       />
 
-      {/* ── Delete Confirm Dialog ── */}
       <ConfirmDialog
-        open={!!delTarget}
-        onClose={() => setDelTarget(null)}
+        open={!!delTarget} onClose={() => setDelTarget(null)}
         onConfirm={handleDeleteConfirm}
         title='Delete Event'
-        message={
-          delTarget
-            ? `Are you sure you want to delete "${delTarget.description}"? This action cannot be undone.`
-            : ''
-        }
-        confirmLabel='Delete'
-        cancelLabel='Cancel'
-        confirmColor='error'
-        icon='tabler-trash'
-        loading={deleting}
+        message={delTarget ? `Are you sure you want to delete "${delTarget.description}"? This action cannot be undone.` : ''}
+        confirmLabel='Delete' cancelLabel='Cancel' confirmColor='error'
+        icon='tabler-trash' loading={deleting}
       />
     </Box>
   )
