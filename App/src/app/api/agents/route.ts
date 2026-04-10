@@ -1,13 +1,8 @@
-/**
- * GET /api/agents — All users with role='agent'
- * POST /api/agents — Upsert agent from Excel seed
- */
-
 import { NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/server'
 
 export async function GET() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data, error } = await supabase
     .from('users')

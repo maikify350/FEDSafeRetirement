@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
+/** Session-aware client — subject to RLS. Use for user-facing auth flows. */
 export async function createClient() {
   const cookieStore = await cookies()
 
@@ -19,11 +21,26 @@ export async function createClient() {
             )
           } catch {
             // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
+            // This can be ignored if you have middleware refreshing user sessions.
           }
         },
       },
     }
   )
+}
+
+/**
+ * Admin client — uses the secret service-role key and bypasses RLS.
+ * Use ONLY in server-side API routes that need to read/write all rows
+ * regardless of the requesting user's identity (e.g. /api/users, /api/agents).
+ * NEVER expose this client or its key to the browser.
+ */
+export function createAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const key = process.env.NEXT_PUBLIC_SECRET_KEY
+            || process.env.SUPABASE_SERVICE_ROLE_KEY
+            || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY! // fallback
+  return createSupabaseClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
 }
