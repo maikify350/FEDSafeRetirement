@@ -14,6 +14,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import { createColumnHelper } from '@tanstack/react-table'
 
 import EntityListView from '@/components/EntityListView'
+import LeadAddDialog from './LeadAddDialog'
 
 interface LeadFunnelRow {
   id: string
@@ -85,6 +86,7 @@ export default function LeadFunnelView() {
   const [leads, setLeads] = useState<LeadFunnelRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [addNew, setAddNew] = useState(false)
 
   const fetchLeads = useCallback(async () => {
     setLoading(true)
@@ -215,25 +217,33 @@ export default function LeadFunnelView() {
   }
 
   return (
-    <EntityListView<LeadFunnelRow>
-      columns={columns as any}
-      data={leads}
-      storageKey='fs-lead-funnel'
-      defaultColVisibility={defaultColVisibility}
-      title='Lead Funnel'
-      searchValue={search}
-      onSearchChange={setSearch}
-      searchPlaceholder='Search leads...'
-      onExportCsv={(rows) => {
-        const csv = ['Status,First,Last,Email,Phone,State,City,Source,ApptDate,TSP'].concat(
-          rows.map(r => `${r.status},${r.first_name},${r.last_name},${r.email},${r.cell_phone || r.phone},${r.state},${r.city},${r.source},${r.appointment_date},${r.tsp_value}`)
-        ).join('\n')
-        downloadBlob(csv, 'lead_funnel.csv', 'text/csv')
-      }}
-      onExportJson={(rows) => downloadBlob(JSON.stringify(rows, null, 2), 'lead_funnel.json', 'application/json')}
-      emptyMessage='No leads in the funnel yet. Leads will appear here when they arrive via webhook.'
-      newButtonLabel=''
-      onNewClick={() => {}}
-    />
+    <>
+      <EntityListView<LeadFunnelRow>
+        columns={columns as any}
+        data={leads}
+        storageKey='fs-lead-funnel'
+        defaultColVisibility={defaultColVisibility}
+        title='Lead Funnel'
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder='Search leads...'
+        newButtonLabel='Add Lead'
+        onNewClick={() => setAddNew(true)}
+        onExportCsv={(rows) => {
+          const csv = ['Status,First,Last,Email,Phone,State,City,Source,ApptDate,TSP'].concat(
+            rows.map(r => `${r.status},${r.first_name},${r.last_name},${r.email},${r.cell_phone || r.phone},${r.state},${r.city},${r.source},${r.appointment_date},${r.tsp_value}`)
+          ).join('\n')
+          downloadBlob(csv, 'lead_funnel.csv', 'text/csv')
+        }}
+        onExportJson={(rows) => downloadBlob(JSON.stringify(rows, null, 2), 'lead_funnel.json', 'application/json')}
+        emptyMessage='No leads in the funnel yet. Leads will appear here when they arrive via webhook.'
+      />
+
+      <LeadAddDialog
+        open={addNew}
+        onClose={() => setAddNew(false)}
+        onSaved={() => { setAddNew(false); fetchLeads() }}
+      />
+    </>
   )
 }
