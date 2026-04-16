@@ -95,6 +95,7 @@ const Navigation = (props: Props) => {
     // eslint-disable-next-line lines-around-comment
     // Sidebar Vertical Menu
     <VerticalNav
+      width={215}
       customStyles={navigationCustomStyles(verticalNavOptions, theme)}
       collapsedWidth={71}
       backgroundColor='var(--mui-palette-background-paper)'
