@@ -9,7 +9,7 @@ const verticalMenuData = (): VerticalMenuDataType[] => [
   },
   {
     isSection: true,
-    label: 'LEADS'
+    label: 'USPS LEADS'
   },
   {
     label: 'Lead Search',
