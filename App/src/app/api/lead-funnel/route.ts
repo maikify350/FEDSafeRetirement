@@ -128,18 +128,41 @@ export async function POST(request: NextRequest) {
 
   const admin = createAdminClient()
 
-  // Upsert by ext_appointment_id for idempotency
-  const { data, error } = await admin
-    .from('lead_funnel')
-    .upsert(row, { onConflict: 'ext_appointment_id' })
-    .select('id')
-    .single()
+  // Manual dedup: check if ext_appointment_id already exists
+  let existingId: string | null = null
+  if (row.ext_appointment_id) {
+    const { data: existing } = await admin
+      .from('lead_funnel')
+      .select('id')
+      .eq('ext_appointment_id', row.ext_appointment_id)
+      .maybeSingle()
+    existingId = existing?.id ?? null
+  }
+
+  let data: any, error: any
+
+  if (existingId) {
+    // Update existing record (idempotent re-delivery)
+    ;({ data, error } = await admin
+      .from('lead_funnel')
+      .update(row)
+      .eq('id', existingId)
+      .select('id')
+      .single())
+  } else {
+    // Insert new record
+    ;({ data, error } = await admin
+      .from('lead_funnel')
+      .insert(row)
+      .select('id')
+      .single())
+  }
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ ok: true, id: data?.id })
+  return NextResponse.json({ ok: true, id: data?.id, action: existingId ? 'updated' : 'created' })
 }
 
 // ─── PATCH — Mark leads as processed / imported ──────────────────────────────
