@@ -74,7 +74,7 @@ export default function UsersView() {
       header: 'User', size: 280,
       cell: ({ row }) => (
         <Box className='flex items-center gap-3'>
-          <Avatar src={row.original.avatar_url || undefined} sx={{ width: 34, height: 34, fontSize: 14, bgcolor: 'primary.main' }}>
+          <Avatar src={row.original.avatar_url || undefined} sx={{ width: 34, height: 34, fontSize: 14, bgcolor: row.original.color || 'primary.main' }}>
             {(row.original.first_name?.[0] || row.original.email?.[0] || '?').toUpperCase()}
           </Avatar>
           <Box>

@@ -113,6 +113,8 @@ export interface EntityListViewProps<TData extends { id: string }> {
   searchPlaceholder?: string
 
   // ── Toolbar right side actions
+  toolbarActions?: ReactNode   // rendered before Export button
+  onPrint?: (rows: TData[]) => void   // print callback (selected or all rows)
   newButtonLabel: string
   onNewClick: () => void
   onExportCsv: (rows: TData[]) => void
@@ -153,6 +155,8 @@ export default function EntityListView<TData extends { id: string }>({
   searchValue,
   onSearchChange,
   searchPlaceholder = 'Search…',
+  toolbarActions,
+  onPrint,
   newButtonLabel,
   onNewClick,
   onExportCsv,
@@ -167,37 +171,55 @@ export default function EntityListView<TData extends { id: string }>({
 }: EntityListViewProps<TData>) {
   const isServerSide = totalRows !== undefined
 
-  // ── Auto-append actions column when onRowEdit is provided ─────────────
+  // ── Auto-prepend select column + auto-append action column ─────────────
   const columnsWithActions = useMemo(() => {
-    if (!onRowEdit) return columns
-    const hasAction = columns.some((c: any) => c.id === 'action')
-    if (hasAction) return columns
-    return [
-      ...columns,
-      {
-        id: 'action',
-        header: '',
-        size: 60,
-        enableSorting: false,
-        enableColumnFilter: false,
-        enableHiding: false,
-        enableResizing: false,
-        cell: ({ row }: any) => (
-          <Tooltip title='Edit'>
-            <IconButton
-              size='small'
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation()
-                onRowEdit(row.original)
-              }}
-              sx={{ color: 'primary.main', p: '2px' }}
-            >
-              <i className='tabler-pencil text-lg' />
-            </IconButton>
-          </Tooltip>
-        ),
-      } as ColumnDef<TData, any>,
-    ]
+    let cols = [...columns]
+
+    // Prepend select / checkbox column if not already present
+    const hasSelect = cols.some((c: any) => c.id === 'select')
+    if (!hasSelect) {
+      cols = [
+        {
+          id: 'select',
+          header: ({ table }: any) => <Checkbox size='small' sx={{ p: '2px' }} checked={table.getIsAllRowsSelected()} indeterminate={table.getIsSomeRowsSelected()} onChange={table.getToggleAllRowsSelectedHandler()} />,
+          cell: ({ row }: any) => <Checkbox size='small' sx={{ p: '2px' }} checked={row.getIsSelected()} onChange={row.getToggleSelectedHandler()} onClick={(e: React.MouseEvent) => e.stopPropagation()} />,
+          size: 50, enableSorting: false, enableColumnFilter: false,
+        } as ColumnDef<TData, any>,
+        ...cols,
+      ]
+    }
+
+    // Append action / edit column if onRowEdit provided
+    if (onRowEdit) {
+      const hasAction = cols.some((c: any) => c.id === 'action')
+      if (!hasAction) {
+        cols.push({
+          id: 'action',
+          header: '',
+          size: 60,
+          enableSorting: false,
+          enableColumnFilter: false,
+          enableHiding: false,
+          enableResizing: false,
+          cell: ({ row }: any) => (
+            <Tooltip title='Edit'>
+              <IconButton
+                size='small'
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation()
+                  onRowEdit(row.original)
+                }}
+                sx={{ color: 'primary.main', p: '2px' }}
+              >
+                <i className='tabler-pencil text-lg' />
+              </IconButton>
+            </Tooltip>
+          ),
+        } as ColumnDef<TData, any>)
+      }
+    }
+
+    return cols
   }, [columns, onRowEdit])
 
   // ── Persisted preferences ──────────────────────────────────────────────────
@@ -215,7 +237,7 @@ export default function EntityListView<TData extends { id: string }>({
   const columnOrder      = gridPrefs.columnOrder      ?? []
   const columnSizing     = gridPrefs.columnSizing     ?? {}
   const persistedSorting = gridPrefs.sorting          ?? defaultSorting
-  const density          = (gridPrefs.density          ?? 'normal') as 'compact' | 'normal' | 'comfortable'
+  const density          = (gridPrefs.density          ?? 'compact') as 'compact' | 'normal' | 'comfortable'
   const pageSize         = gridPrefs.pageSize         ?? 25
   const showFilters      = gridPrefs.showFilters      ?? false
 
@@ -260,7 +282,6 @@ export default function EntityListView<TData extends { id: string }>({
   const [exportDialogRows, setExportDialogRows] = useState<TData[]>([])
   const dragColId                               = useRef<string | null>(null)
 
-  const densityPy = density === 'compact' ? '1px' : '4px'
 
   // ── Two-phase column order ────────────────────────────────────────────────
   const cleanedColumnOrder = useMemo(
@@ -524,6 +545,22 @@ export default function EntityListView<TData extends { id: string }>({
               </Box>
             </Popover>
 
+            {/* Custom toolbar actions (e.g. Print) */}
+            {toolbarActions}
+
+            {/* Print PDF */}
+            {onPrint && (
+              <Tooltip title='Print PDF'>
+                <IconButton
+                  size='small'
+                  onClick={() => onPrint(selectedRows.length > 0 ? selectedRows : data)}
+                  sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1.5 }}
+                >
+                  <i className='tabler-printer text-xl' />
+                </IconButton>
+              </Tooltip>
+            )}
+
             {/* Export */}
             <Button
               color='secondary'
@@ -635,7 +672,7 @@ export default function EntityListView<TData extends { id: string }>({
                       {[...row.getVisibleCells()]
                         .sort((a, b) => colSortKey(a.column.id) - colSortKey(b.column.id))
                         .map(cell => (
-                          <td key={cell.id} style={{ paddingBlock: densityPy }}>
+                          <td key={cell.id}>
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>
                         ))}

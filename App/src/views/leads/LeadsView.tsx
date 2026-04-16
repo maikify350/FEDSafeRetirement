@@ -305,13 +305,6 @@ export default function LeadsView() {
 
   // ── Columns ───────────────────────────────────────────────────────────────
   const columns = useMemo(() => {
-    const selectCol = {
-      id: 'select',
-      header: ({ table }: any) => <Checkbox size='small' sx={{ p: '2px' }} checked={table.getIsAllRowsSelected()} indeterminate={table.getIsSomeRowsSelected()} onChange={table.getToggleAllRowsSelectedHandler()} />,
-      cell: ({ row }: any) => <Checkbox size='small' sx={{ p: '2px' }} checked={row.getIsSelected()} onChange={row.getToggleSelectedHandler()} onClick={(e: React.MouseEvent) => e.stopPropagation()} />,
-      size: 50, enableSorting: false, enableColumnFilter: false,
-    }
-
     const favoriteCol = {
       id: 'favorite',
       header: () => <i className='tabler-star text-sm' />,
@@ -334,7 +327,6 @@ export default function LeadsView() {
     }
 
     return [
-      selectCol,
       favoriteCol,
       columnHelper.accessor('first_name', {
         header: 'First Name', size: 140,

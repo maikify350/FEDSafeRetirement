@@ -48,16 +48,16 @@
 
     th,
     td {
-      font-size: 0.9375rem;
-      line-height: 1.4667;
+      font-size: 0.8125rem;
+      line-height: 1.3;
       block-size: auto;
       &:not(:first-of-type):not(:last-of-type) {
-        padding-block: 0.5rem;
+        padding-block: 0.125rem;
         padding-inline: 1rem;
       }
       &:first-of-type {
         &:not(:has(input[type='checkbox'])) {
-          padding-block: 0.5rem;
+          padding-block: 0.125rem;
           padding-inline: 1.5rem 1rem;
         }
         &:has(input[type='checkbox']) {
@@ -66,7 +66,7 @@
         }
       }
       &:last-of-type {
-        padding-block: 0.5rem;
+        padding-block: 0.125rem;
         padding-inline: 1rem 1.5rem;
       }
     }

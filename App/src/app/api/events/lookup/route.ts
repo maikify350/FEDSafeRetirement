@@ -143,7 +143,7 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const agent = match.assignedto as {
+  const agent = (Array.isArray(match.assignedto) ? match.assignedto[0] : match.assignedto) as {
     id: string; first_name: string; last_name: string
     email: string; phone: string | null; act_uuid?: string | null
   } | null
@@ -212,7 +212,7 @@ async function retryWithoutActUuid(
 
   if (!match) return NextResponse.json({ error: 'No event covers the requested time slot.' }, { status: 404 })
 
-  const agent = match.assignedto as {
+  const agent = (Array.isArray(match.assignedto) ? match.assignedto[0] : match.assignedto) as {
     id: string; first_name: string; last_name: string; email: string; phone: string | null
   } | null
 

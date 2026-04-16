@@ -35,6 +35,25 @@ const verticalMenuData = (): VerticalMenuDataType[] => [
     icon: 'tabler-calendar-event'
   },
   {
+    label: 'Event Check-In',
+    href: '/event-checkin',
+    icon: 'tabler-clipboard-check'
+  },
+  {
+    isSection: true,
+    label: 'BLUEPRINT'
+  },
+  {
+    label: 'Rates',
+    href: '/blueprint/rates',
+    icon: 'tabler-heart-rate-monitor',
+  },
+  {
+    label: 'Brackets',
+    href: '/blueprint/brackets',
+    icon: 'tabler-receipt-tax',
+  },
+  {
     isSection: true,
     label: 'ACCOUNT'
   },

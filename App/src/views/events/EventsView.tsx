@@ -74,6 +74,8 @@ interface EventRecord {
   event_date: string | null
   event_time: string | null
   duration: number | null
+  expected_attendees: number
+  expected_guests: number
   cre_dt: string
   assignedto: AssignedUser | null
 }
@@ -165,8 +167,9 @@ function CityAutocomplete({ value, onChange, stateName, error, helperText }: {
 interface EventFormState {
   description: string; notes: string; assignedtoFk: string
   stateAbbr: string; city: string; eventDate: string; eventTime: string; duration: string
+  expectedAttendees: string; expectedGuests: string
 }
-const EMPTY_FORM: EventFormState = { description:'', notes:'', assignedtoFk:'', stateAbbr:'', city:'', eventDate:'', eventTime:'', duration:'' }
+const EMPTY_FORM: EventFormState = { description:'', notes:'', assignedtoFk:'', stateAbbr:'', city:'', eventDate:'', eventTime:'', duration:'', expectedAttendees:'', expectedGuests:'' }
 
 function EventForm({ form, setForm, users, errors, setErrors, saving }: {
   form: EventFormState
@@ -193,11 +196,22 @@ function EventForm({ form, setForm, users, errors, setErrors, saving }: {
         fullWidth error={!!errors.description} helperText={errors.description} autoFocus
         placeholder='Brief description of the event' />
       <Box sx={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:2}}>
-        <TextField label='Event Date' type='date' value={form.eventDate} onChange={set('eventDate')}
-          InputLabelProps={{shrink:true}} sx={nativeInputSx} fullWidth />
-        <TextField label='Event Time' type='time' value={form.eventTime} onChange={set('eventTime')}
-          InputLabelProps={{shrink:true}} sx={nativeInputSx} fullWidth />
-        <TextField label='Duration (min)' type='number' value={form.duration} onChange={set('duration')}
+        <TextField
+          label={<>Event Date <Box component='span' sx={{color:'error.main',fontWeight:700}}>*</Box></>}
+          type='date' value={form.eventDate}
+          onChange={e=>{set('eventDate')(e);clrErr('eventDate')}}
+          InputLabelProps={{shrink:true}} sx={nativeInputSx} fullWidth
+          error={!!errors.eventDate} helperText={errors.eventDate} />
+        <TextField
+          label={<>Event Time <Box component='span' sx={{color:'error.main',fontWeight:700}}>*</Box></>}
+          type='time' value={form.eventTime}
+          onChange={e=>{set('eventTime')(e);clrErr('eventTime')}}
+          InputLabelProps={{shrink:true}} sx={nativeInputSx} fullWidth
+          error={!!errors.eventTime} helperText={errors.eventTime} />
+        <TextField
+          label={<>Duration (min) <Box component='span' sx={{color:'error.main',fontWeight:700}}>*</Box></>}
+          type='number' value={form.duration}
+          onChange={e=>{set('duration')(e);clrErr('duration')}}
           fullWidth error={!!errors.duration} helperText={errors.duration}
           placeholder='e.g. 90' inputProps={{min:1}}
           InputProps={{endAdornment:<InputAdornment position='end'>min</InputAdornment>}} />
@@ -228,13 +242,21 @@ function EventForm({ form, setForm, users, errors, setErrors, saving }: {
           {users.map(u=>(
             <MenuItem key={u.id} value={u.id}>
               <Box sx={{display:'flex',alignItems:'center',gap:1.5}}>
-                <Avatar sx={{width:26,height:26,fontSize:11,bgcolor:agentColor(u)}}>{userInitials(u)}</Avatar>
+                <Avatar style={{width:26,height:26,fontSize:11,backgroundColor:agentColor(u)}}>{userInitials(u)}</Avatar>
                 <Typography variant='body2' fontWeight={600}>{userFullName(u)}</Typography>
               </Box>
             </MenuItem>
           ))}
         </Select>
       </FormControl>
+      <Box sx={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:2}}>
+        <TextField label='Expected Attendees' type='number' value={form.expectedAttendees}
+          onChange={set('expectedAttendees')} fullWidth placeholder='e.g. 25'
+          inputProps={{min:0}} InputProps={{startAdornment:<InputAdornment position='start'><i className='tabler-users' style={{fontSize:14,opacity:.4}}/></InputAdornment>}} />
+        <TextField label='Expected Guests' type='number' value={form.expectedGuests}
+          onChange={set('expectedGuests')} fullWidth placeholder='e.g. 10'
+          inputProps={{min:0}} InputProps={{startAdornment:<InputAdornment position='start'><i className='tabler-user-plus' style={{fontSize:14,opacity:.4}}/></InputAdornment>}} />
+      </Box>
       <TextField label='Notes' value={form.notes} onChange={set('notes')}
         fullWidth multiline rows={3} placeholder='Optional notes about this event' />
     </>
@@ -244,10 +266,12 @@ function EventForm({ form, setForm, users, errors, setErrors, saving }: {
 function validateEventForm(form: EventFormState) {
   const e: Record<string,string> = {}
   if (!form.description.trim()) e.description = 'Description is required'
+  if (!form.eventDate)          e.eventDate   = 'Date is required'
+  if (!form.eventTime)          e.eventTime   = 'Time is required'
+  if (!form.duration || isNaN(Number(form.duration)) || Number(form.duration) < 1)
+    e.duration = 'Duration is required (positive number)'
   if (!form.stateAbbr)          e.stateAbbr   = 'State is required'
   if (!form.city.trim())        e.city        = 'City is required'
-  if (form.duration !== '' && (isNaN(Number(form.duration)) || Number(form.duration) < 1))
-    e.duration = 'Must be a positive number'
   return e
 }
 
@@ -258,6 +282,8 @@ function formToPayload(form: EventFormState) {
     state_fk: form.stateAbbr, city: form.city,
     event_date: form.eventDate || null, event_time: form.eventTime || null,
     duration: form.duration ? Number(form.duration) : null,
+    expected_attendees: form.expectedAttendees ? Number(form.expectedAttendees) : 0,
+    expected_guests: form.expectedGuests ? Number(form.expectedGuests) : 0,
   }
 }
 
@@ -323,6 +349,8 @@ function EditEventDialog({ event, users, onClose, onSaved }: {
         eventDate:    event.event_date || '',
         eventTime:    event.event_time ? event.event_time.slice(0,5) : '',
         duration:     event.duration ? String(event.duration) : '',
+        expectedAttendees: event.expected_attendees ? String(event.expected_attendees) : '',
+        expectedGuests:    event.expected_guests ? String(event.expected_guests) : '',
       })
       setErrors({})
     }
@@ -437,54 +465,67 @@ function YearCalendarDialog({ open, events, onClose, onEventClick }: {
                   ))}
                 </Box>
                 {/* Day cells */}
-                <Box sx={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',px:0.5,pb:0.5,gap:'1px'}}>
+                <Box sx={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',px:0.5,pb:0.5,gap:'2px'}}>
                   {cells.map((day, ci) => {
-                    if (!day) return <Box key={ci} sx={{height:28}} />
+                    if (!day) return <Box key={ci} sx={{height:48}} />
                     const dateKey = `${year}-${String(mIdx+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
                     const dayEvents = eventsByDate[dateKey] || []
                     const isToday = dateKey === new Date().toISOString().slice(0,10)
 
                     return (
                       <Box key={ci} sx={{
-                        height:28, display:'flex', flexDirection:'column',
-                        alignItems:'center', justifyContent:'flex-start', pt:'2px',
+                        minHeight:48, display:'flex', flexDirection:'column',
+                        alignItems:'center', justifyContent:'flex-start', pt:'3px',
                         borderRadius:1, position:'relative',
                         bgcolor: isToday ? 'primary.lighter' : undefined,
                       }}>
                         <Typography variant='caption' sx={{
                           fontSize:10, lineHeight:1, fontWeight: isToday ? 700 : 400,
                           color: isToday ? 'primary.main' : 'text.primary',
+                          mb:'3px',
                         }}>
                           {day}
                         </Typography>
-                        {/* Colored dots for events */}
+                        {/* Colored circles for events */}
                         {dayEvents.length > 0 && (
-                          <Box sx={{display:'flex',gap:'1px',mt:'1px',flexWrap:'wrap',justifyContent:'center',maxWidth:'100%'}}>
+                          <Box sx={{display:'flex',gap:'2px',flexWrap:'wrap',justifyContent:'center',maxWidth:'100%',px:'1px'}}>
                             {dayEvents.slice(0,3).map(ev => (
-                              <Tooltip key={ev.id} title={
-                                <Box>
-                                  <Typography variant='caption' fontWeight={700}>{ev.description}</Typography>
-                                  {ev.event_time && <Typography variant='caption' display='block'>{fmtTime(ev.event_time)}</Typography>}
-                                  {ev.assignedto && <Typography variant='caption' display='block'>{userFullName(ev.assignedto)}</Typography>}
-                                  <Typography variant='caption' display='block'>{ev.city}, {ev.state_fk}</Typography>
-                                </Box>
-                              } arrow>
+                              <Tooltip key={ev.id} arrow title={
+                                <div style={{lineHeight:1.6}}>
+                                  <div style={{fontWeight:700,fontSize:12,marginBottom:2}}>{ev.description}</div>
+                                  {ev.assignedto && <div style={{fontSize:11,opacity:.85}}>{userFullName(ev.assignedto)}</div>}
+                                  {ev.event_time && <div style={{fontSize:11,opacity:.85}}>{fmtTime(ev.event_time)}</div>}
+                                  <div style={{fontSize:11,opacity:.75}}>{ev.city}, {ev.state_fk}</div>
+                                </div>
+                              }>
                                 <Box
                                   onClick={() => { onEventClick(ev) }}
                                   sx={{
-                                    width:6, height:6, borderRadius:'50%',
+                                    width:20, height:20, borderRadius:'50%',
                                     bgcolor: agentColor(ev.assignedto),
+                                    display:'flex', alignItems:'center', justifyContent:'center',
                                     cursor:'pointer', flexShrink:0,
-                                    '&:hover': { transform:'scale(1.5)', zIndex:10 },
-                                    transition:'transform .15s',
+                                    boxShadow:'0 1px 3px rgba(0,0,0,.25)',
+                                    '&:hover': { transform:'scale(1.15)', zIndex:10, boxShadow:'0 2px 6px rgba(0,0,0,.35)' },
+                                    transition:'transform .15s, box-shadow .15s',
                                   }}
-                                />
+                                >
+                                  <Typography sx={{fontSize:7,fontWeight:700,color:'#fff',lineHeight:1,userSelect:'none'}}>
+                                    {ev.assignedto ? userInitials(ev.assignedto) : '?'}
+                                  </Typography>
+                                </Box>
                               </Tooltip>
                             ))}
                             {dayEvents.length > 3 && (
-                              <Typography variant='caption' sx={{fontSize:7,lineHeight:'6px',color:'text.disabled'}}>
-                                +{dayEvents.length-3}
-                              </Typography>
+                              <Box sx={{
+                                width:20,height:20,borderRadius:'50%',
+                                bgcolor:'action.selected',display:'flex',
+                                alignItems:'center',justifyContent:'center',flexShrink:0,
+                              }}>
+                                <Typography sx={{fontSize:7,fontWeight:700,color:'text.secondary',lineHeight:1}}>
+                                  +{dayEvents.length-3}
+                                </Typography>
+                              </Box>
                             )}
                           </Box>
                         )}
@@ -530,14 +571,12 @@ function YearCalendarDialog({ open, events, onClose, onEventClick }: {
 // ── Grid columns ──────────────────────────────────────────────────────────────
 const COLS = [
   {label:'#',           w:'56px'},
-  {label:'Description', w:'1.5fr'},
+  {label:'Description', w:'2.5fr'},
   {label:'Date',        w:'130px'},
-  {label:'Time',        w:'96px'},
-  {label:'Duration',    w:'96px'},
-  {label:'State',       w:'140px'},
+  {label:'State',       w:'80px'},
   {label:'City',        w:'130px'},
   {label:'Assigned To', w:'1fr'},
-  {label:'Notes',       w:'1.2fr'},
+
   {label:'',            w:'88px'},   // edit + delete
 ]
 const GRID_COLS = COLS.map(c=>c.w).join(' ')
@@ -650,9 +689,9 @@ export default function EventsView() {
           </Box>
         ) : (
           filtered.map((ev,idx)=>(
-            <Box key={ev.id} sx={{
+            <Box key={ev.id} onDoubleClick={()=>setEditEvent(ev)} sx={{
               display:'grid',gridTemplateColumns:GRID_COLS,alignItems:'center',
-              px:2,py:1.5,gap:1,
+              px:2,py:1.5,gap:1,cursor:'pointer',
               borderBottom: idx<filtered.length-1 ? '1px solid' : 'none',
               borderColor:'divider',transition:'background .1s ease',
               '&:hover':{bgcolor:'action.hover'},
@@ -671,20 +710,8 @@ export default function EventsView() {
                   : <Typography variant='body2' color='text.disabled'>—</Typography>}
               </Box>
 
-              <Box sx={{display:'flex',alignItems:'center',gap:.75}}>
-                {ev.event_time
-                  ? <><i className='tabler-clock' style={{fontSize:13,opacity:.4}}/><Typography variant='body2' noWrap>{fmtTime(ev.event_time)}</Typography></>
-                  : <Typography variant='body2' color='text.disabled'>—</Typography>}
-              </Box>
-
-              {ev.duration
-                ? <Chip label={fmtDuration(ev.duration)} size='small'
-                    icon={<i className='tabler-hourglass' style={{fontSize:11}}/>}
-                    sx={{fontSize:11,height:22,bgcolor:'action.selected'}} />
-                : <Typography variant='body2' color='text.disabled'>—</Typography>}
-
-              <Chip label={STATE_BY_ABBR[ev.state_fk]??ev.state_fk} size='small'
-                sx={{fontSize:11,height:22,fontWeight:600,maxWidth:'100%',
+              <Chip label={ev.state_fk} size='small'
+                sx={{fontSize:11,height:22,fontWeight:700,maxWidth:'100%',
                   bgcolor:stateChipColor(ev.state_fk)+'18',color:stateChipColor(ev.state_fk),border:'none'}} />
 
               <Typography variant='body2' noWrap>{ev.city}</Typography>
@@ -698,9 +725,7 @@ export default function EventsView() {
                 </Box>
               ) : <Typography variant='body2' color='text.disabled'>—</Typography>}
 
-              <Typography variant='body2' color='text.secondary' noWrap>
-                {ev.notes || <span style={{opacity:.3}}>—</span>}
-              </Typography>
+
 
               {/* Edit + Delete */}
               <Box sx={{display:'flex',alignItems:'center',justifyContent:'flex-end',gap:.5}}>

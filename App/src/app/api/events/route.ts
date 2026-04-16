@@ -18,6 +18,8 @@ const EVENT_SELECT = `
   event_date,
   event_time,
   duration,
+  expected_attendees,
+  expected_guests,
   cre_dt,
   assignedto:users!events_assignedto_fk_fkey (
     id, first_name, last_name, email, color
@@ -38,7 +40,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const supabase = createAdminClient()
   const body = await req.json()
-  const { description, notes, assignedto_fk, state_fk, city, event_date, event_time, duration } = body
+  const { description, notes, assignedto_fk, state_fk, city, event_date, event_time, duration, expected_attendees, expected_guests } = body
 
   if (!description?.trim() || !state_fk?.trim() || !city?.trim()) {
     return NextResponse.json({ error: 'description, state_fk, and city are required' }, { status: 400 })
@@ -53,8 +55,10 @@ export async function POST(req: NextRequest) {
       state_fk: state_fk.trim().toUpperCase(),
       city: city.trim(),
       event_date: event_date || null,
-      event_time: event_time || null,
+      event_time: event_time ? (event_time.length === 5 ? `${event_time}:00` : event_time) : null,
       duration: duration ? Number(duration) : null,
+      expected_attendees: expected_attendees ? Number(expected_attendees) : 0,
+      expected_guests: expected_guests ? Number(expected_guests) : 0,
     })
     .select(EVENT_SELECT)
     .single()
@@ -70,7 +74,7 @@ export async function PATCH(req: NextRequest) {
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
   const body = await req.json()
-  const { description, notes, assignedto_fk, state_fk, city, event_date, event_time, duration } = body
+  const { description, notes, assignedto_fk, state_fk, city, event_date, event_time, duration, expected_attendees, expected_guests } = body
 
   const updates: Record<string, unknown> = {}
   if (description !== undefined) updates.description = description.trim()
@@ -79,8 +83,14 @@ export async function PATCH(req: NextRequest) {
   if (state_fk    !== undefined) updates.state_fk   = state_fk.trim().toUpperCase()
   if (city        !== undefined) updates.city        = city.trim()
   if (event_date  !== undefined) updates.event_date  = event_date || null
-  if (event_time  !== undefined) updates.event_time  = event_time || null
+  if (event_time  !== undefined) {
+    // Browser time inputs send HH:MM; Postgres TIME columns need HH:MM:SS
+    const t = event_time as string | null
+    updates.event_time = t ? (t.length === 5 ? `${t}:00` : t) : null
+  }
   if (duration    !== undefined) updates.duration    = duration ? Number(duration) : null
+  if (expected_attendees !== undefined) updates.expected_attendees = Number(expected_attendees) || 0
+  if (expected_guests    !== undefined) updates.expected_guests    = Number(expected_guests) || 0
 
   const { data, error } = await supabase
     .from('events')
