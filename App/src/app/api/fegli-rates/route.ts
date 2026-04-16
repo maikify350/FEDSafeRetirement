@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/utils/supabase/server'
+import { applyOData, parseODataSelect } from '@/utils/odata'
 
 const DATA_COLS = 'id, age_min, age_max, opt_a, opt_b, opt_c, notes'
 const AUDIT_COLS = 'cre_by, cre_dt, mod_by, mod_dt'
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
   const includeAudit = params.get('includeAudit') === 'true'
   const selectCols = includeAudit ? `${DATA_COLS}, ${AUDIT_COLS}` : DATA_COLS
 
-  let query = supabase.from('fegli_rates').select(selectCols)
+  let query = supabase.from('fegli_rates').select(parseODataSelect(params) || selectCols)
 
   // ?age=42 → find the band where age_min <= 42 AND age_max >= 42
   const age = params.get('age')
@@ -34,6 +35,9 @@ export async function GET(request: NextRequest) {
   // ?ageMax=44 → exact match on age_max
   const ageMax = params.get('ageMax')
   if (ageMax) query = query.eq('age_max', parseInt(ageMax, 10))
+
+  // Apply OData query options ($orderby, $top, $skip, $filter)
+  query = applyOData(query, params)
 
   const { data, error } = await query.order('age_min', { ascending: true })
 

@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/utils/supabase/server'
+import { applyOData } from '@/utils/odata'
 
 const EVENT_SELECT = `
   id,
@@ -26,12 +27,17 @@ const EVENT_SELECT = `
   )
 `
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const supabase = createAdminClient()
-  const { data, error } = await supabase
+  let query = supabase
     .from('events')
     .select(EVENT_SELECT)
     .order('event_seq', { ascending: true })
+
+  // Apply OData query options
+  query = applyOData(query, req.nextUrl.searchParams)
+
+  const { data, error } = await query
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data ?? [])

@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/utils/supabase/server'
+import { applyOData, parseODataSelect } from '@/utils/odata'
 
 const DATA_COLS = 'id, filing_status, floor, ceiling, base_tax, marginal_rate, notes'
 const AUDIT_COLS = 'cre_by, cre_dt, mod_by, mod_dt'
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
   const includeAudit = params.get('includeAudit') === 'true'
   const selectCols = includeAudit ? `${DATA_COLS}, ${AUDIT_COLS}` : DATA_COLS
 
-  let query = supabase.from('irs_brackets').select(selectCols)
+  let query = supabase.from('irs_brackets').select(parseODataSelect(params) || selectCols)
 
   // ?filingStatus=Single → filter by filing status
   const filingStatus = params.get('filingStatus')
@@ -40,6 +41,9 @@ export async function GET(request: NextRequest) {
   // ?ceiling=74550 → exact match on ceiling
   const ceiling = params.get('ceiling')
   if (ceiling) query = query.eq('ceiling', parseFloat(ceiling))
+
+  // Apply OData query options
+  query = applyOData(query, params)
 
   const { data, error } = await query
     .order('filing_status', { ascending: true })
