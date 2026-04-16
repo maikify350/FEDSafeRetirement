@@ -20,8 +20,8 @@ const menuSectionStyles = (verticalNavOptions: VerticalNavState, theme: Theme): 
       [`& .${menuClasses.menuSectionContent}`]: {
         color: 'var(--mui-palette-text-disabled)',
         paddingInline: '12px !important',
-        paddingBlock: `${theme.spacing(collapsedNotHovered ? 3.625 : 1.5)} !important`,
-        marginBlockStart: theme.spacing(3.5),
+        paddingBlock: `${theme.spacing(collapsedNotHovered ? 3.625 : 0.25)} !important`,
+        marginBlockStart: theme.spacing(0.25),
 
         '&:before': {
           content: '""',
