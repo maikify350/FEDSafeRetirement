@@ -18,6 +18,15 @@ const verticalMenuData = (): VerticalMenuDataType[] => [
   },
   {
     isSection: true,
+    label: 'LEAD FUNNEL'
+  },
+  {
+    label: 'Lead Funnel',
+    href: '/lead-funnel',
+    icon: 'tabler-filter'
+  },
+  {
+    isSection: true,
     label: 'CAMPAIGNS'
   },
   {
