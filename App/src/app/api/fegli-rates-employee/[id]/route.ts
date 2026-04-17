@@ -27,7 +27,7 @@ async function requireAdmin() {
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = createAdminClient()
+  const supabase = await createClient()
   const includeAudit = request.nextUrl.searchParams.get('includeAudit') === 'true'
   const selectCols = includeAudit ? `${DATA_COLS}, ${AUDIT_COLS}` : DATA_COLS
 

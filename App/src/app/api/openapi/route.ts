@@ -26,9 +26,8 @@ const spec = {
         name: '$select',
         in: 'query',
         required: false,
-        description: 'Comma-separated list of columns to return',
+        description: 'Comma-separated list of columns to return (use column names from the specific table)',
         schema: { type: 'string' },
-        example: 'id,first_name,last_name',
       },
       ODataTop: {
         name: '$top',
@@ -36,7 +35,6 @@ const spec = {
         required: false,
         description: 'Maximum number of rows to return',
         schema: { type: 'integer', minimum: 1 },
-        example: 25,
       },
       ODataSkip: {
         name: '$skip',
@@ -44,7 +42,6 @@ const spec = {
         required: false,
         description: 'Number of rows to skip (offset)',
         schema: { type: 'integer', minimum: 0 },
-        example: 0,
       },
       ODataOrderBy: {
         name: '$orderby',
@@ -52,7 +49,6 @@ const spec = {
         required: false,
         description: 'Column name and direction (asc/desc)',
         schema: { type: 'string' },
-        example: 'last_name asc',
       },
     },
     schemas: {

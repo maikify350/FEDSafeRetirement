@@ -14,7 +14,7 @@ const DATA_COLS = 'id, age_min, age_max, basic_75, basic_50, basic_0, opt_a, opt
 const AUDIT_COLS = 'cre_by, cre_dt, mod_by, mod_dt'
 
 export async function GET(request: NextRequest) {
-  const supabase = createAdminClient()
+  const supabase = await createClient()
   const params = request.nextUrl.searchParams
   const includeAudit = params.get('includeAudit') === 'true'
   const selectCols = includeAudit ? `${DATA_COLS}, ${AUDIT_COLS}` : DATA_COLS
