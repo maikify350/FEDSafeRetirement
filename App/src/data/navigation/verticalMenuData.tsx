@@ -53,9 +53,20 @@ const verticalMenuData = (): VerticalMenuDataType[] => [
     label: 'BLUEPRINT'
   },
   {
-    label: 'Rates',
-    href: '/blueprint/rates',
+    label: 'FEGLI Rates',
     icon: 'tabler-heart-rate-monitor',
+    children: [
+      {
+        label: 'Employee',
+        href: '/blueprint/rates-employee',
+        icon: 'tabler-user-heart',
+      },
+      {
+        label: 'Annuitant',
+        href: '/blueprint/rates-annuitant',
+        icon: 'tabler-old',
+      },
+    ],
   },
   {
     label: 'Brackets',

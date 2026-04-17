@@ -5,6 +5,9 @@
  *
  * Uses EntityListView in server-side mode for 472K+ records.
  * Column filters translate to Supabase PostgREST queries via /api/leads.
+ *
+ * State is persisted via LeadsDataProvider context so navigating to other
+ * sections and returning does NOT trigger a fresh data fetch.
  */
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
@@ -27,6 +30,7 @@ import { createColumnHelper, type ColumnFiltersState, type SortingState } from '
 
 import EntityListView from '@/components/EntityListView'
 import { isConditionActive, type ColFilterValue } from '@/lib/columnFilter'
+import { useLeadsData, type Lead } from '@/hooks/useLeadsData'
 import LeadEditDialog from './LeadEditDialog'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import PushToActDialog from '@/components/PushToActDialog'
@@ -34,39 +38,6 @@ import SaveToCollectionDialog, { type FilterCriteria } from '@/components/SaveTo
 import FacilityMapDialog from '@/components/FacilityMapDialog'
 import Snackbar from '@mui/material/Snackbar'
 import Alert from '@mui/material/Alert'
-
-// ── Lead type ───────────────────────────────────────────────────────────────
-interface Lead {
-  id: string
-  first_name: string
-  last_name: string
-  middle_initial: string | null
-  occupation_title: string | null
-  grade_level: string | null
-  annual_salary: number | null
-  hourly_rate: number | null
-  facility_name: string | null
-  facility_address: string | null
-  facility_city: string | null
-  facility_state: string | null
-  facility_zip_code: string | null
-  entered_on_duty_date: string | null
-  years_of_service: number | null
-  gender: string | null
-  date_of_birth: string | null
-  source_file: string | null
-  is_favorite: boolean
-  personal_address: string | null
-  personal_city: string | null
-  personal_state: string | null
-  personal_zip: string | null
-  personal_email: string | null
-  personal_phone: string | null
-  cre_dt: string | null
-  cre_by: string | null
-  mod_by: string | null
-  mod_dt: string | null
-}
 
 type LeadWithAction = Lead & { action?: string }
 
@@ -119,21 +90,27 @@ const LEAD_EXPORT_FIELDS = [
 ]
 
 export default function LeadsView() {
-  const [leads, setLeads] = useState<Lead[]>([])
-  const [totalRows, setTotalRows] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [currentPage, setCurrentPage] = useState(0)
-  const [pageSize, setPageSizeState] = useState(25)
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [sorting, setSorting] = useState<SortingState>([{ id: 'last_name', desc: false }])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [stateFilter, setStateFilter] = useState<string>('all')
-  const [genderFilter, setGenderFilter] = useState<string>('all')
-  const [favoriteFilter, setFavoriteFilter] = useState(false)
+  // ── Pull ALL state from the shared context (persists across navigation) ──
+  const ctx = useLeadsData()
+  const {
+    leads, totalRows, loading,
+    currentPage, pageSize,
+    globalFilter, debouncedSearch, sorting, columnFilters,
+    stateFilter, genderFilter, favoriteFilter,
+    collectionFilter, collections,
+    setLeads, setTotalRows, setLoading,
+    setCurrentPage, setPageSize: setPageSizeState,
+    setGlobalFilter, setDebouncedSearch,
+    setSorting, setColumnFilters,
+    setStateFilter, setGenderFilter, setFavoriteFilter,
+    setCollectionFilter, setCollections,
+    fetchLeads, refreshCollections,
+    hasInitialized, markStaleCheckOnResume,
+  } = ctx
+
+  // ── Local-only UI state (doesn't need to persist across navigation) ──────
   const [editLead, setEditLead] = useState<Lead | null>(null)
   const [mapLead, setMapLead] = useState<Lead | null>(null)
-  const [collections, setCollections] = useState<{id: string; name: string}[]>([])
-  const [collectionFilter, setCollectionFilter] = useState<string>('')
   const [clearFavConfirm, setClearFavConfirm] = useState(false)
   const [clearingFavs, setClearingFavs] = useState(false)
   const [actDialogOpen, setActDialogOpen] = useState(false)
@@ -141,26 +118,29 @@ export default function LeadsView() {
   const [saveCollectionOpen, setSaveCollectionOpen] = useState(false)
   const [saveSnackbar, setSaveSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' })
 
-  // Fetch collections for the combobox filter
-  const refreshCollections = useCallback(() => {
-    fetch('/api/collections').then(r => r.json()).then(data => {
-      if (Array.isArray(data)) setCollections(data.map((c: any) => ({ id: c.id, name: c.name })))
-    }).catch(() => {})
-  }, [])
-
-  useEffect(() => { refreshCollections() }, [refreshCollections])
-
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Auto-apply collection from ?collection= query param (e.g. from "Apply in Leads" button)
+  // ── Initial fetch: only if never initialized or stale ────────────────────
+  const didMountRef = useRef(false)
+
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true
+      refreshCollections()
+      if (markStaleCheckOnResume()) {
+        fetchLeads()
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // ── Auto-apply collection from ?collection= query param ──────────────────
   useEffect(() => {
     const collId = searchParams.get('collection')
     if (collId) {
-      // Wait for collections to load, then apply
       const apply = async () => {
         await handleCollectionChange(collId)
-        // Clean URL without triggering navigation
         router.replace('/leads', { scroll: false })
       }
       apply()
@@ -187,7 +167,7 @@ export default function LeadsView() {
         setSaveSnackbar({ open: true, message: `Filters from "${coll.name}" applied`, severity: 'success' })
       }
     } catch { /* ignore */ }
-  }, [])
+  }, [setCollectionFilter, setCurrentPage, setStateFilter, setGenderFilter, setFavoriteFilter, setGlobalFilter, setColumnFilters])
 
   // Build the filter_criteria object for saving
   const currentFilterCriteria = useMemo<FilterCriteria>(() => ({
@@ -214,9 +194,8 @@ export default function LeadsView() {
     return chips
   }, [stateFilter, genderFilter, favoriteFilter, globalFilter, columnFilters])
 
-  // Debounced search
+  // Debounced search — updates debouncedSearch in context
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [debouncedSearch, setDebouncedSearch] = useState('')
 
   useEffect(() => {
     if (searchTimer.current) clearTimeout(searchTimer.current)
@@ -225,48 +204,17 @@ export default function LeadsView() {
       setCurrentPage(0)  // Reset to first page on new search
     }, 400)
     return () => { if (searchTimer.current) clearTimeout(searchTimer.current) }
-  }, [globalFilter])
+  }, [globalFilter, setDebouncedSearch, setCurrentPage])
 
-  // ── Fetch leads from API ──────────────────────────────────────────────────
-  const fetchLeads = useCallback(async () => {
-    setLoading(true)
-    try {
-      // Build active column filters (strip empty conditions)
-      const activeFilters = columnFilters
-        .filter(cf => {
-          const val = cf.value as ColFilterValue
-          return val?.conditions?.some(isConditionActive)
-        })
-        .map(cf => ({ id: cf.id, value: cf.value }))
-
-      const params = new URLSearchParams({
-        page: String(currentPage),
-        pageSize: String(pageSize),
-        search: debouncedSearch,
-        sort: JSON.stringify(sorting),
-        filters: JSON.stringify(activeFilters),
-        ...(stateFilter !== 'all' ? { state: stateFilter } : {}),
-        ...(genderFilter !== 'all' ? { gender: genderFilter } : {}),
-        ...(favoriteFilter ? { favorite: 'true' } : {}),
-      })
-
-      const res = await fetch(`/api/leads?${params}`, { cache: 'no-store' })
-      const json = await res.json()
-
-      if (json.error) {
-        console.error('Leads API error:', json.error)
-      } else {
-        setLeads(json.data)
-        setTotalRows(json.total)
-      }
-    } catch (err) {
-      console.error('Failed to fetch leads:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [currentPage, pageSize, debouncedSearch, sorting, columnFilters, stateFilter, genderFilter, favoriteFilter])
+  // ── Re-fetch when filter/pagination deps change (but NOT on first mount if cached) ──
+  const isFirstFetchSkipped = useRef(!markStaleCheckOnResume())
 
   useEffect(() => {
+    // Skip the very first effect if we already have cached data
+    if (isFirstFetchSkipped.current) {
+      isFirstFetchSkipped.current = false
+      return
+    }
     fetchLeads()
   }, [fetchLeads])
 
@@ -274,17 +222,17 @@ export default function LeadsView() {
   const handlePageChange = useCallback((page: number, size: number) => {
     setCurrentPage(page)
     setPageSizeState(size)
-  }, [])
+  }, [setCurrentPage, setPageSizeState])
 
   const handleSortChange = useCallback((s: SortingState) => {
     setSorting(s)
     setCurrentPage(0)
-  }, [])
+  }, [setSorting, setCurrentPage])
 
   const handleFilterChange = useCallback((f: ColumnFiltersState) => {
     setColumnFilters(f)
     setCurrentPage(0)
-  }, [])
+  }, [setColumnFilters, setCurrentPage])
 
   // ── Export ────────────────────────────────────────────────────────────────
   const exportToCSV = (rows: LeadWithAction[]) => {
@@ -469,7 +417,7 @@ export default function LeadsView() {
   // Handle edit save — update local data and refresh
   const handleEditSaved = useCallback((updated: Lead) => {
     setLeads(prev => prev.map(l => l.id === updated.id ? updated : l))
-  }, [])
+  }, [setLeads])
 
   // ── Favorite toggle ─────────────────────────────────────────────────────
   const toggleFavorite = useCallback(async (id: string, isFav: boolean) => {
@@ -485,7 +433,7 @@ export default function LeadsView() {
       // Revert on error
       setLeads(prev => prev.map(l => l.id === id ? { ...l, is_favorite: !isFav } : l))
     }
-  }, [])
+  }, [setLeads])
 
   const handleClearAllFavorites = useCallback(async () => {
     setClearingFavs(true)
@@ -496,7 +444,7 @@ export default function LeadsView() {
       if (favoriteFilter) { setFavoriteFilter(false); setCurrentPage(0) }
     } catch { /* ignore */ }
     finally { setClearingFavs(false) }
-  }, [favoriteFilter])
+  }, [favoriteFilter, setLeads, setFavoriteFilter, setCurrentPage])
 
   if (loading && leads.length === 0) {
     return (

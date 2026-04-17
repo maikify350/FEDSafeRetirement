@@ -4,9 +4,12 @@
  * LeadFunnelView — Client-side grid for incoming lead funnel records.
  * Shows all webhook-received leads with status badges and ability to
  * mark records as imported so they don't get processed again.
+ *
+ * State is persisted via LeadFunnelDataProvider context so navigating
+ * to other sections and returning does NOT trigger a fresh data fetch.
  */
 
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import Chip from '@mui/material/Chip'
@@ -15,42 +18,7 @@ import { createColumnHelper } from '@tanstack/react-table'
 
 import EntityListView from '@/components/EntityListView'
 import LeadAddDialog from './LeadAddDialog'
-
-interface LeadFunnelRow {
-  id: string
-  ext_appointment_id: number | null
-  ext_lead_id: number | null
-  event: string | null
-  source: string | null
-  lead_type: string | null
-  status: string
-  first_name: string | null
-  last_name: string | null
-  email: string | null
-  phone: string | null
-  cell_phone: string | null
-  birth_year: number | null
-  is_over_59: boolean | null
-  agency: string | null
-  years_employed: string | null
-  city: string | null
-  state: string | null
-  zip: string | null
-  marital_status: string | null
-  fegli_options: string | null
-  retirement_year: number | null
-  tsp_value: number | null
-  other_acct_value: number | null
-  appointment_date: string | null
-  ext_agent_id: number | null
-  act_contact_id: string | null
-  assigned_agent: string | null
-  imported_at: string | null
-  import_error: string | null
-  notes: string | null
-  processed: boolean
-  cre_dt: string
-}
+import { useLeadFunnelData, type LeadFunnelRow } from '@/hooks/useLeadFunnelData'
 
 const columnHelper = createColumnHelper<LeadFunnelRow>()
 
@@ -83,21 +51,30 @@ const statusColor = (status: string): 'warning' | 'success' | 'error' | 'default
 }
 
 export default function LeadFunnelView() {
-  const [leads, setLeads] = useState<LeadFunnelRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  // ── Pull state from shared context (persists across navigation) ──────────
+  const ctx = useLeadFunnelData()
+  const {
+    leads, loading, search,
+    setSearch,
+    fetchLeads,
+    hasInitialized, markStaleCheckOnResume,
+  } = ctx
+
+  // ── Local-only UI state ──────────────────────────────────────────────────
   const [addNew, setAddNew] = useState(false)
 
-  const fetchLeads = useCallback(async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/lead-funnel')
-      const data = await res.json()
-      if (Array.isArray(data)) setLeads(data)
-    } catch { /* ignore */ } finally { setLoading(false) }
-  }, [])
+  // ── Initial fetch: only if never initialized or stale ────────────────────
+  const didMountRef = useRef(false)
 
-  useEffect(() => { fetchLeads() }, [fetchLeads])
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true
+      if (markStaleCheckOnResume()) {
+        fetchLeads()
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const columns = useMemo(() => [
     columnHelper.accessor('status', {

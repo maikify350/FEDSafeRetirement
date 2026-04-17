@@ -1,14 +1,14 @@
 /**
- * GET    /api/fegli-rates/[id]                    — Get a single rate row (all users)
- * GET    /api/fegli-rates/[id]?includeAudit=true  — Include audit/control fields
- * PUT    /api/fegli-rates/[id]                    — Update a rate row (admin only)
- * DELETE /api/fegli-rates/[id]                    — Delete a rate row (admin only)
+ * GET    /api/fegli-rates-annuitant/[id]                    — Get a single rate row (all users)
+ * GET    /api/fegli-rates-annuitant/[id]?includeAudit=true  — Include audit/control fields
+ * PUT    /api/fegli-rates-annuitant/[id]                    — Update a rate row (admin only)
+ * DELETE /api/fegli-rates-annuitant/[id]                    — Delete a rate row (admin only)
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 
-const DATA_COLS = 'id, age_min, age_max, opt_a, opt_b, opt_c, notes'
+const DATA_COLS = 'id, age_min, age_max, basic_75, basic_50, basic_0, opt_a, opt_b, opt_c, notes'
 const AUDIT_COLS = 'cre_by, cre_dt, mod_by, mod_dt'
 
 async function requireAdmin() {
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const selectCols = includeAudit ? `${DATA_COLS}, ${AUDIT_COLS}` : DATA_COLS
 
   const { data, error } = await supabase
-    .from('fegli_rates')
+    .from('fegli_rates_annuitant')
     .select(selectCols)
     .eq('id', id)
     .single()
@@ -57,16 +57,21 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.age_min !== undefined && body.age_max !== undefined && body.age_min > body.age_max) {
     errors.push('age_min must be ≤ age_max')
   }
-  if (body.opt_a < 0 || body.opt_b < 0 || body.opt_c < 0) errors.push('Rates must be ≥ 0')
+  if (body.basic_75 < 0 || body.basic_50 < 0 || body.basic_0 < 0 || body.opt_a < 0 || body.opt_b < 0 || body.opt_c < 0) {
+    errors.push('Rates must be ≥ 0')
+  }
   if (errors.length) {
     return NextResponse.json({ error: errors.join('; ') }, { status: 400 })
   }
 
   const { data, error } = await admin
-    .from('fegli_rates')
+    .from('fegli_rates_annuitant')
     .update({
       age_min: body.age_min,
       age_max: body.age_max,
+      basic_75: body.basic_75,
+      basic_50: body.basic_50,
+      basic_0: body.basic_0,
       opt_a: body.opt_a,
       opt_b: body.opt_b,
       opt_c: body.opt_c,
@@ -92,7 +97,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   const { admin } = result as any
 
   const { error } = await admin
-    .from('fegli_rates')
+    .from('fegli_rates_annuitant')
     .delete()
     .eq('id', id)
 

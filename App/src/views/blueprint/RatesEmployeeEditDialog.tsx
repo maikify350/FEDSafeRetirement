@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * RateEditDialog — Edit/create/delete FEGLI rate rows.
+ * RatesEmployeeEditDialog — Edit/create/delete FEGLI employee rate rows.
  * Delete button (red trash can) appears to the left of "Save" for admin users.
  */
 
@@ -13,10 +13,11 @@ import CustomTextField from '@core/components/mui/TextField'
 import EntityEditDialog from '@/components/EntityEditDialog'
 import ConfirmDialog from '@/components/ConfirmDialog'
 
-interface FegliRate {
+interface FegliRateEmployee {
   id: string
   age_min: number
   age_max: number
+  basic: number
   opt_a: number
   opt_b: number
   opt_c: number
@@ -30,17 +31,16 @@ interface FegliRate {
 interface Props {
   open: boolean
   onClose: () => void
-  rate: FegliRate | null  // null = new
+  rate: FegliRateEmployee | null  // null = new
   onSaved?: () => void
   isAdmin: boolean
 }
 
-
-
-export default function RateEditDialog({ open, onClose, rate, onSaved, isAdmin }: Props) {
+export default function RatesEmployeeEditDialog({ open, onClose, rate, onSaved, isAdmin }: Props) {
   const [form, setForm] = useState({
     age_min: 0,
     age_max: 0,
+    basic: 0,
     opt_a: 0,
     opt_b: 0,
     opt_c: 0,
@@ -58,13 +58,14 @@ export default function RateEditDialog({ open, onClose, rate, onSaved, isAdmin }
       setForm({
         age_min: rate.age_min,
         age_max: rate.age_max,
+        basic: rate.basic,
         opt_a: rate.opt_a,
         opt_b: rate.opt_b,
         opt_c: rate.opt_c,
         notes: rate.notes ?? '',
       })
     } else {
-      setForm({ age_min: 0, age_max: 0, opt_a: 0, opt_b: 0, opt_c: 0, notes: '' })
+      setForm({ age_min: 0, age_max: 0, basic: 0, opt_a: 0, opt_b: 0, opt_c: 0, notes: '' })
     }
     setDirty(false)
     setError('')
@@ -79,7 +80,7 @@ export default function RateEditDialog({ open, onClose, rate, onSaved, isAdmin }
   const handleSave = async () => {
     setSaving(true); setError('')
     try {
-      const url = rate ? `/api/fegli-rates/${rate.id}` : '/api/fegli-rates'
+      const url = rate ? `/api/fegli-rates-employee/${rate.id}` : '/api/fegli-rates-employee'
       const method = rate ? 'PUT' : 'POST'
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
       const data = await res.json()
@@ -92,7 +93,7 @@ export default function RateEditDialog({ open, onClose, rate, onSaved, isAdmin }
     if (!rate) return
     setDeleting(true); setError('')
     try {
-      const res = await fetch(`/api/fegli-rates/${rate.id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/fegli-rates-employee/${rate.id}`, { method: 'DELETE' })
       if (!res.ok) {
         const data = await res.json()
         setError(data.error || 'Failed to delete'); return
@@ -107,7 +108,7 @@ export default function RateEditDialog({ open, onClose, rate, onSaved, isAdmin }
     <>
       <EntityEditDialog
         open={open} onClose={onClose}
-        title={rate ? `Edit Rate: Age ${rate.age_min}–${rate.age_max}` : 'New FEGLI Rate'}
+        title={rate ? `Edit Rate: Age ${rate.age_min}–${rate.age_max}` : 'New Employee FEGLI Rate'}
         subtitle={rate ? `Age ${rate.age_min}–${rate.age_max}` : 'New'}
         icon='tabler-heart-rate-monitor'
         onSave={handleSave} saving={saving || deleting} dirty={dirty}
@@ -119,7 +120,7 @@ export default function RateEditDialog({ open, onClose, rate, onSaved, isAdmin }
         createdBy={rate?.cre_by || undefined}
         modifiedAt={rate?.mod_dt || undefined}
         modifiedBy={rate?.mod_by}
-        width='45vw' maxWidth={600} height='58vh'
+        width='45vw' maxWidth={600} height='62vh'
       >
 
         <div className='grid grid-cols-2 gap-3 mb-2'>
@@ -134,7 +135,13 @@ export default function RateEditDialog({ open, onClose, rate, onSaved, isAdmin }
             inputProps={{ min: 0, max: 120 }}
           />
         </div>
-        <div className='grid grid-cols-3 gap-3 mb-2'>
+        <div className='grid grid-cols-4 gap-3 mb-2'>
+          <CustomTextField
+            fullWidth label='Basic' type='number' value={form.basic}
+            onChange={handleChange('basic')} disabled={saving || !isAdmin}
+            inputProps={{ step: 0.001, min: 0 }}
+            sx={{ '& input': { textAlign: 'right' } }}
+          />
           <CustomTextField
             fullWidth label='Option-A' type='number' value={form.opt_a}
             onChange={handleChange('opt_a')} disabled={saving || !isAdmin}
@@ -186,7 +193,7 @@ export default function RateEditDialog({ open, onClose, rate, onSaved, isAdmin }
       <ConfirmDialog
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
-        title='Delete FEGLI Rate'
+        title='Delete Employee FEGLI Rate'
         message={`Are you sure you want to delete the rate for ages ${rate?.age_min}–${rate?.age_max}? This cannot be undone.`}
         confirmLabel='Delete'
         confirmColor='error'

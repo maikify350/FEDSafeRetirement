@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * RatesView — Client-side grid for FEGLI rate reference data.
+ * RatesAnnuitantView — Client-side grid for FEGLI annuitant rate reference data.
  * All users can view. Only admin users see the edit pencil and +Add button.
  */
 
@@ -12,13 +12,16 @@ import CircularProgress from '@mui/material/CircularProgress'
 import { createColumnHelper } from '@tanstack/react-table'
 
 import EntityListView from '@/components/EntityListView'
-import RateEditDialog from './RateEditDialog'
+import RatesAnnuitantEditDialog from './RatesAnnuitantEditDialog'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 
-interface FegliRate {
+interface FegliRateAnnuitant {
   id: string
   age_min: number
   age_max: number
+  basic_75: number
+  basic_50: number
+  basic_0: number
   opt_a: number
   opt_b: number
   opt_c: number
@@ -29,7 +32,7 @@ interface FegliRate {
   mod_dt: string | null
 }
 
-const columnHelper = createColumnHelper<FegliRate>()
+const columnHelper = createColumnHelper<FegliRateAnnuitant>()
 
 const formatDate = (v: string | null) => {
   if (!v) return '—'
@@ -38,13 +41,13 @@ const formatDate = (v: string | null) => {
 
 const formatRate = (v: number) => {
   if (v === 0) return '—'
-  return `$${v.toFixed(3)}`
+  return `$${v.toFixed(4)}`
 }
 
 /** Open a print-friendly PDF-style window with a formatted table */
-function printRatesTable(rows: FegliRate[]) {
+function printRatesTable(rows: FegliRateAnnuitant[]) {
   const html = `<!DOCTYPE html>
-<html><head><title>FEGLI Rates</title>
+<html><head><title>FEGLI Rates – Annuitants</title>
 <style>
   body { font-family: Arial, sans-serif; margin: 40px; }
   h1 { font-size: 14pt; text-align: center; margin-bottom: 20px; }
@@ -55,15 +58,19 @@ function printRatesTable(rows: FegliRate[]) {
   @media print { body { margin: 20px; } }
 </style></head>
 <body>
-  <h1>FEGLI Rates</h1>
+  <h1>FEGLI Rates – Annuitants</h1>
   <table>
     <thead><tr>
       <th>Age Min</th><th>Age Max</th>
+      <th class="right">Basic 75%</th><th class="right">Basic 50%</th><th class="right">Basic 0%</th>
       <th class="right">Option-A</th><th class="right">Option-B</th><th class="right">Option-C</th>
     </tr></thead>
     <tbody>
       ${rows.map(r => `<tr>
         <td>${r.age_min}</td><td>${r.age_max}</td>
+        <td class="right">${r.basic_75 === 0 ? '—' : '$' + r.basic_75.toFixed(4)}</td>
+        <td class="right">${r.basic_50 === 0 ? '—' : '$' + r.basic_50.toFixed(4)}</td>
+        <td class="right">${r.basic_0 === 0 ? '—' : '$' + r.basic_0.toFixed(4)}</td>
         <td class="right">${r.opt_a === 0 ? '—' : '$' + r.opt_a.toFixed(3)}</td>
         <td class="right">${r.opt_b === 0 ? '—' : '$' + r.opt_b.toFixed(3)}</td>
         <td class="right">${r.opt_c === 0 ? '—' : '$' + r.opt_c.toFixed(3)}</td>
@@ -89,18 +96,18 @@ function printRatesTable(rows: FegliRate[]) {
   setTimeout(() => document.body.removeChild(iframe), 1000)
 }
 
-export default function RatesView() {
+export default function RatesAnnuitantView() {
   const { isAdmin } = useCurrentUser()
-  const [rates, setRates] = useState<FegliRate[]>([])
+  const [rates, setRates] = useState<FegliRateAnnuitant[]>([])
   const [loading, setLoading] = useState(true)
-  const [editRate, setEditRate] = useState<FegliRate | null>(null)
+  const [editRate, setEditRate] = useState<FegliRateAnnuitant | null>(null)
   const [addNew, setAddNew] = useState(false)
   const [search, setSearch] = useState('')
 
   const fetchRates = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/fegli-rates?includeAudit=true')
+      const res = await fetch('/api/fegli-rates-annuitant?includeAudit=true')
       const data = await res.json()
       if (Array.isArray(data)) setRates(data)
     } catch { /* ignore */ } finally { setLoading(false) }
@@ -110,23 +117,35 @@ export default function RatesView() {
 
   const columns = useMemo(() => [
     columnHelper.accessor('age_min', {
-      header: 'Age Min', size: 100,
+      header: 'Age Min', size: 90,
       cell: ({ row }) => <Typography className='font-semibold text-sm' sx={{ textAlign: 'center' }}>{row.original.age_min}</Typography>,
     }),
     columnHelper.accessor('age_max', {
-      header: 'Age Max', size: 100,
+      header: 'Age Max', size: 90,
       cell: ({ row }) => <Typography className='font-semibold text-sm' sx={{ textAlign: 'center' }}>{row.original.age_max}</Typography>,
     }),
+    columnHelper.accessor('basic_75', {
+      header: 'Basic 75%', size: 120,
+      cell: ({ row }) => <Typography className='text-sm' sx={{ textAlign: 'right' }}>{formatRate(row.original.basic_75)}</Typography>,
+    }),
+    columnHelper.accessor('basic_50', {
+      header: 'Basic 50%', size: 120,
+      cell: ({ row }) => <Typography className='text-sm' sx={{ textAlign: 'right' }}>{formatRate(row.original.basic_50)}</Typography>,
+    }),
+    columnHelper.accessor('basic_0', {
+      header: 'Basic 0%', size: 120,
+      cell: ({ row }) => <Typography className='text-sm' sx={{ textAlign: 'right' }}>{formatRate(row.original.basic_0)}</Typography>,
+    }),
     columnHelper.accessor('opt_a', {
-      header: 'Option-A', size: 120,
+      header: 'Option-A', size: 110,
       cell: ({ row }) => <Typography className='text-sm' sx={{ textAlign: 'right' }}>{formatRate(row.original.opt_a)}</Typography>,
     }),
     columnHelper.accessor('opt_b', {
-      header: 'Option-B', size: 120,
+      header: 'Option-B', size: 110,
       cell: ({ row }) => <Typography className='text-sm' sx={{ textAlign: 'right' }}>{formatRate(row.original.opt_b)}</Typography>,
     }),
     columnHelper.accessor('opt_c', {
-      header: 'Option-C', size: 120,
+      header: 'Option-C', size: 110,
       cell: ({ row }) => <Typography className='text-sm' sx={{ textAlign: 'right' }}>{formatRate(row.original.opt_c)}</Typography>,
     }),
     columnHelper.accessor('mod_by', {
@@ -172,31 +191,31 @@ export default function RatesView() {
 
   return (
     <>
-      <EntityListView<FegliRate>
+      <EntityListView<FegliRateAnnuitant>
         columns={columns as any}
         data={rates}
-        storageKey='fs-fegli-rates'
+        storageKey='fs-fegli-rates-annuitant'
         defaultColVisibility={defaultColVisibility}
-        title='FEGLI Rates'
+        title='FEGLI Rates – Annuitants'
         searchValue={search}
         onSearchChange={setSearch}
         searchPlaceholder='Search rates...'
         newButtonLabel='Add Rate'
         onNewClick={() => isAdmin && setAddNew(true)}
         onExportCsv={(rows) => {
-          const csv = ['AgeMin,AgeMax,OptA,OptB,OptC'].concat(
-            rows.map(r => `${r.age_min},${r.age_max},${r.opt_a},${r.opt_b},${r.opt_c}`)
+          const csv = ['AgeMin,AgeMax,Basic_75,Basic_50,Basic_0,OptA,OptB,OptC'].concat(
+            rows.map(r => `${r.age_min},${r.age_max},${r.basic_75},${r.basic_50},${r.basic_0},${r.opt_a},${r.opt_b},${r.opt_c}`)
           ).join('\n')
-          downloadBlob(csv, 'fegli_rates.csv', 'text/csv')
+          downloadBlob(csv, 'fegli_rates_annuitant.csv', 'text/csv')
         }}
-        onExportJson={(rows) => downloadBlob(JSON.stringify(rows, null, 2), 'fegli_rates.json', 'application/json')}
-        emptyMessage='No FEGLI rates found.'
+        onExportJson={(rows) => downloadBlob(JSON.stringify(rows, null, 2), 'fegli_rates_annuitant.json', 'application/json')}
+        emptyMessage='No FEGLI annuitant rates found.'
         onRowDoubleClick={isAdmin ? (r) => setEditRate(r) : undefined}
         onRowEdit={isAdmin ? (r) => setEditRate(r) : undefined}
         onPrint={(rows) => printRatesTable(rows)}
       />
 
-      <RateEditDialog
+      <RatesAnnuitantEditDialog
         open={!!editRate || addNew}
         onClose={() => { setEditRate(null); setAddNew(false) }}
         rate={editRate}

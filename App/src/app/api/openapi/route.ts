@@ -56,12 +56,32 @@ const spec = {
       },
     },
     schemas: {
-      FegliRate: {
+      FegliRateEmployee: {
         type: 'object',
         properties: {
           id: { type: 'string', format: 'uuid' },
           age_min: { type: 'integer' },
           age_max: { type: 'integer' },
+          basic: { type: 'number' },
+          opt_a: { type: 'number' },
+          opt_b: { type: 'number' },
+          opt_c: { type: 'number' },
+          notes: { type: 'string' },
+          cre_by: { type: 'string' },
+          cre_dt: { type: 'string', format: 'date-time' },
+          mod_by: { type: 'string' },
+          mod_dt: { type: 'string', format: 'date-time' },
+        },
+      },
+      FegliRateAnnuitant: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          age_min: { type: 'integer' },
+          age_max: { type: 'integer' },
+          basic_75: { type: 'number' },
+          basic_50: { type: 'number' },
+          basic_0: { type: 'number' },
           opt_a: { type: 'number' },
           opt_b: { type: 'number' },
           opt_c: { type: 'number' },
@@ -154,11 +174,11 @@ const spec = {
     },
   },
   paths: {
-    // ── FEGLI Rates ──────────────────────────────────────────────
-    '/api/fegli-rates': {
+    // ── FEGLI Rates – Employee ───────────────────────────────────
+    '/api/fegli-rates-employee': {
       get: {
-        tags: ['FEGLI Rates'],
-        summary: 'List all FEGLI rates',
+        tags: ['FEGLI Rates – Employee'],
+        summary: 'List all employee FEGLI rates',
         parameters: [
           { name: 'includeAudit', in: 'query', schema: { type: 'boolean' }, description: 'Include audit fields (cre_by, cre_dt, mod_by, mod_dt)' },
           { name: 'age', in: 'query', schema: { type: 'integer' }, description: 'Find the rate band containing this age' },
@@ -170,47 +190,109 @@ const spec = {
           { $ref: '#/components/parameters/ODataOrderBy' },
         ],
         responses: {
-          '200': { description: 'Array of FEGLI rates', content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/FegliRate' } } } } },
+          '200': { description: 'Array of employee FEGLI rates', content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/FegliRateEmployee' } } } } },
         },
       },
       post: {
-        tags: ['FEGLI Rates'],
-        summary: 'Create a new FEGLI rate (admin only)',
+        tags: ['FEGLI Rates – Employee'],
+        summary: 'Create a new employee FEGLI rate (admin only)',
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/FegliRate' } } },
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/FegliRateEmployee' } } },
         },
         responses: {
-          '200': { description: 'Created rate', content: { 'application/json': { schema: { $ref: '#/components/schemas/FegliRate' } } } },
+          '200': { description: 'Created rate', content: { 'application/json': { schema: { $ref: '#/components/schemas/FegliRateEmployee' } } } },
           '400': { description: 'Validation error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
           '401': { description: 'Unauthorized' },
           '403': { description: 'Forbidden — admin only' },
         },
       },
     },
-    '/api/fegli-rates/{id}': {
+    '/api/fegli-rates-employee/{id}': {
       get: {
-        tags: ['FEGLI Rates'],
-        summary: 'Get a single FEGLI rate by ID',
+        tags: ['FEGLI Rates – Employee'],
+        summary: 'Get a single employee FEGLI rate by ID',
         parameters: [
           { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
           { name: 'includeAudit', in: 'query', schema: { type: 'boolean' } },
         ],
-        responses: { '200': { description: 'Single rate', content: { 'application/json': { schema: { $ref: '#/components/schemas/FegliRate' } } } } },
+        responses: { '200': { description: 'Single rate', content: { 'application/json': { schema: { $ref: '#/components/schemas/FegliRateEmployee' } } } } },
       },
       put: {
-        tags: ['FEGLI Rates'],
-        summary: 'Update a FEGLI rate (admin only)',
+        tags: ['FEGLI Rates – Employee'],
+        summary: 'Update an employee FEGLI rate (admin only)',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
-        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/FegliRate' } } } },
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/FegliRateEmployee' } } } },
         responses: {
           '200': { description: 'Updated rate' },
           '400': { description: 'Validation error' },
         },
       },
       delete: {
-        tags: ['FEGLI Rates'],
-        summary: 'Delete a FEGLI rate (admin only)',
+        tags: ['FEGLI Rates – Employee'],
+        summary: 'Delete an employee FEGLI rate (admin only)',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: { '200': { description: 'Deleted' } },
+      },
+    },
+
+    // ── FEGLI Rates – Annuitant ──────────────────────────────────
+    '/api/fegli-rates-annuitant': {
+      get: {
+        tags: ['FEGLI Rates – Annuitant'],
+        summary: 'List all annuitant FEGLI rates',
+        parameters: [
+          { name: 'includeAudit', in: 'query', schema: { type: 'boolean' }, description: 'Include audit fields (cre_by, cre_dt, mod_by, mod_dt)' },
+          { name: 'age', in: 'query', schema: { type: 'integer' }, description: 'Find the rate band containing this age' },
+          { name: 'ageMin', in: 'query', schema: { type: 'integer' }, description: 'Exact match on age_min' },
+          { name: 'ageMax', in: 'query', schema: { type: 'integer' }, description: 'Exact match on age_max' },
+          { $ref: '#/components/parameters/ODataSelect' },
+          { $ref: '#/components/parameters/ODataTop' },
+          { $ref: '#/components/parameters/ODataSkip' },
+          { $ref: '#/components/parameters/ODataOrderBy' },
+        ],
+        responses: {
+          '200': { description: 'Array of annuitant FEGLI rates', content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/FegliRateAnnuitant' } } } } },
+        },
+      },
+      post: {
+        tags: ['FEGLI Rates – Annuitant'],
+        summary: 'Create a new annuitant FEGLI rate (admin only)',
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/FegliRateAnnuitant' } } },
+        },
+        responses: {
+          '200': { description: 'Created rate', content: { 'application/json': { schema: { $ref: '#/components/schemas/FegliRateAnnuitant' } } } },
+          '400': { description: 'Validation error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          '401': { description: 'Unauthorized' },
+          '403': { description: 'Forbidden — admin only' },
+        },
+      },
+    },
+    '/api/fegli-rates-annuitant/{id}': {
+      get: {
+        tags: ['FEGLI Rates – Annuitant'],
+        summary: 'Get a single annuitant FEGLI rate by ID',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+          { name: 'includeAudit', in: 'query', schema: { type: 'boolean' } },
+        ],
+        responses: { '200': { description: 'Single rate', content: { 'application/json': { schema: { $ref: '#/components/schemas/FegliRateAnnuitant' } } } } },
+      },
+      put: {
+        tags: ['FEGLI Rates – Annuitant'],
+        summary: 'Update an annuitant FEGLI rate (admin only)',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/FegliRateAnnuitant' } } } },
+        responses: {
+          '200': { description: 'Updated rate' },
+          '400': { description: 'Validation error' },
+        },
+      },
+      delete: {
+        tags: ['FEGLI Rates – Annuitant'],
+        summary: 'Delete an annuitant FEGLI rate (admin only)',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: { '200': { description: 'Deleted' } },
       },
@@ -453,7 +535,8 @@ const spec = {
     },
   },
   tags: [
-    { name: 'FEGLI Rates', description: 'Federal Employees Group Life Insurance rate tables' },
+    { name: 'FEGLI Rates – Employee', description: 'FEGLI rate tables for active employees' },
+    { name: 'FEGLI Rates – Annuitant', description: 'FEGLI rate tables for annuitants/retirees' },
     { name: 'IRS Brackets', description: 'IRS federal income tax brackets' },
     { name: 'Events', description: 'Event management and agent assignment' },
     { name: 'Event Attendees', description: 'Event check-in and attendee management' },
