@@ -2230,22 +2230,22 @@ const PDF_Preparer_API = {
 
         const healthInsuranceMonthly = this.getMonthlyValueFromCustomFields(
             c,
-            ["cust_fehbpermonth_023844547"],
+            ["cust_fehbpermonth_023844547", "fehbpermonth"],
             ["fehbperpayperiod", "healthinsuranceperpayperiod"]
         );
         const dentalInsuranceMonthly = this.getMonthlyValueFromCustomFields(
             c,
-            ["cust_dentalinsurancepermonth_030554373"],
+            ["cust_dentalinsurancepermonth_030554373", "dentalinsurancepermonth"],
             ["dentalinsuranceperpayperiod"]
         );
         const visionInsuranceMonthly = this.getMonthlyValueFromCustomFields(
             c,
-            ["cust_visioninsurancepermonth_032424647"],
+            ["cust_visioninsurancepermonth_032424647", "visioninsurancepermonth"],
             ["visioninsuranceperpayperiod"]
         );
         const ltcInsuranceMonthly = this.getMonthlyValueFromCustomFields(
             c,
-            ["cust_ltcpermonth_062304353"],
+            ["cust_ltcpermonth_062304353", "ltcpermonth"],
             ["ltcperpayperiod"]
         );
         const annualLeaveHours = this.toNumber(c.annualleave);
