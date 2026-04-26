@@ -51,5 +51,14 @@ export async function POST(request: NextRequest) {
 
   const { data: { publicUrl } } = admin.storage.from('Forms').getPublicUrl(path)
 
+  // Auto-persist form_url in the forms table so the user doesn't need to
+  // manually save the edit dialog just to commit the uploaded URL.
+  if (formId !== 'unknown') {
+    await admin
+      .from('forms')
+      .update({ form_url: publicUrl })
+      .eq('form_id', formId)
+  }
+
   return NextResponse.json({ url: publicUrl, path })
 }
