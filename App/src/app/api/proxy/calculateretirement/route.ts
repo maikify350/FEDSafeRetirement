@@ -14,8 +14,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/utils/supabase/server'
 
-// @ts-expect-error — Chris's JS modules, no type declarations
-import FEGLI_API from '@/lib/pdfgen/fegli_api.js'
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const FEGLI_API = require('@/lib/pdfgen/fegli_api.js')
 
 // CORS headers
 const CORS = {
