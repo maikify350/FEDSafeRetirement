@@ -86,6 +86,9 @@ export interface EntityEditDialogProps {
   isFavorite?: boolean
   onToggleFavorite?: () => void
 
+  // ── Custom header buttons (rendered before Cancel/Save)
+  headerActions?: React.ReactNode
+
   // ── Content
   children: React.ReactNode
 }
@@ -115,6 +118,7 @@ export default function EntityEditDialog({
   height = '88vh',
   isFavorite,
   onToggleFavorite,
+  headerActions,
   children,
 }: EntityEditDialogProps) {
 
@@ -193,6 +197,7 @@ export default function EntityEditDialog({
                 <i className={isFavorite ? 'tabler-star-filled' : 'tabler-star'} style={{ fontSize: 22 }} />
               </IconButton>
             )}
+            {headerActions}
             <Button
               variant='outlined'
               onClick={handleClose}

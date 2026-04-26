@@ -1,17 +1,18 @@
 /**
  * POST /api/proxy/calculate
  *
- * FEGLI calculation endpoint — callable from Act! CRM Copilot extension.
- * Fetches rate table from the existing /api/fegli-rates-employee endpoint
- * (same host, no direct Supabase access), then runs the FEGLI engine.
+ * FEGLI calculation endpoint - callable from Act! CRM Copilot extension.
+ * Queries fegli_rates_employee directly via Supabase admin client,
+ * then runs the FEGLI engine. No self-referential HTTP fetch needed.
  *
  * CORS: open to all origins so the Chrome extension on Act.com can reach it.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { executeFegliCalculation, getOPMLetter, FegliCustomFields } from '@/lib/fegli-engine'
+import { createAdminClient } from '@/utils/supabase/server'
 
-// ── CORS headers ─────────────────────────────────────────────────────────────
+// CORS headers
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -22,7 +23,7 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS })
 }
 
-// ── Build the list of valid OPM FEGLI codes ───────────────────────────────────
+// Build the list of valid OPM FEGLI codes (includes extended C x4/C x5 so Z5 is valid)
 function getValidFegliCodes(): string[] {
   const codes: string[] = []
   for (const bMult of [0, 1, 2, 3, 4, 5]) {
@@ -49,13 +50,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // ── Normalize age alias ─────────────────────────────────────────────────
+    // Normalize age alias
     const customFields: FegliCustomFields = { ...rawFields }
     if (customFields.cust_age_033220843 !== undefined && customFields.age === undefined) {
       customFields.age = customFields.cust_age_033220843
     }
 
-    // ── Validate required fields ────────────────────────────────────────────
+    // Validate required fields
     const required = [
       { key: 'age',          label: 'Age' },
       { key: 'salaryamount', label: 'Salary' },
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // ── Validate FEGLI code ─────────────────────────────────────────────────
+    // Validate FEGLI code
     if (hasCode) {
       const code = String(customFields.feglicodeactive).trim().toUpperCase()
       if (!getValidFegliCodes().includes(code)) {
@@ -97,22 +98,28 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ── Fetch rate table from our own endpoint ──────────────────────────────
-    const ratesUrl = new URL('/api/fegli-rates-employee', request.url).toString()
-    const ratesResp = await fetch(ratesUrl)
-    if (!ratesResp.ok) {
-      throw new Error(`Failed to fetch FEGLI rates from ${ratesUrl}: ${ratesResp.status}`)
-    }
-    const rateTable = await ratesResp.json()
+    // Fetch rate table directly from Supabase using admin client.
+    // This replaces the previous self-referential HTTP fetch to /api/fegli-rates-employee
+    // which passed back through Vercel middleware unauthenticated, causing
+    // "Missing Authentication Token" errors.
+    const admin = createAdminClient()
+    const { data: rateTable, error: rateError } = await admin
+      .from('fegli_rates_employee')
+      .select('id, age_min, age_max, basic, opt_a, opt_b, opt_c')
+      .order('age_min', { ascending: true })
 
-    // ── Run FEGLI engine ────────────────────────────────────────────────────
+    if (rateError || !rateTable) {
+      throw new Error(`Failed to load FEGLI rate table: ${rateError?.message ?? 'no data'}`)
+    }
+
+    // Run FEGLI engine
     const result = executeFegliCalculation(customFields, rateTable)
 
     return NextResponse.json(
       {
         success: true,
         contactId: contactId ?? null,
-        ratesSource: ratesUrl,
+        ratesSource: 'supabase:fegli_rates_employee',
         input: customFields,
         result: result.customFields,
       },

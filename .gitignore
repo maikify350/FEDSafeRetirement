@@ -47,3 +47,5 @@ DataSeed/*.csv
 
 # Gemini agent state (do not commit)
 .gemini/
+
+.vercel

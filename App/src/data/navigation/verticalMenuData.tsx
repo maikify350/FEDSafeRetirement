@@ -74,6 +74,21 @@ const verticalMenuData = (): VerticalMenuDataType[] => [
     icon: 'tabler-receipt-tax',
   },
   {
+    label: 'Federal Forms',
+    href: '/forms',
+    icon: 'tabler-file-description',
+  },
+  {
+    label: 'FEDSafe AI',
+    href: '/ai-assistant',
+    icon: 'tabler-robot',
+  },
+  {
+    label: 'Training Quiz',
+    href: '/quiz',
+    icon: 'tabler-school',
+  },
+  {
     isSection: true,
     label: 'ACCOUNT'
   },
