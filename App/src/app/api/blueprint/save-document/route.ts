@@ -111,9 +111,18 @@ export async function POST(req: NextRequest) {
   try {
     const now = new Date().toISOString()
 
+    // Build a short redirect URL so Act! CRM doesn't truncate it.
+    // Extract the filename (minus .pdf) from the full Supabase URL to use as the redirect ID.
+    // Full URL:  .../filled-forms/2840103a-...-BLUEPRINT-2026-04-26_21-14-05.pdf
+    // Short URL: https://fedsafe-retirement.vercel.app/api/pdf/2840103a-...-BLUEPRINT-2026-04-26_21-14-05
+    const storageFileName = pdfUrl.split('/').pop()?.replace(/\.pdf$/i, '') || ''
+    const shortUrl = storageFileName
+      ? `https://fedsafe-retirement.vercel.app/api/pdf/${storageFileName}`
+      : pdfUrl  // fallback to full URL if extraction fails
+
     const docBody = {
       regarding:     fileName,
-      details:       pdfUrl,
+      details:       shortUrl,
       startTime:     now,
       endTime:       now,
       duration:      '0 minutes',
