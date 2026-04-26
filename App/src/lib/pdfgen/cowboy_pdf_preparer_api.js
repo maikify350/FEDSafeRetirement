@@ -1627,10 +1627,10 @@ const PDF_Preparer_API = {
         });
 
         if (!match) {
-            return this.toNumber(bracketRows[bracketRows.length - 1].rate);
+            return this.toNumber(bracketRows[bracketRows.length - 1].marginal_rate);
         }
 
-        return this.toNumber(match.rate);
+        return this.toNumber(match.marginal_rate);
     },
 
     calculateTaxableSocialSecurityAnnual: function(benefitsAnnual, otherIncomeAnnual, filingStatus) {
@@ -2304,8 +2304,11 @@ const PDF_Preparer_API = {
                 : "");
         const taxYear = this.getTargetTaxYear(retirementDate);
         const stateRetirementTaxRule = this.getStateRetirementTaxRule(clientState, stateRetirementTaxRules);
-        const federalBracketRows = federalTaxRates.filter((row) => String(row.filingstatus || "").toLowerCase() === filingStatus);
-        const standardDeduction = federalBracketRows.length > 0 ? this.toNumber(federalBracketRows[0].standarddeduction) : 0;
+        const federalBracketRows = federalTaxRates.filter((row) => String(row.filing_status || "").toLowerCase() === filingStatus);
+        const defaultStandardDeduction = filingStatus === "married" ? 30500 : 15250;
+        const standardDeduction = federalBracketRows.length > 0 && federalBracketRows[0].standard_deduction !== undefined
+            ? this.toNumber(federalBracketRows[0].standard_deduction)
+            : defaultStandardDeduction;
         const federalOtherIncomeAnnual = this.roundMoney((grossFERS * 12) + grossBridgeYearly + taxableTspYearly);
         const socialSecurityTaxability = this.calculateTaxableSocialSecurityAnnual(
             socialSecurityGross * 12,

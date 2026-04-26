@@ -90,14 +90,19 @@ export async function POST(request: NextRequest) {
     if (annResult.error || !annResult.data) {
       throw new Error(`Annuitant rates: ${annResult.error?.message ?? 'no data'}`)
     }
+    // Fetch federal tax brackets from Supabase
+    const fedResult = await admin.from('irs_brackets')
+      .select('filing_status, floor, ceiling, base_tax, marginal_rate')
+      .order('floor', { ascending: true })
 
-    // Load bundled tax rate files
+    if (fedResult.error || !fedResult.data) {
+      throw new Error(`Federal tax brackets: ${fedResult.error?.message ?? 'no data'}`)
+    }
+    const federalTaxBrackets = fedResult.data
+
+    // Load bundled state tax rate files
     const stateTaxRates = loadBundledJson('state_income_tax_rates.json')
     const stateRetirementTaxRules = loadBundledJson('state_retirement_tax_rules.json')
-
-    // Federal tax brackets — currently empty array (TODO: create Supabase table)
-    // The calculation still works — it just uses 0% federal marginal rate
-    const federalTaxBrackets: unknown[] = []
 
     // Run Chris's full retirement calculation engine
     const result = PDF_Preparer_API.executeFinalCalculation(
@@ -116,7 +121,7 @@ export async function POST(request: NextRequest) {
         ratesSource: {
           fegli_employee: 'supabase:fegli_rates_employee',
           fegli_annuitant: 'supabase:fegli_rates_annuitant',
-          federal_tax: 'TODO:supabase (currently empty)',
+          federal_tax: 'supabase:irs_brackets',
           state_tax: 'bundled:state_income_tax_rates.json',
           state_retirement: 'bundled:state_retirement_tax_rules.json',
         },
