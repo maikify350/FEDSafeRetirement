@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import path from 'path'
 import fs from 'fs'
+import { createAdminClient } from '@/utils/supabase/server'
 import { PDFDocument, StandardFonts } from 'pdf-lib'
 
 // ── Chris's PDF Preparer API ────────────────────────────────────────────────
@@ -53,25 +54,42 @@ const CORS = {
 
 // ── Form key normalization ───────────────────────────────────────────────────
 const FORM_KEY_MAP: Record<string, string> = {
-  'W4P':      'fw4p',
-  'FW4P':     'fw4p',
-  'FW-4P':    'fw4p',
-  'SF-2809':  'sf2809',
-  'SF2809':   'sf2809',
-  'SF-2818':  'sf2818',
-  'SF2818':   'sf2818',
-  'SF-2823':  'sf2823',
-  'SF2823':   'sf2823',
-  'SF-3102':  'sf3102',
-  'SF3102':   'sf3102',
-  'SF-3107':  'sf3107',
-  'SF3107':   'sf3107',
-  'SF-3107-2':'sf3107',
-  'SF-3108':  'sf3108',
-  'SF3108':   'sf3108',
+  'W4P':       'fw4p',
+  'FW4P':      'fw4p',
+  'FW-4P':     'fw4p',
+  'SF-2809':   'sf2809',
+  'SF2809':    'sf2809',
+  'SF-2818':   'sf2818',
+  'SF2818':    'sf2818',
+  'SF-2823':   'sf2823',
+  'SF2823':    'sf2823',
+  'SF-3102':   'sf3102',
+  'SF3102':    'sf3102',
+  'SF-3107':   'sf3107',
+  'SF3107':    'sf3107',
+  'SF-3107-2': 'sf3107',
+  'SF-3108':   'sf3108',
+  'SF3108':    'sf3108',
+  'BLUEPRINT': 'blueprint',
 }
 
-// Prefill function dispatch
+/**
+ * Load a bundled JSON rate file from the pdfgen directory.
+ */
+function loadBundledJson(filename: string): unknown[] {
+  const candidates = [
+    path.resolve(process.cwd(), 'src/lib/pdfgen', filename),
+    path.resolve(__dirname, '..', '..', '..', '..', 'lib/pdfgen', filename),
+  ]
+  for (const p of candidates) {
+    if (fs.existsSync(p)) {
+      return JSON.parse(fs.readFileSync(p, 'utf-8'))
+    }
+  }
+  throw new Error(`Bundled rate file not found: ${filename}`)
+}
+
+// Prefill function dispatch for unsorted ORA forms
 function callPrefill(formKey: string, actData: unknown) {
   switch (formKey) {
     case 'fw4p':   return PDF_Preparer_API.buildFw4pPrefill(actData)
@@ -82,6 +100,54 @@ function callPrefill(formKey: string, actData: unknown) {
     case 'sf3107': return PDF_Preparer_API.buildSf3107Prefill(actData)
     case 'sf3108': return PDF_Preparer_API.buildSf3108Prefill(actData)
     default: throw new Error(`Unknown formKey: ${formKey}`)
+  }
+}
+
+/**
+ * Blueprint uses the full calculation engine (executeTemplate2) which requires
+ * rate tables and tax data — fundamentally different from the simple prefill forms.
+ */
+async function callBlueprintPrefill(actData: unknown) {
+  const admin = createAdminClient()
+
+  const [empResult, annResult, fedResult] = await Promise.all([
+    admin.from('fegli_rates_employee')
+      .select('age_min, age_max, basic, opt_a, opt_b, opt_c')
+      .order('age_min', { ascending: true }),
+    admin.from('fegli_rates_annuitant')
+      .select('age_min, age_max, basic_75, basic_50, basic_0, opt_a, opt_b, opt_c')
+      .order('age_min', { ascending: true }),
+    admin.from('irs_brackets')
+      .select('filing_status, floor, ceiling, base_tax, marginal_rate')
+      .order('floor', { ascending: true }),
+  ])
+
+  if (empResult.error || !empResult.data)
+    throw new Error(`Employee rates: ${empResult.error?.message ?? 'no data'}`)
+  if (annResult.error || !annResult.data)
+    throw new Error(`Annuitant rates: ${annResult.error?.message ?? 'no data'}`)
+  if (fedResult.error || !fedResult.data)
+    throw new Error(`Federal tax brackets: ${fedResult.error?.message ?? 'no data'}`)
+
+  const stateTaxRates = loadBundledJson('state_income_tax_rates.json')
+  const stateRetirementTaxRules = loadBundledJson('state_retirement_tax_rules.json')
+
+  const result = PDF_Preparer_API.executeTemplate2(
+    actData,
+    empResult.data,
+    annResult.data,
+    fedResult.data,
+    stateTaxRates,
+    stateRetirementTaxRules
+  )
+
+  // Return in the same shape as unsorted prefill results so downstream fill logic works
+  return {
+    mappedFields: result,
+    unmappedFields: [] as string[],
+    mappedFieldCount: Object.keys(result).length,
+    populatedFieldCount: Object.values(result).filter((v: unknown) => String(v ?? '').trim() !== '').length,
+    totalFields: Object.keys(result).length,
   }
 }
 
@@ -161,13 +227,14 @@ export async function POST(req: NextRequest) {
 
   // Maps internal formKey → actual form_id stored in Supabase
   const FORM_ID_MAP: Record<string, string> = {
-    fw4p:   'W4P',        // Supabase uses W4P
-    sf2809: 'SF-2809',
-    sf2818: 'SF-2818',
-    sf2823: 'SF-2823',
-    sf3102: 'SF-3102',
-    sf3107: 'SF-3107-2',  // Supabase uses SF-3107-2
-    sf3108: 'SF-3108',
+    fw4p:      'W4P',        // Supabase uses W4P
+    sf2809:    'SF-2809',
+    sf2818:    'SF-2818',
+    sf2823:    'SF-2823',
+    sf3102:    'SF-3102',
+    sf3107:    'SF-3107-2',   // Supabase uses SF-3107-2
+    sf3108:    'SF-3108',
+    blueprint: 'Blueprint',
   }
   const supabaseFormId = FORM_ID_MAP[formKey]
 
@@ -214,7 +281,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    prefillResult = callPrefill(formKey, actFullData)
+    if (formKey === 'blueprint') {
+      // Blueprint uses the full calculation engine with rate/tax tables
+      prefillResult = await callBlueprintPrefill(actFullData)
+    } else {
+      prefillResult = callPrefill(formKey, actFullData)
+    }
   } catch (e: unknown) {
     return NextResponse.json(
       { success: false, error: `Prefill failed: ${e instanceof Error ? e.message : String(e)}`, code: 'PREFILL_ERROR' },
