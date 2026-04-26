@@ -335,7 +335,7 @@ export async function POST(req: NextRequest) {
   const lastName   = String(fields?.lastname  ?? '').replace(/[^a-zA-Z0-9 ]/g, '')
   const firstName  = String(fields?.firstname ?? '').replace(/[^a-zA-Z0-9 ]/g, '')
   const formLabel  = formRaw
-  const dateTag    = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-')
+  const dateTag    = new Date().toISOString().slice(0,19).replace('T','_').replace(/:/g,'-')
   const fileName   = `${lastName}, ${firstName} ${formLabel} ${dateTag}.pdf`
   const storagePath = `filled-forms/${contactId}-${formLabel}-${dateTag}.pdf`
 
