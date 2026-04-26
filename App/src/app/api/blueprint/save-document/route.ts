@@ -1,14 +1,15 @@
 /**
  * POST /api/blueprint/save-document
  *
- * Downloads a filled PDF from its public Supabase URL and attaches it as a
- * document to the specified Act! CRM contact record.
+ * Creates a "Library Document" history entry on the specified Act! CRM contact
+ * with the PDF URL stored in the `details` field. The Act! UI will show it
+ * under the contact's Documents tab as a clickable link.
  *
  * Request body:
  *   { contactId: string, pdfUrl: string, fileName: string }
  *
  * Act! Web API endpoint used:
- *   POST /api/contacts/{contactId}/documents  (multipart/form-data)
+ *   POST /api/documents  (application/json, History model with historyTypeID -1)
  *
  * CORS: open to all origins so the Chrome extension on Act.com can reach it.
  */
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
 
   const contactId = (body.contactId as string | undefined)?.trim()
   const pdfUrl    = (body.pdfUrl    as string | undefined)?.trim()
-  const fileName  = (body.fileName  as string | undefined)?.trim() || 'Blueprint.pdf'
+  const fileName  = (body.fileName  as string | undefined)?.trim() || 'Blueprint Report'
 
   if (!contactId || !pdfUrl) {
     return NextResponse.json(
@@ -79,20 +80,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // ── 1. Download the PDF from Supabase public URL ───────────────────────────
-  let pdfBytes: Buffer
-  try {
-    const dlRes = await fetch(pdfUrl, { signal: AbortSignal.timeout(30_000) })
-    if (!dlRes.ok) throw new Error(`HTTP ${dlRes.status}`)
-    pdfBytes = Buffer.from(await dlRes.arrayBuffer())
-  } catch (e: unknown) {
-    return NextResponse.json(
-      { success: false, error: `Failed to download PDF: ${e instanceof Error ? e.message : String(e)}` },
-      { status: 502, headers: CORS },
-    )
-  }
-
-  // ── 2. Authenticate to Act! API ────────────────────────────────────────────
+  // ── 1. Authenticate to Act! API ────────────────────────────────────────────
   const base     = process.env.ACT_API_BASE || 'https://apius.act.com/act.web.api'
   const username = process.env.ACT_USERNAME
   const password = process.env.ACT_PASSWORD
@@ -115,51 +103,43 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // ── 3. Upload document to Act! CRM via multipart/form-data ─────────────────
-  //    Act! Web API: POST /api/contacts/{contactId}/documents
+  // ── 2. Create a Library Document entry linked to the contact ───────────────
+  //    POST /api/documents with a History JSON body.
+  //    historyTypeID: -1 = "Library Document" (shows under contact's Documents tab)
+  //    details: the PDF public URL (clickable link in Act!)
+  //    regarding: display name shown in the Documents list
   try {
-    // Build multipart boundary
-    const boundary = `----FormBoundary${Date.now()}`
-    const CRLF = '\r\n'
+    const now = new Date().toISOString()
 
-    // Construct multipart body manually (Node.js Buffer-based)
-    const parts: Buffer[] = []
+    const docBody = {
+      regarding:     fileName,
+      details:       pdfUrl,
+      startTime:     now,
+      endTime:       now,
+      duration:      '0 minutes',
+      isPrivate:     false,
+      historyTypeID: -1,
+      contacts:      [{ id: contactId }],
+    }
 
-    // File part
-    parts.push(Buffer.from(
-      `--${boundary}${CRLF}` +
-      `Content-Disposition: form-data; name="file"; filename="${fileName}"${CRLF}` +
-      `Content-Type: application/pdf${CRLF}${CRLF}`
-    ))
-    parts.push(pdfBytes)
-    parts.push(Buffer.from(CRLF))
-
-    // Closing boundary
-    parts.push(Buffer.from(`--${boundary}--${CRLF}`))
-
-    const multipartBody = Buffer.concat(parts)
-
-    const uploadRes = await fetch(
-      `${base}/api/contacts/${contactId}/documents`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization':    `Bearer ${token}`,
-          'Act-Database-Name': database,
-          'Content-Type':     `multipart/form-data; boundary=${boundary}`,
-        },
-        body: multipartBody,
-        signal: AbortSignal.timeout(30_000),
+    const uploadRes = await fetch(`${base}/api/documents`, {
+      method:  'POST',
+      headers: {
+        'Authorization':    `Bearer ${token}`,
+        'Act-Database-Name': database,
+        'Content-Type':     'application/json',
       },
-    )
+      body:   JSON.stringify(docBody),
+      signal: AbortSignal.timeout(15_000),
+    })
 
     if (!uploadRes.ok) {
       const errText = await uploadRes.text().catch(() => '')
       return NextResponse.json(
         {
           success: false,
-          error: `Act! document upload failed: HTTP ${uploadRes.status}`,
-          detail: errText.slice(0, 500),
+          error:   `Act! document save failed: HTTP ${uploadRes.status}`,
+          detail:  errText.slice(0, 500),
         },
         { status: uploadRes.status, headers: CORS },
       )
@@ -169,16 +149,17 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        success:   true,
+        success:    true,
         contactId,
         fileName,
+        documentId: (result as Record<string, unknown>).id ?? null,
         actResponse: result,
       },
       { status: 200, headers: CORS },
     )
   } catch (e: unknown) {
     return NextResponse.json(
-      { success: false, error: `Document upload error: ${e instanceof Error ? e.message : String(e)}` },
+      { success: false, error: `Document save error: ${e instanceof Error ? e.message : String(e)}` },
       { status: 500, headers: CORS },
     )
   }
