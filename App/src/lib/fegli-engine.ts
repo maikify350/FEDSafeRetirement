@@ -133,7 +133,16 @@ export function executeFegliCalculation(
   const codeInfo = getComponentsFromLetter(finalCode[0])
   const cMult = parseInt(finalCode[1]) || 0
 
+  // Calculate premiums from rate table (mirrors fegli_api.js calculateCurrentButton)
+  const rates = rateTable.find(r => age >= r.age_min && age <= r.age_max)
+  const basicPremium = rates ? (bia.total / 1000) * rates.basic : 0
+  const optAPremium  = rates && codeInfo.hasA ? rates.opt_a : 0
+  const optBPremium  = rates ? codeInfo.bMult * (bia.base / 1000) * rates.opt_b : 0
+  const optCPremium  = rates ? cMult * rates.opt_c : 0
+  const currentCost  = Math.round((basicPremium + optAPremium + optBPremium + optCPremium) * 100) / 100
+
   fields.feglicodeactive = finalCode
+  fields.feglinetcost = currentCost.toFixed(2)
   fields.basiclife = bia.total.toFixed(2)
   fields.optiona = codeInfo.hasA
   fields.optionb = codeInfo.bMult.toString()
