@@ -164,7 +164,8 @@ const PDF_Preparer_API = {
 
     toNumber: function(value, fallback = 0) {
         if (value === null || value === undefined || value === "") return fallback;
-        const parsed = parseFloat(value);
+        const cleaned = String(value).replace(/[\$,\s]/g, "");
+        const parsed = parseFloat(cleaned);
         return Number.isFinite(parsed) ? parsed : fallback;
     },
 
