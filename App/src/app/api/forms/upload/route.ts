@@ -38,7 +38,22 @@ export async function POST(request: NextRequest) {
 
   const arrayBuffer = await file.arrayBuffer()
   const bytes = new Uint8Array(arrayBuffer)
-  const path = `${formId}/${file.name}`
+  // Always use a fixed canonical name so re-uploads overwrite the same file
+  const path = `${formId}/template.pdf`
+
+  // ── Remove any old files in this form's folder first ────────────────────────
+  const { data: existingFiles } = await admin.storage
+    .from('Forms')
+    .list(formId, { limit: 50 })
+
+  if (existingFiles && existingFiles.length > 0) {
+    const oldPaths = existingFiles
+      .filter(f => f.name && f.name !== '.emptyFolderPlaceholder')
+      .map(f => `${formId}/${f.name}`)
+    if (oldPaths.length > 0) {
+      await admin.storage.from('Forms').remove(oldPaths)
+    }
+  }
 
   // ── Upload via admin client (bypasses storage RLS) ──────────────────────────
   const { error: upErr } = await admin.storage
@@ -49,16 +64,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `Upload failed: ${upErr.message}` }, { status: 500 })
   }
 
+  // Append cache-buster so CDN / browser never serves a stale version
   const { data: { publicUrl } } = admin.storage.from('Forms').getPublicUrl(path)
+  const freshUrl = `${publicUrl}?v=${Date.now()}`
 
   // Auto-persist form_url in the forms table so the user doesn't need to
   // manually save the edit dialog just to commit the uploaded URL.
   if (formId !== 'unknown') {
     await admin
       .from('forms')
-      .update({ form_url: publicUrl })
+      .update({ form_url: freshUrl })
       .eq('form_id', formId)
   }
 
-  return NextResponse.json({ url: publicUrl, path })
+  return NextResponse.json({ url: freshUrl, path })
 }
