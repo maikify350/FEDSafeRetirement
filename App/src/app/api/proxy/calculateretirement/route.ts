@@ -1,9 +1,12 @@
 /**
- * POST /api/proxy/calculatecurrent
+ * POST /api/proxy/calculateretirement
  *
- * FEGLI "current benefits" calculation endpoint — callable from Act! CRM
- * Copilot extension. Fetches employee rate table from Supabase, then runs
- * Chris's FEGLI_API.calculateCurrentButton() for the actual calculation.
+ * FEGLI "retirement projection" calculation endpoint — callable from Act! CRM
+ * Copilot extension. Fetches annuitant rate table from Supabase, then runs
+ * Chris's FEGLI_API.calculateRetirementButton() for the actual calculation.
+ *
+ * Required fields: salaryamount, feglicostage (retirement age), feglireduction
+ * Optional: optiona_retire, optionb_retire, optionc_retire
  *
  * CORS: open to all origins so the Chrome extension on Act.com can reach it.
  */
@@ -38,16 +41,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate required fields
-    const age = rawFields.age ?? rawFields.cust_age_033220843
     const salary = rawFields.salaryamount
-    if (!age || !salary) {
+    const retireAge = rawFields.feglicostage
+    if (!salary || !retireAge) {
       return NextResponse.json(
         {
           success: false,
           error: 'Missing required fields',
           missingFields: [
-            !age ? 'Age (age or cust_age_033220843)' : null,
             !salary ? 'Salary (salaryamount)' : null,
+            !retireAge ? 'Projected FEGLI Age (feglicostage)' : null,
           ].filter(Boolean),
           received: rawFields,
         },
@@ -55,41 +58,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const hasCode   = rawFields.feglicodeactive && String(rawFields.feglicodeactive).trim() !== ''
-    const hasAmount = rawFields.fegliperpayperiod && String(rawFields.fegliperpayperiod).trim() !== ''
-    if (!hasCode && !hasAmount) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Missing required fields',
-          missingFields: ['FEGLI Code or FEGLI Per Pay Period (need at least one)'],
-          received: rawFields,
-        },
-        { status: 422, headers: CORS }
-      )
-    }
-
-    // Fetch employee rate table from Supabase
+    // Fetch annuitant rate table from Supabase
     const admin = createAdminClient()
     const { data: rateTable, error: rateError } = await admin
-      .from('fegli_rates_employee')
-      .select('id, age_min, age_max, basic, opt_a, opt_b, opt_c')
+      .from('fegli_rates_annuitant')
+      .select('id, age_min, age_max, basic_75, basic_50, basic_0, opt_a, opt_b, opt_c')
       .order('age_min', { ascending: true })
 
     if (rateError || !rateTable) {
-      throw new Error(`Failed to load employee rate table: ${rateError?.message ?? 'no data'}`)
+      throw new Error(`Failed to load annuitant rate table: ${rateError?.message ?? 'no data'}`)
     }
 
-    // Run Chris's FEGLI_API.calculateCurrentButton()
-    // It expects (actJson, employeeRateInput) where actJson has .customFields
+    // Run Chris's FEGLI_API.calculateRetirementButton()
+    // It expects (actJson, annuitantRateInput) where actJson has .customFields
     const actJson = { customFields: { ...rawFields } }
-    const result = FEGLI_API.calculateCurrentButton(actJson, rateTable)
+    const result = FEGLI_API.calculateRetirementButton(actJson, rateTable)
 
     return NextResponse.json(
       {
         success: true,
         contactId: contactId ?? null,
-        ratesSource: 'supabase:fegli_rates_employee',
+        ratesSource: 'supabase:fegli_rates_annuitant',
         input: rawFields,
         result: result.customFields,
         displayFields: result.displayFields,
@@ -98,7 +87,7 @@ export async function POST(request: NextRequest) {
     )
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e)
-    console.error('[/api/proxy/calculatecurrent] Error:', msg)
+    console.error('[/api/proxy/calculateretirement] Error:', msg)
     return NextResponse.json(
       { success: false, error: msg },
       { status: 500, headers: CORS }
