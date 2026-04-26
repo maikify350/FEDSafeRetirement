@@ -38,8 +38,7 @@ export async function POST(request: NextRequest) {
 
   const arrayBuffer = await file.arrayBuffer()
   const bytes = new Uint8Array(arrayBuffer)
-  // Always use a fixed canonical name so re-uploads overwrite the same file
-  const path = `${formId}/template.pdf`
+  const path = `${formId}/${file.name}`
 
   // ── Remove any old files in this form's folder first ────────────────────────
   const { data: existingFiles } = await admin.storage
