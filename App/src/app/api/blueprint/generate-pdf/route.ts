@@ -427,6 +427,7 @@ export async function POST(req: NextRequest) {
           Authorization:   `Bearer ${supabaseKey}`,
           'Content-Type':  'application/pdf',
           'Cache-Control': 'no-cache',
+          'x-upsert':     'true',
         },
         body: Buffer.from(filledBytes),
         signal: AbortSignal.timeout(30_000),
