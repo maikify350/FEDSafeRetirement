@@ -69,24 +69,10 @@ export async function POST(request: NextRequest) {
       throw new Error(`Failed to load annuitant rate table: ${rateError?.message ?? 'no data'}`)
     }
 
-    // Remap Supabase column names to Chris's expected format
-    // (normalizeRateRows lowercases but keeps underscores;
-    //  lookupRate expects agemin/agemax, calculateRetireeFEGLI expects opta/optb/optc)
-    const remapped = rateTable.map((r: Record<string, unknown>) => ({
-      agemin:    r.age_min,
-      agemax:    r.age_max,
-      basic_75:  r.basic_75,   // dynamic key `basic_${reduction}` — keeps underscore
-      basic_50:  r.basic_50,
-      basic_0:   r.basic_0,
-      opta:      r.opt_a,
-      optb:      r.opt_b,
-      optc:      r.opt_c,
-    }))
-
     // Run Chris's FEGLI_API.calculateRetirementButton()
     // It expects (actJson, annuitantRateInput) where actJson has .customFields
     const actJson = { customFields: { ...rawFields } }
-    const result = FEGLI_API.calculateRetirementButton(actJson, remapped)
+    const result = FEGLI_API.calculateRetirementButton(actJson, rateTable)
 
     return NextResponse.json(
       {

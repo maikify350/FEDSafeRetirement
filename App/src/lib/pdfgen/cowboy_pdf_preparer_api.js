@@ -1852,7 +1852,7 @@ const PDF_Preparer_API = {
     },
 
     lookupRate: function(rateTable, age) {
-        return rateTable.find((row) => age >= row.agemin && age <= row.agemax) || null;
+        return rateTable.find((row) => age >= row.age_min && age <= row.age_max) || null;
     },
 
     // --- 2. OPM LOGIC SUB-ENGINES ---
@@ -1936,9 +1936,9 @@ const PDF_Preparer_API = {
                     const hasA = hasAIndex === 1;
                     const hasC = cMult > 0;
                     const testedPremium = basicPremium +
-                        (hasA ? this.toNumber(rate.opta) : 0) +
-                        (bMult * (bia.base / 1000) * this.toNumber(rate.optb)) +
-                        (hasC ? cMult * this.toNumber(rate.optc) : 0);
+                        (hasA ? this.toNumber(rate.opt_a) : 0) +
+                        (bMult * (bia.base / 1000) * this.toNumber(rate.opt_b)) +
+                        (hasC ? cMult * this.toNumber(rate.opt_c) : 0);
 
                     if (testedPremium > targetCost + 0.05) continue;
 
@@ -2014,9 +2014,9 @@ const PDF_Preparer_API = {
             optBCoverage: this.roundMoney(components.bMult * bia.base),
             optCCoverage: this.roundMoney(components.hasC ? cMultiple * 5000 : 0),
             basicPremium: this.roundMoney((bia.total / 1000) * this.toNumber(rate.basic)),
-            optAPremium: this.roundMoney(components.hasA ? this.toNumber(rate.opta) : 0),
-            optBPremium: this.roundMoney(components.bMult * (bia.base / 1000) * this.toNumber(rate.optb)),
-            optCPremium: this.roundMoney(components.hasC ? cMultiple * this.toNumber(rate.optc) : 0)
+            optAPremium: this.roundMoney(components.hasA ? this.toNumber(rate.opt_a) : 0),
+            optBPremium: this.roundMoney(components.bMult * (bia.base / 1000) * this.toNumber(rate.opt_b)),
+            optCPremium: this.roundMoney(components.hasC ? cMultiple * this.toNumber(rate.opt_c) : 0)
         };
     },
 
@@ -2048,9 +2048,9 @@ const PDF_Preparer_API = {
             optBCoverage: this.roundMoney(safeBMult * bia.base),
             optCCoverage: this.roundMoney(safeCMult * 5000),
             basicPremium: this.roundMoney((bia.total / 1000) * this.toNumber(rate[basicKey])),
-            optAPremium: this.roundMoney(hasA ? this.toNumber(rate.opta) : 0),
-            optBPremium: this.roundMoney(safeBMult * (bia.base / 1000) * this.toNumber(rate.optb)),
-            optCPremium: this.roundMoney(safeCMult * this.toNumber(rate.optc))
+            optAPremium: this.roundMoney(hasA ? this.toNumber(rate.opt_a) : 0),
+            optBPremium: this.roundMoney(safeBMult * (bia.base / 1000) * this.toNumber(rate.opt_b)),
+            optCPremium: this.roundMoney(safeCMult * this.toNumber(rate.opt_c))
         };
     },
 
