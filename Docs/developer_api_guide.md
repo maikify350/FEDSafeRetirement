@@ -1,6 +1,6 @@
 # FEDSafe Retirement — API Reference Guide
 
-> **Last Updated:** April 17, 2026
+> **Last Updated:** April 26, 2026
 > **Repo:** [github.com/maikify350/FEDSafeRetirement](https://github.com/maikify350/FEDSafeRetirement)
 
 ---
@@ -189,6 +189,29 @@ GET /api/fegli-rates-employee?$select=age_min,age_max,basic,opt_a&$orderby=age_m
 
 ---
 
+## 📄 PDF Generation & Act! CRM Integration
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/blueprint/generate-pdf` | Generate filled PDF from Act! contact data (all 8 forms + Blueprint) |
+| `POST` | `/api/blueprint/save-document` | Save filled PDF as Library Document on Act! contact |
+| `GET` | `/api/pdf/{id}` | Short-URL redirect to full Supabase Storage PDF |
+| `POST` | `/api/blueprint/act-full` | Fetch and normalize all contact fields from Act! CRM |
+| `POST` | `/api/forms/upload` | Upload PDF template to Supabase Storage (admin only) |
+
+> See [act_pdf_handoff.md](./act_pdf_handoff.md) for full request/response schemas.
+
+### Key Design Decisions (April 26, 2026)
+
+- **x-upsert header** on storage uploads prevents duplicate-key errors on rapid re-generation
+- **Seconds in timestamps** (`HH-mm-ss`) ensures unique filenames for back-to-back generation
+- **Short-URL redirects** (`/api/pdf/{id}`) prevent Act! CRM from truncating long Supabase URLs
+- **Cache-busting** (`?v=timestamp`) on template URLs ensures preview always shows latest version
+- **Auto-delete old files** before template re-upload keeps storage clean
+- **Auto-persist form_url** after upload eliminates manual database updates
+
+---
+
 ## 📋 Architecture Notes
 
 - **Framework:** Next.js 16 (App Router) deployed on Vercel
@@ -196,4 +219,6 @@ GET /api/fegli-rates-employee?$select=age_min,age_max,basic,opt_a&$orderby=age_m
 - **Auth:** Supabase Auth (email/password)
 - **Admin gates:** POST/PUT/DELETE routes check the `users.role` column for `'admin'`
 - **Rate tables:** `fegli_rates_employee` and `fegli_rates_annuitant` in Supabase
+- **PDF Storage:** Supabase Storage bucket `Forms` (templates + `filled-forms/` folder)
+- **Act! CRM API:** Server-side auth via `ACT_USERNAME`/`ACT_PASSWORD`/`ACT_DATABASE` env vars
 - **Swagger UI:** Auto-generated from the `/api/openapi` spec
