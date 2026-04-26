@@ -2043,11 +2043,11 @@ const PDF_Preparer_API = {
         const safeCMult = Math.min(5, Math.max(0, parseInt(cMult, 10) || 0));
 
         return {
-            basicCoverage: this.roundMoney(bia.total * reductionPercent),
+            basicCoverage: this.roundMoney(bia.base * reductionPercent),
             optACoverage: this.roundMoney(hasA ? 2500 : 0),
             optBCoverage: this.roundMoney(safeBMult * bia.base),
             optCCoverage: this.roundMoney(safeCMult * 5000),
-            basicPremium: this.roundMoney((bia.total / 1000) * this.toNumber(rate[basicKey])),
+            basicPremium: this.roundMoney((bia.base / 1000) * this.toNumber(rate[basicKey])),
             optAPremium: this.roundMoney(hasA ? this.toNumber(rate.opt_a) : 0),
             optBPremium: this.roundMoney(safeBMult * (bia.base / 1000) * this.toNumber(rate.opt_b)),
             optCPremium: this.roundMoney(safeCMult * this.toNumber(rate.opt_c))
