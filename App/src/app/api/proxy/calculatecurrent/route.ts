@@ -80,10 +80,21 @@ export async function POST(request: NextRequest) {
       throw new Error(`Failed to load employee rate table: ${rateError?.message ?? 'no data'}`)
     }
 
+    // Remap Supabase column names to Chris's expected format
+    // (lookupRate expects agemin/agemax, calculateActiveFEGLI expects opta/optb/optc)
+    const remapped = rateTable.map((r: Record<string, unknown>) => ({
+      agemin: r.age_min,
+      agemax: r.age_max,
+      basic:  r.basic,
+      opta:   r.opt_a,
+      optb:   r.opt_b,
+      optc:   r.opt_c,
+    }))
+
     // Run Chris's FEGLI_API.calculateCurrentButton()
     // It expects (actJson, employeeRateInput) where actJson has .customFields
     const actJson = { customFields: { ...rawFields } }
-    const result = FEGLI_API.calculateCurrentButton(actJson, rateTable)
+    const result = FEGLI_API.calculateCurrentButton(actJson, remapped)
 
     return NextResponse.json(
       {
