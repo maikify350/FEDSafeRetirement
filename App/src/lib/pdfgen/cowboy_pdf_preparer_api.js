@@ -1451,7 +1451,7 @@ const PDF_Preparer_API = {
     parseBoolean: function(value) {
         if (value === true || value === false) return value;
         const normalized = String(value || "").trim().toLowerCase();
-        return normalized === "true" || normalized === "yes" || normalized === "y" || normalized === "1";
+        return normalized === "true" || normalized === "yes" || normalized === "y" || normalized === "1" || normalized === "on";
     },
 
     hasExplicitValue: function(source, key) {
