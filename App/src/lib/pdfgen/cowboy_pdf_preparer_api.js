@@ -1959,8 +1959,13 @@ const PDF_Preparer_API = {
         const hasRetireFieldInputs = this.hasExplicitValue(customFields, "optiona_retire") ||
             this.hasExplicitValue(customFields, "optionb_retire") ||
             this.hasExplicitValue(customFields, "optionc_retire");
+        // Fall back to active election fields if _retire variants are missing
+        const hasActiveFieldInputs = this.hasExplicitValue(customFields, "optiona") ||
+            this.hasExplicitValue(customFields, "optionb") ||
+            this.hasExplicitValue(customFields, "optionc");
         const requestedRetireChange = this.parseBoolean(customFields.change2fegli);
-        if (!hasRetireFieldInputs) {
+
+        if (!hasRetireFieldInputs && !hasActiveFieldInputs) {
             return {
                 hasA: false,
                 bMult: 0,
@@ -1970,14 +1975,19 @@ const PDF_Preparer_API = {
             };
         }
 
-        const hasRetireOverrides = requestedRetireChange || hasRetireFieldInputs;
+        const hasRetireOverrides = requestedRetireChange || hasRetireFieldInputs || hasActiveFieldInputs;
 
-        const hasA = hasRetireOverrides ? this.parseBoolean(customFields.optiona_retire) : false;
+        // Prefer _retire fields, fall back to active fields (mirrors calculateRetirementButton)
+        const hasA = hasRetireOverrides
+            ? this.parseBoolean(customFields.optiona_retire !== undefined ? customFields.optiona_retire : customFields.optiona)
+            : false;
         const bMult = hasRetireOverrides
-            ? Math.min(5, Math.max(0, parseInt(customFields.optionb_retire, 10) || 0))
+            ? Math.min(5, Math.max(0, parseInt(
+                customFields.optionb_retire !== undefined ? customFields.optionb_retire : customFields.optionb, 10) || 0))
             : 0;
         const cMult = hasRetireOverrides
-            ? Math.min(5, Math.max(0, parseInt(customFields.optionc_retire, 10) || 0))
+            ? Math.min(5, Math.max(0, parseInt(
+                customFields.optionc_retire !== undefined ? customFields.optionc_retire : customFields.optionc, 10) || 0))
             : 0;
 
         return {
