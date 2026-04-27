@@ -2062,7 +2062,7 @@ const PDF_Preparer_API = {
         const retirementDate = c.retiredate || today.toISOString();
         const employeeRates = this.parseRates(empRateInput);
         const annuitantRates = this.parseRates(annuitantRateInput);
-        const clientAge = parseInt(c.cust_age_033220843, 10) || this.ageOnDate(actJson.birthday, today);
+        const clientAge = parseInt(c.ageyy || c.cust_age_033220843, 10) || this.ageOnDate(actJson.birthday, today);
         const retireAge = this.ageOnDate(actJson.birthday, retirementDate);
         const salary = this.toNumber(c.salaryamount);
         const explicitActiveCode = (c.feglicodeactive || "").trim().toUpperCase();
@@ -2200,7 +2200,7 @@ const PDF_Preparer_API = {
         const stateTaxRates = this.parseRates(stateTaxCsv);
         const stateRetirementTaxRules = this.parseRates(stateRetirementTaxRulesInput);
 
-        const clientAge = parseInt(c.cust_age_033220843, 10) || this.ageOnDate(actJson.birthday, today);
+        const clientAge = parseInt(c.ageyy || c.cust_age_033220843, 10) || this.ageOnDate(actJson.birthday, today);
         const spouseAge = c.cust_spouseage_074349200
             ? parseInt(c.cust_spouseage_074349200, 10) || 0
             : this.ageOnDate(c.spousedob, today);
@@ -2705,11 +2705,10 @@ const PDF_Preparer_API = {
         output["Summary Net FERS"] = this.formatWholeCurrency(this.parseInjectedNumber(output["Net FERS"]));
         output["Summary Net TSP"] = this.formatWholeCurrency(this.parseInjectedNumber(output["Net TSP"]));
 
-        output["Client State"] = actJson.homeAddress && actJson.homeAddress.state
-            ? actJson.homeAddress.state
-            : (actJson.businessAddress && actJson.businessAddress.state
-                ? actJson.businessAddress.state
-                : "");
+        // NOTE: "Client State" is already correctly set by execute() using the
+        // normalized actJson (which has homeAddress/businessAddress resolved).
+        // Do NOT overwrite it here — the actJson parameter in executeTemplate2
+        // is the raw, un-normalized input and lacks those address objects.
 
         output["Sick Leave"] = this.formatTemplate2HoursDisplay(sickLeaveHours);
         output["Years of Service"] = this.formatTemplate2ServiceDisplay(

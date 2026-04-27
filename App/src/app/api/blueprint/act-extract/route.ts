@@ -55,7 +55,7 @@ const ROOT_FIELDS = [
  * Ref: direct_crm_fields.customFields in template2_pdf_requirements.json
  */
 const CUSTOM_FIELDS = [
-  'cust_age_033220843',
+  'ageyy',                                         // renamed from cust_age_033220843
   'cust_spouseage_074349200',
   'spousedob',
   'servicecomputationdate',
@@ -230,7 +230,7 @@ export async function GET(req: NextRequest) {
 
     // ── 3. Flatten + clean field names ──────────────────────────────────────
     //
-    // cleanKey():  cust_age_033220843  →  age
+    // cleanKey():  ageyy  →  ageyy  (unchanged)
     //              cust_fehbpermonth_023844547  →  fehbpermonth
     //              salaryamount  →  salaryamount  (unchanged — no prefix/suffix)
     //

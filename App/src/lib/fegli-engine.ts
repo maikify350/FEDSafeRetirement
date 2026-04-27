@@ -14,8 +14,9 @@ export interface FegliRateBand {
 }
 
 export interface FegliCustomFields {
-  age?: string | number
-  cust_age_033220843?: string | number // alias — normalized to `age`
+  ageyy?: string | number              // primary — AgeYY in CRM
+  age?: string | number                // legacy alias
+  cust_age_033220843?: string | number  // legacy raw CRM key
   salaryamount?: string | number
   feglicodeactive?: string
   fegliperpayperiod?: string | number
@@ -111,13 +112,17 @@ export function executeFegliCalculation(
 ): FegliResult {
   const fields = { ...customFields }
 
-  // Normalize age alias
-  if (fields.cust_age_033220843 !== undefined && fields.age === undefined) {
-    fields.age = fields.cust_age_033220843
+  // Normalize age aliases — prefer ageyy → age → cust_age_033220843
+  if (fields.ageyy === undefined) {
+    if (fields.age !== undefined) {
+      fields.ageyy = fields.age
+    } else if (fields.cust_age_033220843 !== undefined) {
+      fields.ageyy = fields.cust_age_033220843
+    }
   }
 
   const salary = parseCurrency(fields.salaryamount)
-  const age = parseInt(String(fields.age ?? '0'), 10) || 0
+  const age = parseInt(String(fields.ageyy ?? fields.age ?? '0'), 10) || 0
   const biWeeklyCost = parseCurrency(fields.fegliperpayperiod)
   const existingCode = String(fields.feglicodeactive ?? '').trim()
 

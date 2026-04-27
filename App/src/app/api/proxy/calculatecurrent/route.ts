@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate required fields
-    const age = rawFields.age ?? rawFields.cust_age_033220843
+    const age = rawFields.ageyy ?? rawFields.age ?? rawFields.cust_age_033220843
     const salary = rawFields.salaryamount
     if (!age || !salary) {
       return NextResponse.json(
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
           success: false,
           error: 'Missing required fields',
           missingFields: [
-            !age ? 'Age (age or cust_age_033220843)' : null,
+            !age ? 'AgeYY (ageyy, age, or cust_age_033220843)' : null,
             !salary ? 'Salary (salaryamount)' : null,
           ].filter(Boolean),
           received: rawFields,

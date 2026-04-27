@@ -64,7 +64,7 @@ async function getActToken(
 //  field-mapper.js — both strip cust_ prefix and trailing numeric suffix.
 //
 //  cust_fehbpermonth_023844547  →  fehbpermonth
-//  cust_age_033220843           →  age
+//  ageyy                          →  ageyy (unchanged)
 //  feglicodeactive              →  feglicodeactive   (unchanged)
 // ═════════════════════════════════════════════════════════════════════════════
 
@@ -239,7 +239,7 @@ function flattenContact(
 
   // 2. Merge customFields blob — cleaned names win over root if both present
   //    and the custom value is non-null.
-  // NOTE: some custom fields are ACT-calculated (e.g. cust_age_033220843 → age,
+  // NOTE: some custom fields are ACT-calculated (e.g. ageyy,
   // cust_spouseage_... → spouseage). These are READ-ONLY — ACT computes them
   // automatically from other fields (DOB, SpouseDOB). Never write back to them
   // via the PDF fill or any update endpoint.
@@ -264,7 +264,7 @@ function flattenContact(
   //    birth year: if this year's birthday has already passed → birthYear = thisYear - age,
   //    otherwise → thisYear - age - 1.
   const bdRaw = fields['birthday']
-  const ageRaw = fields['age']
+  const ageRaw = fields['ageyy'] ?? fields['age']
   if (typeof bdRaw === 'string' && ageRaw !== null && ageRaw !== undefined) {
     const age = parseInt(String(ageRaw), 10)
     if (!isNaN(age)) {

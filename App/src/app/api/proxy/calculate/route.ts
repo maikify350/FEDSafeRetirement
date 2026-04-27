@@ -50,15 +50,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Normalize age alias
+    // Normalize age aliases — prefer ageyy → age → cust_age_033220843
     const customFields: FegliCustomFields = { ...rawFields }
-    if (customFields.cust_age_033220843 !== undefined && customFields.age === undefined) {
-      customFields.age = customFields.cust_age_033220843
+    if (customFields.ageyy === undefined) {
+      if (customFields.age !== undefined) {
+        customFields.ageyy = customFields.age
+      } else if (customFields.cust_age_033220843 !== undefined) {
+        customFields.ageyy = customFields.cust_age_033220843
+      }
     }
 
     // Validate required fields
     const required = [
-      { key: 'age',          label: 'Age' },
+      { key: 'ageyy',       label: 'AgeYY' },
       { key: 'salaryamount', label: 'Salary' },
     ]
     const missing = required
