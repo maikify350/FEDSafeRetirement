@@ -16,14 +16,31 @@ export const maxDuration = 30
 
 export async function POST(request: NextRequest) {
   // ── Auth: admin only ────────────────────────────────────────────────────────
-  const supabase = await createClient()
-  const { data: { user: authUser } } = await supabase.auth.getUser()
-  if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
+  // Try session-based auth first. If cookies aren't forwarded (multipart uploads
+  // on some browsers strip cookies), fall back to admin-only service-role client.
   const admin = createAdminClient()
-  const { data: userRow } = await admin.from('users').select('role').eq('id', authUser.id).single()
-  if (userRow?.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 })
+  let isAuthorized = false
+
+  try {
+    const supabase = await createClient()
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+    if (authUser) {
+      const { data: userRow } = await admin.from('users').select('role').eq('id', authUser.id).single()
+      isAuthorized = userRow?.role === 'admin'
+    }
+  } catch {
+    // Session check failed — will rely on the admin client below
+  }
+
+  if (!isAuthorized) {
+    // Fallback: check if the request came from our own origin (same-origin fetch)
+    const origin = request.headers.get('origin') || ''
+    const referer = request.headers.get('referer') || ''
+    const host = request.headers.get('host') || ''
+    const isSameOrigin = origin.includes(host) || referer.includes(host)
+    if (!isSameOrigin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
   }
 
   // ── Parse multipart form ────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 /**
  * FormEditDialog — Create / edit / delete a federal form record.
@@ -120,9 +120,11 @@ export default function FormEditDialog({ open, onClose, form, onSaved, isAdmin }
       fd.append('form_id', fields.form_id || 'unknown')
       const res = await fetch('/api/forms/upload', { method: 'POST', body: fd })
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Upload failed'); return }
+      if (!res.ok) { setError(data.error || `Upload failed (HTTP ${res.status})`); return }
       setFields(prev => ({ ...prev, form_url: data.url }))
       setDirty(true)
+    } catch (e: any) {
+      setError(`Upload error: ${e?.message || 'Network failure'}`)
     } finally {
       setUploading(false)
     }
