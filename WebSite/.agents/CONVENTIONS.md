@@ -1,51 +1,44 @@
-# FEDSafe Retirement – Website Project Conventions
+# FEDSafe Retirement - Website Conventions
 
-## Project Overview
+## Scope
 
-This project integrates content sections from the legacy **FEDSafe Retirement** WordPress site into a new static HTML website. The goal is to port three resource sections into the new site while preserving design consistency.
+This file defines current working conventions for `C:\WIP\FEDSafeRetirement\WebSite`.
 
-## Folder Structure
+## Core Rules
 
+- Edit website source in `New/`.
+- Do not manually edit generated deploy output in `dist/`.
+- Do not modify `New - Copy/` (backup only).
+- Keep existing FEDSafe visual language unless explicitly asked to redesign.
+
+## Build Stack
+
+- Static HTML/CSS/JS site with Node-based build scripts.
+- Build pipeline is script-driven via npm in `package.json`.
+- Production deploy target: `https://fedsaferetirement.com/`.
+
+## Canonical Commands
+
+From `WebSite/`:
+
+```bash
+npm run layout
+npm run shared
+npm run build
+npm run preview
 ```
-c:\WIP\FEDSafeRetirement\WebSite\
-├── .agents/                  ← Antigravity config & workflows
-├── Current/                  ← Legacy site sections to port (DO NOT DELETE)
-│   ├── benefits-analysis/
-│   ├── fegli-analysis/
-│   └── social-security-analysis/
-├── New/                      ← The active working site (edit HERE)
-│   ├── index.html            ← Main entry point
-│   ├── resources/            ← Existing Resources section
-│   └── ...
-├── New - Copy/               ← BACKUP — DO NOT MODIFY
-├── PRD.md                    ← Project requirements
-└── the_ask.md                ← Customer brief
-```
 
-## ⚠️ Critical Rules
+`npm run build` runs layout + shared component sync + Vercel build pipeline.
 
-- **`New - Copy/`** is a safety backup. **Never modify or delete files in this folder.**
-- All active work goes into **`New/`**.
-- The WIP cloud reference site is: https://fedsafev2.zeppelinwebsites.com/
-- The production site is: https://fedsaferetirement.com/
+## Working Pattern
 
-## Technology Stack
+1. Update content/templates under `New/`.
+2. Run `npm run build`.
+3. Verify with `npm run preview`.
+4. Commit only intentional changes.
 
-- **Static HTML/CSS/JS** — No build system, no npm, no framework.
-- The site originated as a WordPress export; the `New/` folder contains raw HTML.
-- Styling should be consistent with the existing `index.html` design language.
+## Documentation Priority
 
-## Key Tasks (from PRD)
-
-1. Port three sections from `Current/` into the `New/` site:
-   - `benefits-analysis/`
-   - `fegli-analysis/`
-   - `social-security-analysis/`
-2. Add these three sections as sub-menu items under the **Resources** menu in `New/index.html`.
-3. Match the existing header/menu style (reference: `New/Header_Menu.png` and `Current/Current_Site_Header_Section.png`).
-
-## Workflow
-
-- Reference screenshots in `Current/` and `New/` before making UI changes.
-- When modifying `index.html`, always preserve the existing navigation structure before adding new items.
-- Test changes by opening `New/index.html` in a browser.
+- First: source code + build scripts
+- Then: `README.md`, `docs/BUILD.md`, `docs/LAYOUT.md`, `docs/FORMS.md`
+- Treat `session-handoff.md` and `PRD.md` as historical context, not canonical instructions.

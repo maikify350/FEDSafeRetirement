@@ -1,0 +1,11 @@
+Use case: photorealistic-natural
+Asset type: seminar alternate for a retirement-planning microsite
+Primary request: Create a premium photorealistic seminar image from scratch using the provided partner headshot as the identity reference and the provided FedSafe logo as the branding reference. Show Brian Westrich standing at the front of the room behind a polished presentation podium with one exact FedSafe shield logo centered on a clean white rectangular panel on the front. He is facing a seated audience and clearly leading the session from the front, not standing in the back of the room. The audience should be seated in rows and include more middle-aged women than before, with a balanced professional crowd of near-retirement federal employees.
+Scene/background: tasteful seminar room or conference room, audience seated and focused, presenter at the front facing them
+Subject: Brian Westrich in a black casual collared shirt with no visible shirt logo, approachable and energetic, presenting retirement-planning material
+Style/medium: premium editorial photorealism
+Composition/framing: wide horizontal 16:9 scene, presenter and podium at the front of room, seated audience visible from behind and in three-quarter view, clear sense he is addressing them
+Lighting/mood: warm clean conference lighting, trustworthy, premium, energetic
+Color palette: black, navy, gold, white, professional neutrals
+Constraints: preserve Brian Westrich likeness from the headshot, keep the outfit casual not a suit, include FedSafe branding only once on the podium front, use the exact shield logo unchanged in color and shape, place it on a plain white background panel, do not place any logo on his shirt, presenter must be in front of the seated audience, vary the pose from the other seminar images, no watermark
+Avoid: altered logo, wrong logo colors, transparent or dark background behind the podium logo, double logo, shirt logo, suit jacket, empty room, one-on-one consultation, audience standing, unreadable branding, repeated stock pose, cheesy expressions

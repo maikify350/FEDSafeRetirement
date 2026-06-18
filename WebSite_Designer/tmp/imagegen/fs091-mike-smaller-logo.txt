@@ -1,0 +1,11 @@
+Use case: precise-object-edit
+Asset type: seminar alternate test for the FedSafe review microsite
+Primary request: Reduce only the FedSafe shield logo on Mike Zaino's shirt to a much smaller, more realistic embroidered size on the left chest. Keep the image otherwise unchanged.
+Input images: Image 1 is the full seminar image to edit. Image 2 is the exact FedSafe shield reference and must not be altered in color, shape, proportions, or design.
+Scene/background: keep the existing seminar room, audience, composition, lighting, and Mike's pose exactly as they are
+Subject: Mike Zaino in a light blue button-down shirt with one small exact FedSafe shield logo on the left chest
+Style/medium: premium editorial photorealism
+Composition/framing: preserve the existing composition exactly
+Lighting/mood: preserve current lighting and mood
+Constraints: change only the shirt logo size; keep Mike's face, body, shirt color, audience, background, and overall composition unchanged; the logo should be significantly smaller and look like subtle embroidery rather than a patch or oversized print; only one logo should appear in the image; no watermark
+Avoid: second logo, overlapping logo, enlarged logo, distorted logo, logo with wrong colors, altered shirt folds, altered pose, altered face, altered audience

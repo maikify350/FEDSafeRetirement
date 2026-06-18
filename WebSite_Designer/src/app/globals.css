@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(216, 231, 246, 0.72), transparent 32%),
+    radial-gradient(circle at top right, rgba(202, 164, 95, 0.16), transparent 24%),
+    linear-gradient(180deg, #fcfbf8 0%, #f6f1e8 100%);
+  color: #26303c;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(39, 79, 124, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(39, 79, 124, 0.05) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.4), transparent 78%);
+  z-index: -1;
+}
+
+::selection {
+  background: rgba(202, 164, 95, 0.28);
+  color: #15304d;
+}
+
+@layer base {
+  * {
+    @apply border-slate-200;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply text-fed-navy;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .panel-sheen {
+    background:
+      linear-gradient(140deg, rgba(255, 255, 255, 0.96), rgba(251, 248, 242, 0.98)),
+      linear-gradient(180deg, rgba(216, 231, 246, 0.3), rgba(255, 255, 255, 0));
+  }
+}
+

@@ -1,0 +1,927 @@
+[
+  {
+    "id": "FS-001",
+    "mediaType": "image",
+    "title": "Homepage Hero Couple Reviewing Retirement Plans",
+    "section": "Hero Images",
+    "useCase": "Main homepage hero",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Trustworthy",
+      "Reassuring",
+      "Hopeful",
+      "Warm",
+      "Clear",
+      "Professional"
+    ],
+    "relatabilityTags": [
+      "Couples",
+      "Spouses",
+      "Federal Employees",
+      "Near-Retirees",
+      "Families"
+    ],
+    "scenarioTags": [
+      "Planning at Home",
+      "Reviewing Paperwork",
+      "Retirement Benefits",
+      "Family Legacy"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "Many near-retirees make these decisions together at home, sitting at a kitchen or dining table. This image makes retirement planning feel personal, manageable, and family-centered.",
+    "prompt": "Create a premium photorealistic hero image for a federal retirement planning website. Show a near-retirement couple, late 50s to early 60s, sitting at a kitchen or dining table reviewing retirement paperwork and a laptop together. They should look thoughtful, focused, and reassured, not stressed. The scene should feel warm, bright, and hopeful, with natural light coming through a window. Include tasteful papers, a notebook, a laptop, and coffee mugs, but no readable private data.\n\nCast authentically diverse federal employees and retirees, including White, Black, Latino, Asian, and multiracial individuals. Representation should feel natural and professional. Create a composition suitable for a homepage hero banner, with some clean negative space for website text. Premium website style, realistic, polished, trustworthy, and emotionally grounded.",
+    "thumbnail": "/artworks/generated/FS-001_homepage_hero_couple.png"
+  },
+  {
+    "id": "FS-002",
+    "mediaType": "image",
+    "title": "Service to Retirement Hero",
+    "section": "Hero Images",
+    "useCase": "Alternate homepage hero",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Service",
+      "Dignified",
+      "Reflective",
+      "Hopeful",
+      "Confident"
+    ],
+    "relatabilityTags": [
+      "Public Servants",
+      "Federal Employees",
+      "Near-Retirees",
+      "Civilian Professionals"
+    ],
+    "scenarioTags": [
+      "Transition into Retirement",
+      "Reviewing Paperwork",
+      "Service and Honor"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "Federal workers identify with moving from long-term service into the next chapter. It connects the benefits conversation to identity and earned service.",
+    "prompt": "Create a top-of-class photorealistic website hero image for a federal retirement planning company. Show a near-retirement federal employee in their late 50s transitioning from public service into retirement planning. The person is seated at home reviewing retirement documents with a laptop, looking calm, reflective, and prepared. The mood should communicate: “You served the country. Now protect the retirement you earned.”\n\nThe subject may be shown in tasteful professional attire or with subtle federal-service cues. Use soft natural lighting, warm tones, and an elegant, clean composition with room for website headline text. The casting should reflect the diversity of the U.S. federal workforce, including White, Black, Latino, Asian, and multiracial individuals. Avoid official logos and avoid visible confidential text.",
+    "thumbnail": ""
+  },
+  {
+    "id": "FS-003",
+    "mediaType": "image",
+    "title": "Air Force Officer and Spouse Reviewing Retirement Paperwork",
+    "section": "Federal Roles",
+    "useCase": "Military / federal role section",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Military",
+      "Honor",
+      "Family-Oriented",
+      "Confident",
+      "Prepared"
+    ],
+    "relatabilityTags": [
+      "Military Retirees",
+      "Spouses",
+      "Couples",
+      "Federal Employees"
+    ],
+    "scenarioTags": [
+      "Planning at Home",
+      "Reviewing Paperwork",
+      "Transition into Retirement",
+      "Service and Honor"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "Military families often make retirement decisions together. The uniform and spouse involvement make the planning process feel dignified and realistic.",
+    "prompt": "Create a premium photorealistic image for a federal retirement planning website. Show a near-retirement Air Force officer in dress uniform, late 50s to early 60s, seated at a dining table with their spouse reviewing retirement paperwork and a laptop. The officer should have tasteful medals and rank details that feel realistic, but do not emphasize exact official insignia. The spouse is engaged and supportive. The mood should be calm, prepared, and confident.\n\nUse warm natural light, a polished home setting, and a professional composition suitable for a premium financial website. Create a believable, elegant, and emotionally grounded image. Cast authentically diverse subjects, including White, Black, Latino, Asian, and multiracial individuals. Avoid readable document text and avoid cheesy stock-photo expressions.",
+    "thumbnail": "/artworks/generated/FS-003_air_force_officer_spouse.png"
+  },
+  {
+    "id": "FS-004",
+    "mediaType": "image",
+    "title": "Army Colonel Planning Retirement at Home",
+    "section": "Federal Roles",
+    "useCase": "Military retirement section",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Leadership",
+      "Dignified",
+      "Retirement Readiness",
+      "Family-Oriented"
+    ],
+    "relatabilityTags": [
+      "Military Retirees",
+      "Spouses",
+      "Senior Officers",
+      "Near-Retirees"
+    ],
+    "scenarioTags": [
+      "Planning at Home",
+      "Reviewing Paperwork",
+      "Transition into Retirement",
+      "Service and Honor"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "Senior officers and long-term service members want to see themselves represented with dignity, accomplishment, and family partnership.",
+    "prompt": "Create a high-end photorealistic website image showing a near-retirement Army colonel and spouse reviewing retirement planning documents at home. The colonel is late 50s to early 60s, dignified and accomplished, wearing a formal military uniform with tasteful ribbons and medals. Both individuals look thoughtful, informed, and calm. A laptop and organized paperwork sit on the table, with no readable personal data.\n\nThe setting should be warm, clean, and upscale, with soft natural light and an emotionally reassuring tone. The image should feel like a premium editorial lifestyle photo, not a generic stock image. Use authentic diversity across White, Black, Latino, Asian, and multiracial casting.",
+    "thumbnail": ""
+  },
+  {
+    "id": "FS-005",
+    "mediaType": "image",
+    "title": "Postal-Style Federal Worker Reviewing Retirement Paperwork",
+    "section": "Federal Roles",
+    "useCase": "Replace weak USPS-style image",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Hardworking",
+      "Familiar",
+      "Public Service",
+      "Reflective",
+      "Dignified"
+    ],
+    "relatabilityTags": [
+      "USPS-Style Workers",
+      "Federal Employees",
+      "Public Servants",
+      "Near-Retirees"
+    ],
+    "scenarioTags": [
+      "Service and Honor",
+      "Transition into Retirement",
+      "Reviewing Paperwork"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "USPS-style workers are highly recognizable to the federal audience. The end-of-route setting communicates decades of everyday service and earned retirement.",
+    "prompt": "Create a photorealistic, premium-quality website image of a near-retirement postal-style federal worker, late 50s to early 60s, seated beside or inside a generic white mail delivery vehicle at the end of the workday, reviewing paperwork on a clipboard or tablet. Use postal-style cues, but do not show official USPS logos or branding. The person should look calm, reflective, and experienced, as if planning the next chapter of life.\n\nUse warm late-afternoon light, realistic vehicle details, and a visually appealing composition suitable for a website. The image should feel cinematic, honest, and emotionally strong. Cast diverse versions including White, Black, Latino, Asian, and multiracial subjects.",
+    "thumbnail": "/artworks/generated/FS-005_postal_style_worker.png"
+  },
+  {
+    "id": "FS-006",
+    "mediaType": "image",
+    "title": "Federal Judge Reviewing Retirement Documents",
+    "section": "Federal Roles",
+    "useCase": "Credibility / federal professions section",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Authority",
+      "Wisdom",
+      "Professional",
+      "Clear",
+      "Dignified"
+    ],
+    "relatabilityTags": [
+      "Federal Judges",
+      "Civilian Professionals",
+      "Public Servants",
+      "Near-Retirees"
+    ],
+    "scenarioTags": [
+      "Reviewing Paperwork",
+      "Federal Training",
+      "Transition into Retirement"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "It broadens the federal audience beyond military and postal workers, showing that FedSafe understands senior professional public servants too.",
+    "prompt": "Create a premium photorealistic image of a federal judge in their late 50s or early 60s seated in chambers or a law-office-style setting, reviewing retirement planning paperwork at a polished desk. The judge should look thoughtful, intelligent, and calm. Include subtle visual cues such as law books, a robe hanging in the background, elegant wood furnishings, and soft daylight through blinds. The composition should leave some negative space for website text.\n\nThe tone should be dignified, professional, and reassuring. Cast may be White, Black, Latino, Asian, or multiracial. Avoid visible court seals, avoid readable documents, and avoid exaggerated drama. Premium website style, realistic and refined.",
+    "thumbnail": "/artworks/generated/FS-006_federal_judge.png"
+  },
+  {
+    "id": "FS-007",
+    "mediaType": "image",
+    "title": "Federal Civilian Professional at Home Office",
+    "section": "Federal Roles",
+    "useCase": "General federal employee section",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Professional",
+      "Calm",
+      "Relatable",
+      "Modern",
+      "Clear"
+    ],
+    "relatabilityTags": [
+      "Civilian Professionals",
+      "Federal Employees",
+      "Agency Workforce",
+      "Near-Retirees"
+    ],
+    "scenarioTags": [
+      "Reviewing Paperwork",
+      "Planning at Home",
+      "Retirement Benefits"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "This fits the broadest audience: analysts, office staff, administrators, agency managers, and professionals who may not wear uniforms.",
+    "prompt": "Create a premium photorealistic image showing a near-retirement federal professional, late 50s to early 60s, seated at a desk or home office reviewing federal retirement planning paperwork and a laptop. The individual should look composed, thoughtful, and focused. The scene should include a clean desk, organized documents, natural window light, and a calm, modern environment.\n\nThe tone should communicate clarity, preparedness, and professional guidance. Use realistic casting that reflects the diversity of the U.S. federal workforce, including White, Black, Latino, Asian, and multiracial individuals. Avoid fear, panic, exaggerated stress, or overly staged stock-photo posing.",
+    "thumbnail": ""
+  },
+  {
+    "id": "FS-008",
+    "mediaType": "image",
+    "title": "Couple Reviewing Benefits and Elections",
+    "section": "Planning / Guidance",
+    "useCase": "Benefits / elections section",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Decision-Making",
+      "Couple",
+      "Clarity",
+      "Benefits",
+      "Reassuring"
+    ],
+    "relatabilityTags": [
+      "Couples",
+      "Spouses",
+      "Federal Employees",
+      "Near-Retirees"
+    ],
+    "scenarioTags": [
+      "Retirement Benefits",
+      "Reviewing Paperwork",
+      "Planning at Home"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "This is one of the most universal moments in retirement planning: comparing options, dates, forms, and tradeoffs with a spouse or partner.",
+    "prompt": "Create a premium photorealistic image of a near-retirement couple reviewing federal benefits paperwork and a laptop at home. The couple is late 50s to early 60s and appears focused, attentive, and reassured. The setting should be a bright kitchen or dining area with clean natural light, tasteful documents, and a calm professional atmosphere.\n\nThis image should communicate decision-making, benefit elections, retirement timing, and thoughtful preparation. Use authentic diversity across White, Black, Latino, Asian, and multiracial couples. Avoid readable document text and avoid overly dramatic expressions.",
+    "thumbnail": ""
+  },
+  {
+    "id": "FS-009",
+    "mediaType": "image",
+    "title": "Trusted Advisor Consultation",
+    "section": "Planning / Guidance",
+    "useCase": "Consultation section",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Trustworthy",
+      "Guidance",
+      "Educational",
+      "Supportive",
+      "Professional"
+    ],
+    "relatabilityTags": [
+      "Federal Employees",
+      "Couples",
+      "Spouses",
+      "Near-Retirees"
+    ],
+    "scenarioTags": [
+      "Consultation",
+      "Retirement Benefits",
+      "Reviewing Paperwork"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "It shows FedSafe as an expert guide, not just a website. Clients can imagine asking questions and receiving clear help.",
+    "prompt": "Create a high-end photorealistic consultation scene for a federal retirement planning website. Show a trusted retirement consultant meeting with a near-retirement federal employee or couple in a modern office or home-office setting. The consultant is professional, warm, and attentive. The clients are engaged, asking questions, and looking reassured. Use tasteful paperwork, a laptop or tablet, and a clean, upscale environment.\n\nThe image should feel trustworthy, educational, and emotionally supportive. Show authentic diversity across White, Black, Latino, Asian, and multiracial individuals. No readable private data, no exaggerated sales vibe, and no awkward stock-photo posing.",
+    "thumbnail": ""
+  },
+  {
+    "id": "FS-010",
+    "mediaType": "image",
+    "title": "Clarity Before Retirement",
+    "section": "Planning / Guidance",
+    "useCase": "Clarity / planning philosophy section",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Reflective",
+      "Understanding",
+      "Control",
+      "Confidence",
+      "Calm"
+    ],
+    "relatabilityTags": [
+      "Federal Employees",
+      "Near-Retirees",
+      "Civilian Professionals"
+    ],
+    "scenarioTags": [
+      "Retirement Benefits",
+      "Reviewing Paperwork",
+      "Transition into Retirement"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "Many people experience a quiet moment before making big decisions. This makes FedSafe feel like the path from uncertainty to control.",
+    "prompt": "Create a premium photorealistic image showing a near-retirement federal employee pausing to thoughtfully review retirement options. The person should look reflective, intelligent, and calm, seated with paperwork and a laptop in a softly lit home or office setting. The tone should suggest clarity, preparation, and confidence rather than confusion.\n\nUse warm, natural light and a refined composition suitable for a premium retirement planning website. Cast versions across White, Black, Latino, Asian, and multiracial individuals. Avoid making the person look too old, frail, or distressed.",
+    "thumbnail": ""
+  },
+  {
+    "id": "FS-011",
+    "mediaType": "image",
+    "title": "Concerned Individual Reviewing Paperwork",
+    "section": "Concern to Clarity",
+    "useCase": "Problem-awareness section",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Concern",
+      "Realistic",
+      "Solvable Problem",
+      "Emotional Truth",
+      "Supportive"
+    ],
+    "relatabilityTags": [
+      "Federal Employees",
+      "Near-Retirees",
+      "Civilian Professionals"
+    ],
+    "scenarioTags": [
+      "Concern to Clarity",
+      "Reviewing Paperwork",
+      "Retirement Benefits"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "This is the emotional starting point for many clients: not panic, but a realistic sense that benefits decisions are complicated and consequences matter.",
+    "prompt": "Create a photorealistic, premium-quality image of a near-retirement federal employee reviewing bills, retirement paperwork, or benefit documents at a desk or kitchen table. The person should look concerned and thoughtful, but not panicked or overwhelmed. Show a realistic expression of mild stress or uncertainty, with a hand near the temple or forehead, while looking at paperwork and a laptop.\n\nThe environment should be clean, modern, and believable, with natural indoor lighting and a calm, supportive mood. This is for a federal retirement planning website, so the image should communicate concern that can be solved with expert guidance. Use diverse casting including White, Black, Latino, Asian, and multiracial individuals. No readable personal data, no melodrama, and no exaggerated despair.",
+    "thumbnail": "/artworks/generated/FS-011_concerned_individual.png"
+  },
+  {
+    "id": "FS-012",
+    "mediaType": "image",
+    "title": "Concerned Couple Solving It Together",
+    "section": "Concern to Clarity",
+    "useCase": "Emotional transition section",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Partnership",
+      "Realism",
+      "Support",
+      "Problem-Solving",
+      "Reassuring"
+    ],
+    "relatabilityTags": [
+      "Couples",
+      "Spouses",
+      "Federal Employees",
+      "Near-Retirees"
+    ],
+    "scenarioTags": [
+      "Concern to Clarity",
+      "Planning at Home",
+      "Reviewing Paperwork"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "Couples often face retirement uncertainty together. The image emphasizes teamwork rather than fear.",
+    "prompt": "Create a premium photorealistic image of a near-retirement couple seated at a dining table with a laptop, calculator, and paperwork. They are reviewing financial or retirement-related documents and look mildly concerned, serious, and focused, but still calm and realistic. Their body language should show partnership and problem-solving rather than panic.\n\nThe style should be warm, realistic, and emotionally grounded, appropriate for a high-end retirement planning website. Use natural diversity across White, Black, Latino, Asian, and multiracial couples. Avoid overly dramatic gestures and avoid making the scene look like generic stock photography.",
+    "thumbnail": ""
+  },
+  {
+    "id": "FS-013",
+    "mediaType": "image",
+    "title": "Grandparent and Grandchild",
+    "section": "Family / Legacy",
+    "useCase": "Legacy / family section",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Legacy",
+      "Family-Oriented",
+      "Love",
+      "Peace of Mind",
+      "Warm"
+    ],
+    "relatabilityTags": [
+      "Grandparents",
+      "Families",
+      "Federal Employees",
+      "Near-Retirees"
+    ],
+    "scenarioTags": [
+      "Family Legacy",
+      "Life After Retirement"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "It connects retirement planning to what matters emotionally: family, legacy, time, and security for the people they love.",
+    "prompt": "Create a premium photorealistic image for a federal retirement planning website showing a near-retirement grandparent in their late 50s or early 60s spending quality time with a grandchild. The scene should feel warm, loving, and natural — such as reading together on a couch, walking outdoors, or sharing a quiet moment at home. The expression should communicate peace of mind, family legacy, and the purpose behind retirement planning.\n\nUse soft natural light, tasteful home decor, and a polished editorial style. Cast diverse subjects including White, Black, Latino, Asian, and multiracial families. Avoid making the grandparent appear too elderly. The image should feel genuine, not overly posed.",
+    "thumbnail": ""
+  },
+  {
+    "id": "FS-014",
+    "mediaType": "image",
+    "title": "Couple Enjoying the Next Chapter",
+    "section": "Family / Legacy",
+    "useCase": "Post-planning / outcomes section",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Hopeful",
+      "Confident",
+      "Calm",
+      "Togetherness",
+      "Aspirational"
+    ],
+    "relatabilityTags": [
+      "Couples",
+      "Spouses",
+      "Families",
+      "Near-Retirees"
+    ],
+    "scenarioTags": [
+      "Life After Retirement",
+      "Family Legacy",
+      "Transition into Retirement"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "It shows the desired emotional outcome after planning is done well: calm, confidence, and the ability to enjoy the next chapter.",
+    "prompt": "Create a premium photorealistic image of a near-retirement couple in their late 50s to early 60s enjoying a peaceful, hopeful moment together at home or outdoors. They may be smiling at each other near a laptop after reviewing retirement plans, or simply enjoying a calm conversation that suggests confidence about the future. The mood should be warm, reassuring, and aspirational.\n\nThis image is for a premium federal retirement planning website and should communicate peace of mind, partnership, and the rewards of good planning. Show authentic diversity across White, Black, Latino, Asian, and multiracial couples. Keep the look elegant, natural, and emotionally believable.",
+    "thumbnail": ""
+  },
+  {
+    "id": "FS-015",
+    "mediaType": "image",
+    "title": "Federal Retirement Workshop",
+    "section": "Workshops / Training",
+    "useCase": "Seminar / training section",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Educational",
+      "Community",
+      "Trustworthy",
+      "Expertise",
+      "Empowering"
+    ],
+    "relatabilityTags": [
+      "Seminar Attendees",
+      "Agency Workforce",
+      "Federal Employees",
+      "Military Retirees",
+      "USPS-Style Workers"
+    ],
+    "scenarioTags": [
+      "Workshop",
+      "Federal Training",
+      "Retirement Benefits"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "It reflects a core FedSafe service: educating federal employees before irreversible decisions are made.",
+    "prompt": "Create a premium photorealistic image of a federal retirement planning workshop or seminar in a bright, modern training room. A confident presenter stands at the front speaking to a diverse audience of federal employees approaching retirement. The audience should include a natural mix of White, Black, Latino, Asian, and multiracial attendees, with both men and women represented. Include varied federal-role cues such as military, postal-style, healthcare, office, and professional civilian workers.\n\nThe room should feel clean, modern, and educational, with a presentation screen showing blurred charts or simple visual shapes but no readable text. The mood should be informative, engaging, and trustworthy. Suitable for a premium website promoting educational seminars and retirement workshops.",
+    "thumbnail": "/artworks/generated/FS-015_federal_workshop.png"
+  },
+  {
+    "id": "FS-016",
+    "mediaType": "image",
+    "title": "Lunch-and-Learn / Agency Training",
+    "section": "Workshops / Training",
+    "useCase": "Agency training section",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Learning",
+      "Supportive",
+      "Guidance",
+      "Workforce Education",
+      "Approachable"
+    ],
+    "relatabilityTags": [
+      "Agency Workforce",
+      "Seminar Attendees",
+      "Federal Employees",
+      "Public Servants"
+    ],
+    "scenarioTags": [
+      "Workshop",
+      "Federal Training",
+      "Retirement Benefits"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "It signals that FedSafe serves both individuals and agencies, including HR-style training and workforce education.",
+    "prompt": "Create a premium photorealistic image of a federal retirement lunch-and-learn or employee benefits training session. Show a professional presenter speaking to a small group of attentive federal employees in a conference room. The attendees should reflect the diversity of the U.S. federal workforce, including White, Black, Latino, Asian, and multiracial individuals. Some may be in business attire, some in professional uniforms, and some in casual federal workplace attire.\n\nUse clean lighting, polished composition, and realistic body language. The overall mood should be educational, professional, and approachable. Avoid any visible government seals or readable text on the presentation screen.",
+    "thumbnail": ""
+  },
+  {
+    "id": "FS-017",
+    "mediaType": "image",
+    "title": "Saluting the Flag",
+    "section": "Service & Honor",
+    "useCase": "Patriotic / service-to-retirement section",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Patriotic",
+      "Service",
+      "Honor",
+      "Pride",
+      "Dignified",
+      "Inspirational"
+    ],
+    "relatabilityTags": [
+      "Public Servants",
+      "Military Retirees",
+      "Federal Employees",
+      "Near-Retirees"
+    ],
+    "scenarioTags": [
+      "Service and Honor",
+      "Patriotic Imagery",
+      "Transition into Retirement"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "It creates emotional connection with federal and military audiences while keeping the message respectful and nonpolitical.",
+    "prompt": "Create a premium photorealistic patriotic image for a federal retirement planning website. Show a near-retirement federal employee or military service member, late 50s to early 60s, standing outdoors at sunrise or sunset and saluting the American flag. The tone should be respectful, calm, and honorable — not political. The subject should look dignified, reflective, and strong, symbolizing years of public service and the transition into retirement.\n\nUse warm golden light, subtle wind movement in clothing and flag, and a cinematic composition suitable for a website hero section. Create diverse versions featuring White, Black, Latino, Asian, and multiracial subjects. Avoid official logos and avoid overly dramatic patriotic clichés.",
+    "thumbnail": ""
+  },
+  {
+    "id": "FS-018",
+    "mediaType": "image",
+    "title": "Watching a Military Ship Sail Off",
+    "section": "Service & Honor",
+    "useCase": "Emotional transition / hero alternative",
+    "aspectRatio": "16:9",
+    "trackType": null,
+    "appealTags": [
+      "Reflective",
+      "Service",
+      "Transition",
+      "Next Chapter",
+      "Hopeful"
+    ],
+    "relatabilityTags": [
+      "Military Retirees",
+      "Public Servants",
+      "Federal Employees",
+      "Near-Retirees"
+    ],
+    "scenarioTags": [
+      "Service and Honor",
+      "Patriotic Imagery",
+      "Transition into Retirement"
+    ],
+    "diversityTags": [
+      "White",
+      "Black",
+      "Latino",
+      "Asian",
+      "Multiracial",
+      "Mixed Group"
+    ],
+    "whyPeopleRelate": "It symbolizes the close of a service chapter and the beginning of retirement in a cinematic, memorable way.",
+    "prompt": "Create a premium photorealistic image showing a near-retirement service member or federal employee standing on a pier or waterfront, watching and gently waving as a military-style ship sails into the distance. The person should appear reflective, proud, and hopeful. The scene should symbolize transition, service, and the next chapter of life.\n\nUse cinematic golden-hour lighting, realistic water and sky, and a polished composition with emotional depth. Create diverse versions across White, Black, Latino, Asian, and multiracial subjects. Avoid exact official insignia, readable ship numbers, or overt war imagery. The tone should be elegant, patriotic, and reflective.",
+    "thumbnail": ""
+  },
+  {
+    "id": "MU-001",
+    "mediaType": "music",
+    "title": "Federal Service to Retirement Theme",
+    "section": "Suno Music Concepts",
+    "useCase": "Main brand / hero background music",
+    "aspectRatio": null,
+    "trackType": "Instrumental cinematic brand bed",
+    "appealTags": [
+      "Service",
+      "Pride",
+      "Dignified",
+      "Transition",
+      "Confident"
+    ],
+    "relatabilityTags": [
+      "Public Servants",
+      "Federal Employees",
+      "Military Retirees",
+      "USPS-Style Workers"
+    ],
+    "scenarioTags": [
+      "Service and Honor",
+      "Transition into Retirement",
+      "Patriotic Imagery"
+    ],
+    "diversityTags": [],
+    "whyPeopleRelate": "This is the primary sound of the brand: honorable, warm, and confident without sounding political or militaristic.",
+    "prompt": "Instrumental only. Cinematic inspirational background music about a long career of public service transitioning into a secure retirement. Warm piano foundation, soft orchestral strings, restrained French horn, subtle patriotic undertone, gentle percussion, elegant emotional build. Proud but humble. Honorable but not political. Suitable for federal employees, military retirees, postal workers, judges, healthcare workers, and public servants. No vocals, no lyrics, no marching band, no battle music, no political campaign sound.",
+    "thumbnail": ""
+  },
+  {
+    "id": "MU-002",
+    "mediaType": "music",
+    "title": "From Concern to Clarity",
+    "section": "Suno Music Concepts",
+    "useCase": "Problem-to-solution videos",
+    "aspectRatio": null,
+    "trackType": "Instrumental emotional transition bed",
+    "appealTags": [
+      "Uncertainty",
+      "Resolution",
+      "Reassuring",
+      "Clear",
+      "Hopeful"
+    ],
+    "relatabilityTags": [
+      "Federal Employees",
+      "Near-Retirees",
+      "Couples",
+      "Spouses"
+    ],
+    "scenarioTags": [
+      "Concern to Clarity",
+      "Reviewing Paperwork",
+      "Retirement Benefits"
+    ],
+    "diversityTags": [],
+    "whyPeopleRelate": "It supports scenes where retirement confusion becomes confidence after guidance.",
+    "prompt": "Instrumental only. Soft cinematic background music that starts with gentle thoughtful piano and subtle ambient tension, then gradually resolves into a warm, hopeful, reassuring theme. Mood: uncertainty becoming clarity, retirement stress becoming confidence. Use soft strings, light piano, subtle pads, and minimal percussion. Suitable for videos of federal employees reviewing complex retirement paperwork and then feeling reassured. No vocals, no lyrics, no heavy drama.",
+    "thumbnail": ""
+  },
+  {
+    "id": "MU-003",
+    "mediaType": "music",
+    "title": "Saluting the Flag",
+    "section": "Suno Music Concepts",
+    "useCase": "Patriotic service clip",
+    "aspectRatio": null,
+    "trackType": "Instrumental restrained patriotic cue",
+    "appealTags": [
+      "Honor",
+      "Pride",
+      "Gratitude",
+      "Patriotic",
+      "Dignified"
+    ],
+    "relatabilityTags": [
+      "Public Servants",
+      "Military Retirees",
+      "Federal Employees"
+    ],
+    "scenarioTags": [
+      "Service and Honor",
+      "Patriotic Imagery"
+    ],
+    "diversityTags": [],
+    "whyPeopleRelate": "It matches flag and service visuals with restraint, avoiding campaign-style music.",
+    "prompt": "Instrumental only, cinematic patriotic background music, respectful and restrained. Soft piano, warm strings, gentle brass swells, subtle snare texture very low in the mix, slow emotional build. Mood: honor, service, gratitude, pride, and a well-earned next chapter. Designed for a short video of a near-retirement federal employee saluting the American flag at sunrise. No vocals, no lyrics, no aggressive military march, no political campaign sound.",
+    "thumbnail": ""
+  },
+  {
+    "id": "MU-004",
+    "mediaType": "music",
+    "title": "Military Ship Sailing Away",
+    "section": "Suno Music Concepts",
+    "useCase": "Transition / reflective service clip",
+    "aspectRatio": null,
+    "trackType": "Instrumental cinematic reflective cue",
+    "appealTags": [
+      "Reflective",
+      "Legacy",
+      "Transition",
+      "Peaceful",
+      "Optimistic"
+    ],
+    "relatabilityTags": [
+      "Military Retirees",
+      "Public Servants",
+      "Near-Retirees"
+    ],
+    "scenarioTags": [
+      "Service and Honor",
+      "Transition into Retirement"
+    ],
+    "diversityTags": [],
+    "whyPeopleRelate": "It feels like closing one honorable chapter and beginning the next, without sadness-heavy music.",
+    "prompt": "Instrumental only. Cinematic reflective music for a service member watching a military ship sail into the distance. Warm piano, soft cello, gentle orchestral strings, subtle oceanic ambient texture, slow hopeful progression. Mood: reflective, proud, peaceful, and optimistic. Feels like closing one honorable chapter and beginning the next. No vocals, no lyrics, no battle music, no sadness-heavy funeral tone.",
+    "thumbnail": ""
+  },
+  {
+    "id": "MU-005",
+    "mediaType": "music",
+    "title": "Federal Benefits Workshop",
+    "section": "Suno Music Concepts",
+    "useCase": "Seminar / workshop promo",
+    "aspectRatio": null,
+    "trackType": "Instrumental corporate education bed",
+    "appealTags": [
+      "Learning",
+      "Trustworthy",
+      "Professional",
+      "Confident",
+      "Empowering"
+    ],
+    "relatabilityTags": [
+      "Seminar Attendees",
+      "Agency Workforce",
+      "Federal Employees"
+    ],
+    "scenarioTags": [
+      "Workshop",
+      "Federal Training",
+      "Retirement Benefits"
+    ],
+    "diversityTags": [],
+    "whyPeopleRelate": "It gives seminar videos an organized, intelligent tone without sounding like a generic corporate jingle.",
+    "prompt": "Instrumental only. Professional educational background music for a federal retirement benefits workshop. Clean modern corporate style with warm piano, light marimba or muted plucks, subtle strings, soft percussion, and optimistic pacing. Mood: clear, organized, trustworthy, engaging, and empowering. Suitable for seminar, webinar, lunch-and-learn, or agency training videos. No vocals, no lyrics, no cheesy corporate jingle.",
+    "thumbnail": ""
+  },
+  {
+    "id": "MU-006",
+    "mediaType": "music",
+    "title": "Family Legacy Theme",
+    "section": "Suno Music Concepts",
+    "useCase": "Family / grandkids / life after retirement",
+    "aspectRatio": null,
+    "trackType": "Instrumental warm family bed",
+    "appealTags": [
+      "Love",
+      "Legacy",
+      "Security",
+      "Warm",
+      "Peace of Mind"
+    ],
+    "relatabilityTags": [
+      "Grandparents",
+      "Families",
+      "Couples",
+      "Spouses"
+    ],
+    "scenarioTags": [
+      "Family Legacy",
+      "Life After Retirement"
+    ],
+    "diversityTags": [],
+    "whyPeopleRelate": "It supports the emotional reason people plan: family, stability, grandkids, and peace of mind.",
+    "prompt": "Instrumental only. Warm cinematic family background music for a retirement planning brand. Gentle piano, soft acoustic guitar, light strings, warm pads, delicate percussion. Mood: family, legacy, security, love, peace of mind, and the reason people plan for retirement. Suitable for scenes with grandparents, spouses, grandchildren, and home life. No vocals, no lyrics, no overly sentimental sadness.",
+    "thumbnail": ""
+  },
+  {
+    "id": "MU-007",
+    "mediaType": "music",
+    "title": "Postal Worker Retirement",
+    "section": "Suno Music Concepts",
+    "useCase": "Postal-style worker video",
+    "aspectRatio": null,
+    "trackType": "Instrumental documentary lifestyle bed",
+    "appealTags": [
+      "Humble Service",
+      "Warm",
+      "Reflective",
+      "Dignified",
+      "Peaceful"
+    ],
+    "relatabilityTags": [
+      "USPS-Style Workers",
+      "Federal Employees",
+      "Public Servants"
+    ],
+    "scenarioTags": [
+      "Service and Honor",
+      "Transition into Retirement"
+    ],
+    "diversityTags": [],
+    "whyPeopleRelate": "It supports the hardworking, everyday public servant story with warmth and dignity.",
+    "prompt": "Instrumental only. Warm documentary-style background music for a postal employee nearing retirement after years of service. Gentle acoustic guitar, soft piano, light strings, relaxed tempo, subtle hopeful rhythm. Mood: hardworking, humble, reflective, proud, and peaceful. Suitable for a scene at the end of a delivery route. No vocals, no lyrics, no overly sentimental sadness.",
+    "thumbnail": ""
+  },
+  {
+    "id": "MU-008",
+    "mediaType": "music",
+    "title": "Federal Judge / Professional Retirement",
+    "section": "Suno Music Concepts",
+    "useCase": "Judge / senior professional clip",
+    "aspectRatio": null,
+    "trackType": "Instrumental refined professional cue",
+    "appealTags": [
+      "Authority",
+      "Wisdom",
+      "Calm",
+      "Professional",
+      "Dignified"
+    ],
+    "relatabilityTags": [
+      "Federal Judges",
+      "Civilian Professionals",
+      "Public Servants"
+    ],
+    "scenarioTags": [
+      "Reviewing Paperwork",
+      "Transition into Retirement"
+    ],
+    "diversityTags": [],
+    "whyPeopleRelate": "It communicates authority, mature judgment, and credible decision-making.",
+    "prompt": "Instrumental only. Elegant professional cinematic background music for a federal judge or senior public servant reviewing retirement documents. Warm piano, low strings, subtle chamber music influence, refined and calm. Mood: wisdom, authority, reflection, confidence, and clarity. Premium, dignified, and understated. No vocals, no lyrics, no courtroom drama intensity.",
+    "thumbnail": ""
+  }
+]

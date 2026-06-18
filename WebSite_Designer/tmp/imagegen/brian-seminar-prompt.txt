@@ -1,0 +1,13 @@
+Use case: photorealistic-natural
+Asset type: seminar marketing image
+Primary request: Transform the provided Brian Westrich reference headshot into a premium photorealistic FedSafe Retirement seminar scene. Use image 1 as the identity reference for Brian Westrich and preserve his facial likeness. Use image 2 as the FedSafe logo reference and place a realistic embroidered version of that logo on the chest of his shirt.
+Input images: Image 1: Brian Westrich headshot reference; Image 2: FedSafe logo reference
+Scene/backdrop: polished seminar room with audience rows, side tables, and a softly glowing presentation screen behind him
+Subject: Brian Westrich in a light blue branded button-down with sleeves casually rolled, leaning slightly forward while responding to a question from the audience, relaxed and engaged rather than formally posing
+Style/medium: premium editorial event photography
+Composition/framing: medium-wide horizontal shot with Brian off-center, visible audience, and several middle-aged women seated in the front and middle rows
+Lighting/mood: approachable, collaborative, educational, polished
+Color palette: clean blues, warm neutrals, FedSafe navy accents
+Materials/textures: embroidered FedSafe logo on shirt, seminar chairs, notepads, paper handouts, projector light
+Constraints: preserve Brian Westrich likeness; business-casual branded shirt only; no suit jacket; no tie; no podium-only stance; audience should feel natural and female-inclusive
+Avoid: cloned audience faces, stiff pointing pose, distorted hands, oversharp fake logo, stock-photo smiles

@@ -1,0 +1,13 @@
+Use case: photorealistic-natural
+Asset type: seminar marketing image
+Primary request: Transform the provided Daniel French reference headshot into a premium photorealistic FedSafe Retirement seminar workshop scene. Use image 1 as the identity reference for Daniel French and preserve his facial likeness. Use image 2 as the FedSafe logo reference and place a realistic embroidered version of that logo on the chest of his shirt.
+Input images: Image 1: Daniel French headshot reference; Image 2: FedSafe logo reference
+Scene/backdrop: elegant conference training room with a presentation screen, seminar tables, and attentive attendees
+Subject: Daniel French wearing a branded casual button-down shirt, standing near the screen and gesturing toward a key point with a clicker in one hand, body turned three-quarters toward the audience
+Style/medium: premium editorial event photography
+Composition/framing: medium-wide landscape seminar view with Daniel to one side and the audience visible across the room, especially multiple middle-aged women listening and taking notes
+Lighting/mood: confident, informative, upbeat, trustworthy
+Color palette: FedSafe navy, white, muted gold, realistic conference-room neutrals
+Materials/textures: embroidered FedSafe logo shirt, coffee cups, notebooks, handouts, textured conference carpet, projector glow
+Constraints: preserve Daniel French likeness; no suit jacket; no tie; distinct stance from the other presenters; realistic audience diversity with women prominently visible
+Avoid: identical audience expressions, podium-only framing, duplicated hands, fake corporate stock look

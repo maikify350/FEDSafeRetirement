@@ -1,0 +1,4 @@
+Use case: precise-object-edit
+Primary request: Remove only the logo from the shirt and leave a plain light blue shirt. Keep everything else unchanged.
+Constraints: change only the shirt logo area; keep Brian Westrich's face, body, shirt color, audience, pose, background, and lighting unchanged; no logo anywhere on the shirt afterward; no watermark
+Avoid: changed face, changed shirt folds, changed pose, second logo, altered audience

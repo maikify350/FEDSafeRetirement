@@ -1,5 +1,8 @@
 # FedSafe Retirement Website - Session Handoff
 
+> Historical note: this file is a session snapshot, not the canonical build/run source of truth.
+> Use `WebSite/README.md`, `WebSite/.agents/CONVENTIONS.md`, and monorepo `AGENTS.md` for current instructions.
+
 ## Current Status
 
 Latest approved website changes were committed and pushed to GitHub.

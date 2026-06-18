@@ -1,4 +1,17 @@
 {
+  "name": "fedsafe-retirement-website",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "layout": "node apply-shared-layout.mjs",
+    "shared": "node build-shared-components.mjs --root New",
+    "build": "npm run layout && npm run shared && node vercel-build.mjs",
+    "preview": "node scripts/serve-dist-range.mjs dist 4173",
+    "dev": "npm run layout && npm run shared && node scripts/serve-dist-range.mjs New 4173"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
     "pg": "^8.20.0",

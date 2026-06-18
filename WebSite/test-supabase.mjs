@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = 'https://gqarlkfmpgaotbezpkbs.supabase.co'
-const supabaseKey = 'sb_publishable_ZDXaKMDm3JHJGF3Z8gZI3g_GdRls9Tg'
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables.')
+}
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 

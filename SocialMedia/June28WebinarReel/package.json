@@ -1,0 +1,21 @@
+{
+  "name": "june28-webinar-reel",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "preview": "remotion studio",
+    "still": "remotion still src/index.tsx WebinarReel out/preview.png --frame=90",
+    "render": "remotion render src/index.tsx WebinarReel out/fedsafe-june28-webinar-reel.mp4 --codec=h264 --pixel-format=yuv420p"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.379",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "remotion": "^4.0.379"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.9.3"
+  }
+}

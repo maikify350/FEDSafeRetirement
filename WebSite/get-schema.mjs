@@ -1,6 +1,10 @@
 
-const supabaseUrl = 'https://gqarlkfmpgaotbezpkbs.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxYXJsa2ZtcGdhb3RiZXpwa2JzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTA2NDYzNCwiZXhwIjoyMDkwNjQwNjM0fQ.N8TxFsnqnGUkMK_qmvATDSs-kyneci8ULziUHzpOwq8'
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables.')
+}
 
 async function getSchema() {
   const response = await fetch(`${supabaseUrl}/rest/v1/`, {

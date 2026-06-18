@@ -1,0 +1,13 @@
+ARTWORK ID: FS-030
+TITLE: Zoom Review With Spouse at Home
+SECTION: Planning / Guidance
+ASPECT RATIO: 16:9
+SAVE FILE AS: FS-030_zoom_review_with_spouse.png
+
+--- GENERATION PROMPT ---
+
+Photorealistic 16:9 website image. A near-retirement couple seated together on a sofa in a comfortable living room, looking at an open laptop together during a video call. Retirement notes or a folder sit on the coffee table. The woman is visually prominent. Warm home lighting, relaxed clothing.
+
+Mood: modern, supported, engaged. Diverse casting welcome.
+
+IMPORTANT: No text overlays. No watermarks. No captions. No logos. No brand names. No subtitles. No readable screen content. Clean image only, suitable for direct use on a website.

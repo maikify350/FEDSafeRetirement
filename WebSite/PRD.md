@@ -1,3 +1,4 @@
+> Historical kickoff brief. For active instructions use `README.md` and `.agents/CONVENTIONS.md`.
 
 IN this project we will be bringing over some section from an old web site: https://fedsaferetirement.com/ into a new website that I have for now copy into foler: C:\WIP\FEDSafeRetirement\WebSite\New
 

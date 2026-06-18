@@ -1,0 +1,27 @@
+{
+  "name": "fedsafe-retirement-artwork-review",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build --webpack",
+    "start": "next start",
+    "typecheck": "next typegen && tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.105.4",
+    "next": "16.2.4",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "react-pageflip": "^2.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "22.13.14",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "autoprefixer": "10.4.20",
+    "postcss": "8.5.3",
+    "tailwindcss": "3.4.17",
+    "typescript": "5.8.2"
+  }
+}

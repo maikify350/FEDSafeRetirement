@@ -1,0 +1,11 @@
+Use case: photorealistic-natural
+Asset type: seminar alternate for a retirement-planning microsite
+Primary request: Create a premium photorealistic seminar image from scratch using the provided partner headshot as the identity reference and the provided FedSafe logo as the branding reference. Show Mike Zaino at the front of the room behind a polished presentation podium with one exact FedSafe shield logo centered on a clean white rectangular panel on the front of the podium. He is facing a seated audience and leading the seminar from the front, not standing in the back of the room. The audience should be seated in rows and include more middle-aged women than before, with a balanced professional crowd of near-retirement federal employees.
+Scene/background: polished seminar room, audience seated and engaged, presenter at the front facing them
+Subject: Mike Zaino in a dark casual shirt with no visible shirt logo, confident and conversational, presenting retirement-planning material
+Style/medium: premium editorial photorealism
+Composition/framing: wide horizontal 16:9 scene, presenter and podium at front with audience visible in foreground from behind, clear front-facing seminar composition
+Lighting/mood: warm professional lighting, confident, supportive, premium
+Color palette: dark charcoal, navy, gold, white, warm neutrals
+Constraints: preserve Mike Zaino likeness from the headshot, keep the outfit casual not a suit, include FedSafe branding only once on the podium front, use the exact shield logo unchanged in color and shape, place it on a plain white background panel, do not place any logo on his shirt, presenter must be in front of the seated audience, vary the pose from the others with more open hand interaction, no watermark
+Avoid: altered logo, wrong logo colors, transparent or dark background behind the podium logo, double logo, shirt logo, suit jacket, empty room, one-on-one consultation, audience standing, unreadable branding, repeated stock pose, cheesy expressions
