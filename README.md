@@ -9,6 +9,13 @@ This workspace contains multiple related projects. Only one of them is currently
 - `SocialMedia/June28WebinarReel/` - Remotion project for video assets
 - `_ARCHIVE_20260606/` - historical archive material; not active development
 
+## Vercel Project Mapping
+
+- `fed-safe-retirement-web-site` -> deploys `WebSite/` (main public site)
+- `fedsafe-retirement` -> deploys `WebSite_Designer/` (review app)
+
+If Vercel fails after monorepo changes, verify each project's Root Directory in Vercel settings.
+
 ## Where To Start
 
 If you are working on the main site, start in `WebSite/`:

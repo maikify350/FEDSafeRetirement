@@ -19,6 +19,6 @@ This monorepo uses versioned SQL migrations for shared database changes.
 
 ## Notes
 
-- Legacy ad-hoc scripts in `WebSite/` are historical scratch utilities and are not the source of truth.
+- Legacy ad-hoc scripts are archived under `WebSite/scripts/archive/` and are not the source of truth.
 - Any credentials must remain in local `.env` files only and never in committed scripts.
 - Example local variables for script-based checks are in `WebSite/.env.example`.
