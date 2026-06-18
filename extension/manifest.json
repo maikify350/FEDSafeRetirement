@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "FedSafe Retirement Copilot",
+  "version": "1.0.1",
+  "description": "Federal retirement benefit intelligence, field mapping & auto-fill for Act! CRM — FedSafe Retirement",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.act.com/*",
+    "https://fedsafe-retirement.vercel.app/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.act.com/*"
+      ],
+      "js": ["fegli_api.js", "field-mapper.js", "content.js"],
+      "css": ["panel.css"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

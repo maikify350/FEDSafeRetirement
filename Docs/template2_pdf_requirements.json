@@ -1,0 +1,692 @@
+{
+  "document": {
+    "name": "template2.pdf",
+    "path": "Resources/template2.pdf",
+    "description": "Requirements reference for all data needed to produce the cleaned template2 PDF."
+  },
+  "direct_crm_fields": {
+    "root": [
+      {
+        "key": "fullName",
+        "used_for": [
+          "Client Name"
+        ]
+      },
+      {
+        "key": "firstName",
+        "used_for": [
+          "Client Name"
+        ],
+        "notes": "Fallback if fullName is not provided."
+      },
+      {
+        "key": "lastName",
+        "used_for": [
+          "Client Name"
+        ],
+        "notes": "Fallback if fullName is not provided."
+      },
+      {
+        "key": "birthday",
+        "used_for": [
+          "Client DOB",
+          "Client Age",
+          "Retire Age",
+          "Multiplier",
+          "Gross FERS",
+          "Gross Bridge",
+          "Distribution Rate",
+          "FEGLI retirement calculations"
+        ]
+      },
+      {
+        "key": "editedBy",
+        "used_for": [
+          "FRC Name"
+        ]
+      },
+      {
+        "key": "businessAddress.state",
+        "used_for": [
+          "Client State",
+          "State Tax",
+          "Bridge State Tax",
+          "State Tax Social Security",
+          "State Tax TSP",
+          "Social Security State"
+        ]
+      }
+    ],
+    "customFields": [
+      {
+        "key": "cust_age_033220843",
+        "used_for": [
+          "Client Age"
+        ],
+        "notes": "Preferred direct CRM age field."
+      },
+      {
+        "key": "cust_spouseage_074349200",
+        "used_for": [
+          "Spouse Age"
+        ],
+        "notes": "Preferred direct CRM spouse age field."
+      },
+      {
+        "key": "spousedob",
+        "used_for": [
+          "Spouse Age"
+        ],
+        "notes": "Fallback if spouse age is not directly provided."
+      },
+      {
+        "key": "servicecomputationdate",
+        "used_for": [
+          "Hire Date",
+          "Years of Service",
+          "Bridge Years of Service",
+          "Multiplier",
+          "Gross FERS"
+        ]
+      },
+      {
+        "key": "retiredate",
+        "used_for": [
+          "Retire Date",
+          "Retire Age",
+          "Years of Service",
+          "Bridge Years of Service",
+          "Multiplier",
+          "Gross FERS",
+          "Gross Bridge",
+          "Distribution Rate",
+          "FEGLI retirement calculations"
+        ]
+      },
+      {
+        "key": "sickleavehours",
+        "used_for": [
+          "Sick Leave",
+          "Years of Service",
+          "Bridge Years of Service",
+          "Gross FERS"
+        ]
+      },
+      {
+        "key": "unusedsickleavehours",
+        "used_for": [
+          "Sick Leave",
+          "Years of Service",
+          "Bridge Years of Service",
+          "Gross FERS"
+        ],
+        "notes": "Fallback if sickleavehours is not present."
+      },
+      {
+        "key": "salaryamount",
+        "used_for": [
+          "Current Salary",
+          "FEGLI Code decoding",
+          "FEGLI Basic Now",
+          "FEGLI B Now",
+          "FEGLI Basic Retire",
+          "FEGLI B Retire"
+        ]
+      },
+      {
+        "key": "cust_totalbasicpayshow_060132240",
+        "used_for": [
+          "Current Salary"
+        ],
+        "notes": "Fallback salary field."
+      },
+      {
+        "key": "high3avgsalary",
+        "used_for": [
+          "High 3 Salary",
+          "Gross FERS"
+        ]
+      },
+      {
+        "key": "feglicodeactive",
+        "used_for": [
+          "FEGLI Code",
+          "FEGLI active calculations"
+        ]
+      },
+      {
+        "key": "fegliperpayperiod",
+        "used_for": [
+          "FEGLI Code"
+        ],
+        "notes": "Used only if active FEGLI code must be decoded from premium."
+      },
+      {
+        "key": "feglireduction",
+        "used_for": [
+          "FEGLI 75",
+          "FEGLI 50",
+          "FEGLI 0",
+          "FEGLI retirement calculations"
+        ]
+      },
+      {
+        "key": "optiona_retire",
+        "used_for": [
+          "FEGLI Code Retire"
+        ]
+      },
+      {
+        "key": "optionb_retire",
+        "used_for": [
+          "FEGLI Code Retire"
+        ]
+      },
+      {
+        "key": "optionc_retire",
+        "used_for": [
+          "FEGLI Code Retire"
+        ]
+      },
+      {
+        "key": "optiona",
+        "used_for": [
+          "FEGLI Code"
+        ],
+        "notes": "Only needed if active FEGLI code must be assembled from election fields."
+      },
+      {
+        "key": "optionb",
+        "used_for": [
+          "FEGLI Code"
+        ],
+        "notes": "Only needed if active FEGLI code must be assembled from election fields."
+      },
+      {
+        "key": "optionc",
+        "used_for": [
+          "FEGLI Code"
+        ],
+        "notes": "Only needed if active FEGLI code must be assembled from election fields."
+      },
+      {
+        "key": "survisorbenetit",
+        "used_for": [
+          "Survivor 50",
+          "Survivor 25",
+          "Survivor 0",
+          "less Survivor Benefit"
+        ]
+      },
+      {
+        "key": "survivorbenefit",
+        "used_for": [
+          "Survivor 50",
+          "Survivor 25",
+          "Survivor 0",
+          "less Survivor Benefit"
+        ],
+        "notes": "Fallback alias if present in CRM."
+      },
+      {
+        "key": "survivorelection",
+        "used_for": [
+          "Survivor 50",
+          "Survivor 25",
+          "Survivor 0",
+          "less Survivor Benefit"
+        ],
+        "notes": "Fallback alias if present in CRM."
+      },
+      {
+        "key": "maritalstatus",
+        "used_for": [
+          "Survivor defaulting",
+          "Fed Tax",
+          "Social Security 85 Fed",
+          "Social Security 50 Fed"
+        ]
+      },
+      {
+        "key": "yrsofmilitaryservice",
+        "used_for": [
+          "Military Time",
+          "Years of Service",
+          "Bridge Years of Service",
+          "Multiplier",
+          "Gross FERS",
+          "Gross Bridge"
+        ]
+      },
+      {
+        "key": "socialsecurityincome",
+        "used_for": [
+          "Age 62 Social Security",
+          "Gross Social Security",
+          "Gross Bridge"
+        ],
+        "notes": "Currently used as the Age 62 Social Security estimate until a dedicated CRM field exists."
+      },
+      {
+        "key": "currentnetincomeperpayperiod",
+        "used_for": [
+          "Current Bi-Weekly Net",
+          "Current Yearly Net",
+          "Current Monthly Net"
+        ]
+      },
+      {
+        "key": "cust_currentnetincomepermonth_054503101",
+        "used_for": [
+          "Current Monthly Net"
+        ],
+        "notes": "Preferred direct monthly net field if present."
+      },
+      {
+        "key": "tsptraditionalbalance",
+        "used_for": [
+          "TSP Traditional Balance",
+          "TSP Total Balance",
+          "TSP Gross Yearly",
+          "TSP Gross Monthly",
+          "Fed Tax TSP",
+          "State Tax TSP",
+          "Net TSP",
+          "TSP Balance Used"
+        ]
+      },
+      {
+        "key": "tsprothbalance",
+        "used_for": [
+          "TSP Roth Balance",
+          "TSP Total Balance",
+          "TSP Gross Yearly",
+          "TSP Gross Monthly",
+          "Net TSP",
+          "TSP Balance Used"
+        ]
+      },
+      {
+        "key": "tsptotalbalance",
+        "used_for": [
+          "TSP Total Balance",
+          "TSP Balance Used"
+        ],
+        "notes": "Preferred direct total balance field if present."
+      },
+      {
+        "key": "brokerageaccountsnq",
+        "used_for": [
+          "Brokerage Account"
+        ]
+      },
+      {
+        "key": "stocks",
+        "used_for": [
+          "Stocks NQ"
+        ]
+      },
+      {
+        "key": "other40ksira",
+        "used_for": [
+          "Other 401ks and IRAs"
+        ]
+      },
+      {
+        "key": "homevalue",
+        "used_for": [
+          "Home Value"
+        ]
+      },
+      {
+        "key": "mortgage",
+        "used_for": [
+          "Mortgage"
+        ],
+        "notes": "Preferred mortgage field if present."
+      },
+      {
+        "key": "mortage",
+        "used_for": [
+          "Mortgage"
+        ],
+        "notes": "Fallback misspelled mortgage field present in current CRM payload."
+      },
+      {
+        "key": "bank",
+        "used_for": [
+          "Cash Checking Savings"
+        ]
+      },
+      {
+        "key": "checking",
+        "used_for": [
+          "Cash Checking Savings"
+        ]
+      },
+      {
+        "key": "savings",
+        "used_for": [
+          "Cash Checking Savings"
+        ]
+      },
+      {
+        "key": "emergencysavings",
+        "used_for": [
+          "Cash Checking Savings"
+        ]
+      },
+      {
+        "key": "cds",
+        "used_for": [
+          "CDs Money Market Bonds"
+        ]
+      },
+      {
+        "key": "moneymarket",
+        "used_for": [
+          "CDs Money Market Bonds"
+        ]
+      },
+      {
+        "key": "bonds",
+        "used_for": [
+          "CDs Money Market Bonds"
+        ]
+      },
+      {
+        "key": "cust_fehbpermonth_023844547",
+        "used_for": [
+          "less Health Insurance"
+        ],
+        "notes": "Preferred monthly health-insurance total."
+      },
+      {
+        "key": "cust_dentalinsurancepermonth_030554373",
+        "used_for": [
+          "less Dental Insurance"
+        ],
+        "notes": "Preferred monthly dental-insurance total."
+      },
+      {
+        "key": "cust_visioninsurancepermonth_032424647",
+        "used_for": [
+          "less Vision Insurance"
+        ],
+        "notes": "Preferred monthly vision-insurance total."
+      },
+      {
+        "key": "myconcerns",
+        "used_for": [],
+        "notes": "Available CRM note field, not currently represented in template2 fields."
+      },
+      {
+        "key": "myrecomendations",
+        "used_for": [],
+        "notes": "Available CRM note field, not currently represented in template2 fields."
+      }
+    ]
+  },
+  "external_dependencies": [
+    {
+      "name": "appointment_api",
+      "required_for": [
+        "Appt Date"
+      ],
+      "source": "https://apius.act.com/act.web.api/api/calendar",
+      "selection_rule": "Use the activity with title `BP1` and take `startTime` as the appointment date."
+    },
+    {
+      "name": "fegli_rates_employee_json",
+      "required_for": [
+        "FEGLI Basic Now",
+        "FEGLI A Now",
+        "FEGLI B Now",
+        "FEGLI C Now",
+        "FEGLI Code decoding"
+      ],
+      "source": "data/fegli_rates_employee.json"
+    },
+    {
+      "name": "fegli_rates_annuitant_json",
+      "required_for": [
+        "FEGLI Basic Retire",
+        "FEGLI A Retire",
+        "FEGLI B Retire",
+        "FEGLI C Retire",
+        "less FEGLI"
+      ],
+      "source": "data/fegli_rates_annuitant.json"
+    },
+    {
+      "name": "irs_federal_tax_brackets",
+      "required_for": [
+        "Fed Tax",
+        "Bridge Fed Tax",
+        "Fed Tax Social Security",
+        "Fed Tax TSP"
+      ],
+      "source": "data/irs_2026_brackets.json"
+    },
+    {
+      "name": "state_income_tax_rates",
+      "required_for": [
+        "State Tax",
+        "Bridge State Tax",
+        "State Tax Social Security",
+        "State Tax TSP"
+      ],
+      "source": "data/state_income_tax_rates.json"
+    },
+    {
+      "name": "state_retirement_tax_rules",
+      "required_for": [
+        "Social Security State",
+        "State Tax",
+        "Bridge State Tax",
+        "State Tax Social Security",
+        "State Tax TSP"
+      ],
+      "source": "data/state_retirement_tax_rules.json"
+    }
+  ],
+  "derived_values": [
+    "Client Age",
+    "Spouse Age when only DOB is provided",
+    "Retire Age",
+    "Years of Service",
+    "Bridge Years of Service",
+    "Multiplier",
+    "FEGLI Code when decoded from premium",
+    "FEGLI Code Retire when inherited from active election",
+    "FEGLI Basic Now",
+    "FEGLI A Now",
+    "FEGLI B Now",
+    "FEGLI C Now",
+    "FEGLI Basic Retire",
+    "FEGLI A Retire",
+    "FEGLI B Retire",
+    "FEGLI C Retire",
+    "less FEGLI",
+    "Gross FERS",
+    "less Survivor Benefit",
+    "Fed Tax",
+    "State Tax",
+    "Gross Bridge",
+    "Bridge Fed Tax",
+    "Bridge State Tax",
+    "Net Bridge",
+    "Social Security 85 Fed",
+    "Social Security 50 Fed",
+    "Social Security State",
+    "Fed Tax Social Security",
+    "State Tax Social Security",
+    "Projected FERS",
+    "Projected Social Security",
+    "Projected Net Monthly",
+    "Current Yearly Net",
+    "Current Monthly Net",
+    "TSP Total Balance",
+    "Distribution Rate",
+    "TSP Gross Yearly",
+    "TSP Gross Monthly",
+    "Fed Tax TSP",
+    "State Tax TSP",
+    "Net FERS",
+    "Net Social Security",
+    "Net TSP",
+    "Net Retirement Income",
+    "Summary Net SS",
+    "TSP Balance Used",
+    "Cash Checking Savings",
+    "CDs Money Market Bonds"
+  ],
+  "monthly_total_fields": [
+    {
+      "name": "less Health Insurance",
+      "crm_field": "cust_fehbpermonth_023844547"
+    },
+    {
+      "name": "less Dental Insurance",
+      "crm_field": "cust_dentalinsurancepermonth_030554373"
+    },
+    {
+      "name": "less Vision Insurance",
+      "crm_field": "cust_visioninsurancepermonth_032424647"
+    }
+  ],
+  "tax_fields_as_totals": [
+    "Fed Tax",
+    "State Tax",
+    "Bridge Fed Tax",
+    "Bridge State Tax",
+    "Fed Tax Social Security",
+    "State Tax Social Security",
+    "Fed Tax TSP",
+    "State Tax TSP"
+  ],
+  "unresolved_fields": [
+    {
+      "name": "Check Box 6",
+      "status": "needs_mapping",
+      "notes": "Business meaning still needs confirmation after layout merge."
+    },
+    {
+      "name": "Check Box 7",
+      "status": "needs_mapping",
+      "notes": "Business meaning still needs confirmation after layout merge."
+    },
+    {
+      "name": "Check Box 8",
+      "status": "needs_mapping",
+      "notes": "Business meaning still needs confirmation after layout merge."
+    },
+    {
+      "name": "Check Box 9",
+      "status": "needs_mapping",
+      "notes": "Business meaning still needs confirmation after layout merge."
+    },
+    {
+      "name": "Check Box 10",
+      "status": "needs_mapping",
+      "notes": "Business meaning still needs confirmation after layout merge."
+    },
+    {
+      "name": "Check Box 11",
+      "status": "needs_mapping",
+      "notes": "Business meaning still needs confirmation after layout merge."
+    },
+    {
+      "name": "Age 62 Social Security",
+      "status": "temporary_source",
+      "notes": "Currently uses `socialsecurityincome` until a dedicated age-62 estimate field exists in CRM."
+    }
+  ],
+  "template_field_order": [
+    "Client Name",
+    "Appt Date",
+    "Client State",
+    "FRC Name",
+    "Client Age",
+    "Spouse Age",
+    "Hire Date",
+    "Retire Age",
+    "Sick Leave",
+    "Current Salary",
+    "FEGLI Code",
+    "FEGLI Code Retire",
+    "FEGLI 75",
+    "FEGLI 50",
+    "FEGLI 0",
+    "Survivor 50",
+    "Survivor 25",
+    "Survivor 0",
+    "Years of Service",
+    "Multiplier",
+    "High 3 Salary",
+    "Gross FERS",
+    "less Survivor Benefit",
+    "less FEGLI",
+    "Fed Tax",
+    "State Tax",
+    "Bridge Years of Service",
+    "Age 62 Social Security",
+    "Gross Bridge",
+    "Bridge Fed Tax",
+    "Bridge State Tax",
+    "Net Bridge",
+    "Gross Social Security",
+    "Social Security 85 Fed",
+    "Social Security 50 Fed",
+    "Social Security State",
+    "Fed Tax Social Security",
+    "State Tax Social Security",
+    "Projected FERS",
+    "Projected Social Security",
+    "Projected Net Monthly",
+    "Current Bi-Weekly Net",
+    "Current Yearly Net",
+    "TSP Traditional Balance",
+    "TSP Roth Balance",
+    "TSP Total Balance",
+    "Distribution Rate",
+    "TSP Gross Yearly",
+    "TSP Gross Monthly",
+    "Fed Tax TSP",
+    "State Tax TSP",
+    "Net FERS",
+    "Net Social Security",
+    "Net TSP",
+    "Net Retirement Income",
+    "Current Monthly Net",
+    "Brokerage Account",
+    "Stocks NQ",
+    "Other 401ks and IRAs",
+    "Home Value",
+    "Mortgage",
+    "Check Box 6",
+    "Check Box 7",
+    "Check Box 8",
+    "Check Box 9",
+    "Check Box 10",
+    "Check Box 11",
+    "Summary Net SS",
+    "less Health Insurance",
+    "less Dental Insurance",
+    "less Vision Insurance",
+    "FEGLI Basic Now",
+    "FEGLI A Now",
+    "FEGLI B Now",
+    "FEGLI C Now",
+    "FEGLI C Retire",
+    "FEGLI B Retire",
+    "FEGLI A Retire",
+    "FEGLI Basic Retire",
+    "Client DOB",
+    "Retire Date",
+    "Military Time",
+    "TSP Balance Used",
+    "Cash Checking Savings",
+    "CDs Money Market Bonds"
+  ]
+}

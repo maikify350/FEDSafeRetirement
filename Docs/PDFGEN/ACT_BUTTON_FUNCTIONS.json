@@ -1,0 +1,277 @@
+{
+  "notes": [
+    "This file is the machine-friendly ACT button contract for the Cowboy engine.",
+    "The ACT-connected agent should use the function names and return shapes exactly as documented here.",
+    "Unsorted form wrappers currently return mapped field payloads only; the implementation must provide the source PDF file path separately."
+  ],
+  "buttons": [
+    {
+      "buttonName": "Final Calculation",
+      "functionOwner": "PDF_Preparer_API",
+      "functionName": "executeFinalCalculation",
+      "purpose": "Run retirement math and return CRM write-back fields.",
+      "returns": {
+        "topLevelKeys": [
+          "customFields",
+          "crmUpdatePayload",
+          "fieldList",
+          "compatibilityFieldList",
+          "stateTaxGuidance",
+          "displayFields"
+        ],
+        "customFields": [
+          "federalpension",
+          "socialsecurityincome",
+          "ferssupplement",
+          "militarypension",
+          "vadisabilitynet",
+          "spousessnet",
+          "spousepensionnet",
+          "survisorbenetit",
+          "survivorbenefit",
+          "feglinetcost",
+          "add_total",
+          "minus_total",
+          "annualleavepayout"
+        ]
+      },
+      "writeBackToAct": true
+    },
+    {
+      "buttonName": "Generate Blueprint",
+      "functionOwner": "PDF_Preparer_API",
+      "functionName": "buildBlueprintResponse",
+      "purpose": "Return blueprint template field values for PDF filling.",
+      "returns": {
+        "topLevelKeys": [
+          "templateFields"
+        ]
+      },
+      "writeBackToAct": false,
+      "outputFileRule": "Last Name, First Name Blueprint.pdf"
+    },
+    {
+      "buttonName": "Calculate Current FEGLI",
+      "functionOwner": "FEGLI_API",
+      "functionName": "calculateCurrentButton",
+      "purpose": "Calculate active FEGLI values from active code or pay-period cost.",
+      "returns": {
+        "topLevelKeys": [
+          "customFields",
+          "displayFields"
+        ],
+        "customFields": [
+          "feglicodeactive",
+          "feglinetcost",
+          "basiclife",
+          "optiona",
+          "optionb",
+          "optionc"
+        ]
+      },
+      "writeBackToAct": true
+    },
+    {
+      "buttonName": "Calculate Retirement FEGLI",
+      "functionOwner": "FEGLI_API",
+      "functionName": "calculateRetirementButton",
+      "purpose": "Calculate retirement FEGLI values from projected age and reduction election.",
+      "returns": {
+        "topLevelKeys": [
+          "customFields",
+          "displayFields"
+        ],
+        "customFields": [
+          "basicliferetire",
+          "optiona_retire",
+          "optionb_retire",
+          "optionc_retire",
+          "lessfegliretire"
+        ]
+      },
+      "writeBackToAct": true
+    },
+    {
+      "buttonName": "FEGLI Snapshot",
+      "functionOwner": "PDF_Preparer_API",
+      "functionName": "executeFegli",
+      "purpose": "Return the full FEGLI display snapshot without running the full blueprint path.",
+      "returns": {
+        "topLevelKeys": [
+          "FEGLI Code",
+          "FEGLI Code Retire",
+          "FEGLI Basic Now",
+          "FEGLI A Now",
+          "FEGLI B Now",
+          "FEGLI C Now",
+          "FEGLI Basic Retire",
+          "FEGLI A Retire",
+          "FEGLI B Retire",
+          "FEGLI C Retire",
+          "less FEGLI"
+        ]
+      },
+      "writeBackToAct": false
+    },
+    {
+      "buttonName": "FW4P Prefill",
+      "functionOwner": "PDF_Preparer_API",
+      "functionName": "buildFw4pPrefill",
+      "purpose": "Return mapped fields for the FW4P form.",
+      "returns": {
+        "topLevelKeys": [
+          "formKey",
+          "mapFile",
+          "totalFields",
+          "mappedFieldCount",
+          "populatedFieldCount",
+          "mappedFields",
+          "mappingRows",
+          "unmappedFields"
+        ]
+      },
+      "writeBackToAct": false,
+      "requiresRuntimePdfPath": true
+    },
+    {
+      "buttonName": "SF2809 Prefill",
+      "functionOwner": "PDF_Preparer_API",
+      "functionName": "buildSf2809Prefill",
+      "purpose": "Return mapped fields for the SF2809 form.",
+      "returns": {
+        "topLevelKeys": [
+          "formKey",
+          "mapFile",
+          "totalFields",
+          "mappedFieldCount",
+          "populatedFieldCount",
+          "mappedFields",
+          "mappingRows",
+          "unmappedFields"
+        ]
+      },
+      "writeBackToAct": false,
+      "requiresRuntimePdfPath": true
+    },
+    {
+      "buttonName": "SF2818 Prefill",
+      "functionOwner": "PDF_Preparer_API",
+      "functionName": "buildSf2818Prefill",
+      "purpose": "Return mapped fields for the SF2818 form.",
+      "returns": {
+        "topLevelKeys": [
+          "formKey",
+          "mapFile",
+          "totalFields",
+          "mappedFieldCount",
+          "populatedFieldCount",
+          "mappedFields",
+          "mappingRows",
+          "unmappedFields"
+        ]
+      },
+      "writeBackToAct": false,
+      "requiresRuntimePdfPath": true
+    },
+    {
+      "buttonName": "SF2823 Prefill",
+      "functionOwner": "PDF_Preparer_API",
+      "functionName": "buildSf2823Prefill",
+      "purpose": "Return mapped fields for the SF2823 form.",
+      "returns": {
+        "topLevelKeys": [
+          "formKey",
+          "mapFile",
+          "totalFields",
+          "mappedFieldCount",
+          "populatedFieldCount",
+          "mappedFields",
+          "mappingRows",
+          "unmappedFields"
+        ]
+      },
+      "writeBackToAct": false,
+      "requiresRuntimePdfPath": true
+    },
+    {
+      "buttonName": "SF3102 Prefill",
+      "functionOwner": "PDF_Preparer_API",
+      "functionName": "buildSf3102Prefill",
+      "purpose": "Return mapped fields for the SF3102 form.",
+      "returns": {
+        "topLevelKeys": [
+          "formKey",
+          "mapFile",
+          "totalFields",
+          "mappedFieldCount",
+          "populatedFieldCount",
+          "mappedFields",
+          "mappingRows",
+          "unmappedFields"
+        ]
+      },
+      "writeBackToAct": false,
+      "requiresRuntimePdfPath": true
+    },
+    {
+      "buttonName": "SF3102 2022 10 508 1 Prefill",
+      "functionOwner": "PDF_Preparer_API",
+      "functionName": "buildSf3102_2022_10_508_1Prefill",
+      "purpose": "Return mapped fields for the alternate SF3102 form.",
+      "returns": {
+        "topLevelKeys": [
+          "formKey",
+          "mapFile",
+          "totalFields",
+          "mappedFieldCount",
+          "populatedFieldCount",
+          "mappedFields",
+          "mappingRows",
+          "unmappedFields"
+        ]
+      },
+      "writeBackToAct": false,
+      "requiresRuntimePdfPath": true
+    },
+    {
+      "buttonName": "SF3107 Prefill",
+      "functionOwner": "PDF_Preparer_API",
+      "functionName": "buildSf3107Prefill",
+      "purpose": "Return mapped fields for the SF3107 form.",
+      "returns": {
+        "topLevelKeys": [
+          "formKey",
+          "mapFile",
+          "totalFields",
+          "mappedFieldCount",
+          "populatedFieldCount",
+          "mappedFields",
+          "mappingRows",
+          "unmappedFields"
+        ]
+      },
+      "writeBackToAct": false,
+      "requiresRuntimePdfPath": true
+    },
+    {
+      "buttonName": "SF3108 Prefill",
+      "functionOwner": "PDF_Preparer_API",
+      "functionName": "buildSf3108Prefill",
+      "purpose": "Return mapped fields for the SF3108 form.",
+      "returns": {
+        "topLevelKeys": [
+          "formKey",
+          "mapFile",
+          "totalFields",
+          "mappedFieldCount",
+          "populatedFieldCount",
+          "mappedFields",
+          "mappingRows",
+          "unmappedFields"
+        ]
+      },
+      "writeBackToAct": false,
+      "requiresRuntimePdfPath": true
+    }
+  ]
+}

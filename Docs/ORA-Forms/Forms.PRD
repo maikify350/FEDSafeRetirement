@@ -1,0 +1,47 @@
+
+The following PDF forma are stored in fhis folder: \Docs\ORA-FOrms
+
+SF-2818 - Continuatio of Life Insurance Coverage
+
+SF-2823 		- Designation of Beneficiary (FEGLI)
+
+SF-3102 		- Designation of Beneficiary
+
+SF-3107-2	- Application for Immediate Retirement
+
+W4P			- Withholding Certificate for Periodic Pension or Annuity Payments
+
+SF-2809		- Health Benefits Election Form
+
+The table to store these form refrences will be called "Fed-Forms"
+
+It needs to include thes following fields:
+	ID_PK = UUID,
+	Form_ID = Char(12)  (unique in table)
+	AKA = Char (12)
+	Title = Char(60)
+	Description = Memo
+	Tags = Char(40)
+	Source URL = Char(100)
+	InstructPages = Char(8)   (1-7)
+	FillPages = Char(8)  (8-11)
+	Form_Body = JSONB or blob (which ever makes sence)
+	** Non-Negociable Audit/Controls field: cre_dt, cre_by, mod_dt, mod_by
+
+The Ask: Create a Supabase table called "Forms", in it wel will pre-populate the listed forms above.
+
+On th eleft manu bas add a manu option that will open on the right side a grid which shows these forms. Have a penpicl on the far right Actions column for opening an "Edit" dialog centerde on the screen, Also include in this column a Trash icon for delete.You csn clone the implemention of this floe from how we created "Brackets". Edit or deleted funcgionality will be limited to only Admins.
+
+In terms of the Form_Body which is intended to store the actual PDF form, I will be OK with just stoing it in a folder nad having instead the folder/fiel path rerefenced.
+
+The idea naext is that by selecting a form and an ACT client in ACT.COM using our already build ACT API we can make a GET API call, get the data in JSON object automatically fill thr form.
+
+Please study which oif these forms already have fillable field or identiofy what we need to do next to make this happen. I do have accress to Adobe Acrobat Pro (if need)). in the grid we also want an eye swatch on th elast Action column to preview the form refrenced.
+
+SO , stufy this PRD and let plan an implementation strategy.
+BTW, lately you had issues with creating or executing .SL script because your tools keep on failing. If you just create the .SL cscripot i can manually apply in the Supabase portal
+
+
+
+
+)))

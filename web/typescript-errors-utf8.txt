@@ -1,0 +1,9 @@
+﻿src/views/invoices/InvoiceFullPageDetail.tsx(31,2): error TS1434: Unexpected keyword or identifier.
+src/views/invoices/InvoiceFullPageDetail.tsx(31,14): error TS1434: Unexpected keyword or identifier.
+src/views/jobs/JobFullPageDetail.tsx(25,2): error TS1434: Unexpected keyword or identifier.
+src/views/jobs/JobFullPageDetail.tsx(25,14): error TS1434: Unexpected keyword or identifier.
+src/views/quotes/QuoteEditPanel.tsx(617,11): error TS1109: Expression expected.
+src/views/quotes/QuoteFullPageDetail.tsx(30,2): error TS1434: Unexpected keyword or identifier.
+src/views/quotes/QuoteFullPageDetail.tsx(30,14): error TS1434: Unexpected keyword or identifier.
+src/views/teams/TeamFullPageDetail.tsx(22,2): error TS1434: Unexpected keyword or identifier.
+src/views/teams/TeamFullPageDetail.tsx(22,14): error TS1434: Unexpected keyword or identifier.

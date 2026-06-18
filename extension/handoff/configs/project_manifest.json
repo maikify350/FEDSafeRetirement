@@ -1,0 +1,23 @@
+{
+  "project_name": "Private Chrome Extension Deployment Handoff",
+  "company": "VentureSoft LLC",
+  "primary_product": "ACT Copilot",
+  "primary_client_beta": "FedSafeRetirement",
+  "deployment_model": "Chrome Web Store Private beta + Unlisted production + Enterprise policy for managed clients",
+  "created_at": "2026-05-15",
+  "owner": "Ricardo Garcia",
+  "non_negotiables": [
+    "Manifest V3",
+    "No remotely hosted executable code",
+    "No secrets in extension package",
+    "No ACT credentials in frontend extension",
+    "Server-side license gating",
+    "Feature flags controlled by backend",
+    "Least-privilege permissions"
+  ],
+  "recommended_domains": [
+    "act.mustautomate.ai",
+    "api.mustautomate.ai",
+    "license.mustautomate.ai"
+  ]
+}

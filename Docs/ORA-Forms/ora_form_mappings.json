@@ -1,0 +1,1585 @@
+{
+  "sf2818": {
+    "form_id": "sf2818",
+    "form_title": "Continuation of Life Insurance Coverage",
+    "pdf_file": "sf2818.pdf",
+    "created": "2026-04-22",
+    "fields": [
+      {
+        "pdf_field": "employee name",
+        "source": "crm",
+        "crm_key": "fullName",
+        "transform": "last_first_mi"
+      },
+      {
+        "pdf_field": "DOB",
+        "source": "crm",
+        "crm_key": "DateOfBirth",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "SSN",
+        "source": "crm",
+        "crm_key": "SSN"
+      },
+      {
+        "pdf_field": "Department",
+        "source": "crm",
+        "crm_key": "Department"
+      },
+      {
+        "pdf_field": "work address",
+        "source": "crm",
+        "crm_key": "Agency"
+      },
+      {
+        "pdf_field": "claim number",
+        "source": "crm",
+        "crm_key": "ClaimNumber",
+        "note": "CSA/CSF claim#; leave blank if not retired"
+      },
+      {
+        "pdf_field": "signature date",
+        "source": "derived",
+        "transform": "today_date"
+      },
+      {
+        "pdf_field": "Basic Y",
+        "source": "crm",
+        "crm_key": "FEGLI_Basic",
+        "transform": "check_if_eq:Y",
+        "options": [
+          "Yes",
+          "No",
+          "Full"
+        ]
+      },
+      {
+        "pdf_field": "Basic N",
+        "source": "crm",
+        "crm_key": "FEGLI_Basic",
+        "transform": "check_if_eq:N"
+      },
+      {
+        "pdf_field": "Full",
+        "source": "crm",
+        "crm_key": "FEGLI_Basic",
+        "transform": "check_if_eq:Full"
+      },
+      {
+        "pdf_field": "75%",
+        "source": "crm",
+        "crm_key": "FEGLI_BasicReduction",
+        "transform": "check_if_eq:75"
+      },
+      {
+        "pdf_field": "50%",
+        "source": "crm",
+        "crm_key": "FEGLI_BasicReduction",
+        "transform": "check_if_eq:50"
+      },
+      {
+        "pdf_field": "None",
+        "source": "crm",
+        "crm_key": "FEGLI_BasicReduction",
+        "transform": "check_if_eq:None"
+      },
+      {
+        "pdf_field": "Option A Y",
+        "source": "crm",
+        "crm_key": "FEGLI_OptionA",
+        "transform": "check_if_eq:Y"
+      },
+      {
+        "pdf_field": "Option A N",
+        "source": "crm",
+        "crm_key": "FEGLI_OptionA",
+        "transform": "check_if_eq:N"
+      },
+      {
+        "pdf_field": "No Option A",
+        "source": "crm",
+        "crm_key": "FEGLI_OptionA",
+        "transform": "check_if_eq:Cancelled"
+      },
+      {
+        "pdf_field": "Option B Y",
+        "source": "crm",
+        "crm_key": "FEGLI_OptionB",
+        "transform": "check_if_eq:Y"
+      },
+      {
+        "pdf_field": "Option B N",
+        "source": "crm",
+        "crm_key": "FEGLI_OptionB",
+        "transform": "check_if_eq:N"
+      },
+      {
+        "pdf_field": "No Option B",
+        "source": "crm",
+        "crm_key": "FEGLI_OptionB",
+        "transform": "check_if_eq:Cancelled"
+      },
+      {
+        "pdf_field": "No reduction multiples",
+        "source": "crm",
+        "crm_key": "FEGLI_OptionB_NoReductionMultiples"
+      },
+      {
+        "pdf_field": "full reduction multiples",
+        "source": "crm",
+        "crm_key": "FEGLI_OptionB_FullReductionMultiples"
+      },
+      {
+        "pdf_field": "Option C Y",
+        "source": "crm",
+        "crm_key": "FEGLI_OptionC",
+        "transform": "check_if_eq:Y"
+      },
+      {
+        "pdf_field": "Option C N",
+        "source": "crm",
+        "crm_key": "FEGLI_OptionC",
+        "transform": "check_if_eq:N"
+      },
+      {
+        "pdf_field": "No Option C",
+        "source": "crm",
+        "crm_key": "FEGLI_OptionC",
+        "transform": "check_if_eq:Cancelled"
+      },
+      {
+        "pdf_field": "Opt C No reduction multiples",
+        "source": "crm",
+        "crm_key": "FEGLI_OptionC_NoReductionMultiples"
+      },
+      {
+        "pdf_field": "Option C full reduction multiples",
+        "source": "crm",
+        "crm_key": "FEGLI_OptionC_FullReductionMultiples"
+      }
+    ]
+  },
+  "sf2823": {
+    "form_id": "sf2823",
+    "form_title": "Designation of Beneficiary \u2013 FEGLI",
+    "pdf_file": "sf2823.pdf",
+    "created": "2026-04-22",
+    "fields": [
+      {
+        "pdf_field": "Name",
+        "source": "crm",
+        "crm_key": "fullName",
+        "transform": "last_first_mi"
+      },
+      {
+        "pdf_field": "DOB",
+        "source": "crm",
+        "crm_key": "DateOfBirth",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "SSN",
+        "source": "crm",
+        "crm_key": "SSN"
+      },
+      {
+        "pdf_field": "Department",
+        "source": "crm",
+        "crm_key": "Department"
+      },
+      {
+        "pdf_field": "Bureau",
+        "source": "crm",
+        "crm_key": "Bureau",
+        "note": "Bureau/division; may not exist in CRM yet"
+      },
+      {
+        "pdf_field": "Location",
+        "source": "crm",
+        "crm_key": "Agency",
+        "note": "City, State, ZIP of workplace"
+      },
+      {
+        "pdf_field": "date signed",
+        "source": "derived",
+        "transform": "today_date"
+      },
+      {
+        "pdf_field": "Type of Insured",
+        "source": "crm",
+        "crm_key": "EmploymentStatus",
+        "transform": "radio:Employee=Employee,Retiree=Retiree,Compensationer=Compensationer"
+      },
+      {
+        "pdf_field": "I Am",
+        "source": "static",
+        "static_value": "Insured"
+      },
+      {
+        "pdf_field": "Bene 1.0",
+        "source": "crm",
+        "crm_key": "Beneficiary1_Name"
+      },
+      {
+        "pdf_field": "Bene 2.0",
+        "source": "crm",
+        "crm_key": "Beneficiary2_Name"
+      },
+      {
+        "pdf_field": "Bene 3.0",
+        "source": "crm",
+        "crm_key": "Beneficiary3_Name"
+      },
+      {
+        "pdf_field": "Bene 4.0",
+        "source": "crm",
+        "crm_key": "Beneficiary4_Name"
+      },
+      {
+        "pdf_field": "Bene 5.0",
+        "source": "crm",
+        "crm_key": "Beneficiary5_Name"
+      },
+      {
+        "pdf_field": "Bene 6.0",
+        "source": "crm",
+        "crm_key": "Beneficiary6_Name"
+      },
+      {
+        "pdf_field": "SSN 1.0",
+        "source": "crm",
+        "crm_key": "Beneficiary1_SSN"
+      },
+      {
+        "pdf_field": "SSN 2.0",
+        "source": "crm",
+        "crm_key": "Beneficiary2_SSN"
+      },
+      {
+        "pdf_field": "SSN 3.0",
+        "source": "crm",
+        "crm_key": "Beneficiary3_SSN"
+      },
+      {
+        "pdf_field": "SSN 4.0",
+        "source": "crm",
+        "crm_key": "Beneficiary4_SSN"
+      },
+      {
+        "pdf_field": "SSN 5.0",
+        "source": "crm",
+        "crm_key": "Beneficiary5_SSN"
+      },
+      {
+        "pdf_field": "SSN 6.0",
+        "source": "crm",
+        "crm_key": "Beneficiary6_SSN"
+      },
+      {
+        "pdf_field": "address 1.0",
+        "source": "crm",
+        "crm_key": "Beneficiary1_Address"
+      },
+      {
+        "pdf_field": "address 2.0",
+        "source": "crm",
+        "crm_key": "Beneficiary2_Address"
+      },
+      {
+        "pdf_field": "address 3.0",
+        "source": "crm",
+        "crm_key": "Beneficiary3_Address"
+      },
+      {
+        "pdf_field": "address 4.0",
+        "source": "crm",
+        "crm_key": "Beneficiary4_Address"
+      },
+      {
+        "pdf_field": "address 5.0",
+        "source": "crm",
+        "crm_key": "Beneficiary5_Address"
+      },
+      {
+        "pdf_field": "address 6.0",
+        "source": "crm",
+        "crm_key": "Beneficiary6_Address"
+      },
+      {
+        "pdf_field": "Relationship 1.0",
+        "source": "crm",
+        "crm_key": "Beneficiary1_Relationship"
+      },
+      {
+        "pdf_field": "Relationship 2.0",
+        "source": "crm",
+        "crm_key": "Beneficiary2_Relationship"
+      },
+      {
+        "pdf_field": "Relationship 3.0",
+        "source": "crm",
+        "crm_key": "Beneficiary3_Relationship"
+      },
+      {
+        "pdf_field": "Relationship 4.0",
+        "source": "crm",
+        "crm_key": "Beneficiary4_Relationship"
+      },
+      {
+        "pdf_field": "Relationship 5.0",
+        "source": "crm",
+        "crm_key": "Beneficiary5_Relationship"
+      },
+      {
+        "pdf_field": "Relationship 6.0",
+        "source": "crm",
+        "crm_key": "Beneficiary6_Relationship"
+      },
+      {
+        "pdf_field": "amount 1.0",
+        "source": "crm",
+        "crm_key": "Beneficiary1_Share"
+      },
+      {
+        "pdf_field": "amount 2.0",
+        "source": "crm",
+        "crm_key": "Beneficiary2_Share"
+      },
+      {
+        "pdf_field": "amount 3.0",
+        "source": "crm",
+        "crm_key": "Beneficiary3_Share"
+      },
+      {
+        "pdf_field": "amount 4.0",
+        "source": "crm",
+        "crm_key": "Beneficiary4_Share"
+      },
+      {
+        "pdf_field": "amount 5.0",
+        "source": "crm",
+        "crm_key": "Beneficiary5_Share"
+      },
+      {
+        "pdf_field": "amount 6.0",
+        "source": "crm",
+        "crm_key": "Beneficiary6_Share"
+      },
+      {
+        "pdf_field": "Total",
+        "source": "derived",
+        "transform": "sum_beneficiary_shares"
+      },
+      {
+        "pdf_field": "not assigned",
+        "source": "static",
+        "static_value": "Yes",
+        "note": "Check unless client has assigned FEGLI"
+      },
+      {
+        "pdf_field": "C. Name",
+        "source": "needs_mapping",
+        "note": "Assignee name \u2013 only if assigned"
+      },
+      {
+        "pdf_field": "C. Address line one",
+        "source": "needs_mapping",
+        "note": "Assignee address \u2013 only if assigned"
+      },
+      {
+        "pdf_field": "C. Address line two",
+        "source": "needs_mapping",
+        "note": "Assignee address line 2"
+      },
+      {
+        "pdf_field": "C. Address line three",
+        "source": "needs_mapping",
+        "note": "Assignee city/state/zip"
+      },
+      {
+        "pdf_field": "witnessed",
+        "source": "needs_mapping",
+        "note": "Check if witnesses signed below"
+      },
+      {
+        "pdf_field": "no beneficiary",
+        "source": "needs_mapping",
+        "note": "Check if witnesses are not beneficiaries"
+      },
+      {
+        "pdf_field": "Witness Address 1",
+        "source": "needs_mapping",
+        "note": "First witness address"
+      },
+      {
+        "pdf_field": "Witness Address 2",
+        "source": "needs_mapping",
+        "note": "Second witness address"
+      }
+    ]
+  },
+  "sf3102": {
+    "form_id": "sf3102",
+    "form_title": "Designation of Beneficiary \u2013 FERS",
+    "pdf_file": "sf3102.pdf",
+    "created": "2026-04-22",
+    "fields": [
+      {
+        "pdf_field": "Name",
+        "source": "crm",
+        "crm_key": "fullName",
+        "transform": "last_first_mi"
+      },
+      {
+        "pdf_field": "DOB",
+        "source": "crm",
+        "crm_key": "DateOfBirth",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "SSN",
+        "source": "crm",
+        "crm_key": "SSN"
+      },
+      {
+        "pdf_field": "Claim Number",
+        "source": "crm",
+        "crm_key": "ClaimNumber",
+        "note": "If retired"
+      },
+      {
+        "pdf_field": "Department",
+        "source": "crm",
+        "crm_key": "Department"
+      },
+      {
+        "pdf_field": "Location",
+        "source": "crm",
+        "crm_key": "Agency",
+        "note": "City, State, ZIP"
+      },
+      {
+        "pdf_field": "Type",
+        "source": "crm",
+        "crm_key": "EmploymentStatus",
+        "transform": "radio:Employee=Employee,Retired/Applicant=Retiree,Former=Former"
+      },
+      {
+        "pdf_field": "Retirement System",
+        "source": "crm",
+        "crm_key": "RetirementSystem",
+        "transform": "radio:CSRS=CSRS,FERS=FERS"
+      },
+      {
+        "pdf_field": "date of designation",
+        "source": "derived",
+        "transform": "today_date"
+      },
+      {
+        "pdf_field": "Beneficiary 1.0.0",
+        "source": "crm",
+        "crm_key": "Beneficiary1_Name"
+      },
+      {
+        "pdf_field": "Beneficiary 1.0.1.0",
+        "source": "crm",
+        "crm_key": "Beneficiary2_Name"
+      },
+      {
+        "pdf_field": "Beneficiary 1.0.1.1.0",
+        "source": "crm",
+        "crm_key": "Beneficiary3_Name"
+      },
+      {
+        "pdf_field": "Address 1.0.0",
+        "source": "crm",
+        "crm_key": "Beneficiary1_Address"
+      },
+      {
+        "pdf_field": "Address 1.0.1.0",
+        "source": "crm",
+        "crm_key": "Beneficiary2_Address"
+      },
+      {
+        "pdf_field": "Address 1.0.1.1.0",
+        "source": "crm",
+        "crm_key": "Beneficiary3_Address"
+      },
+      {
+        "pdf_field": "Relationship 1.0.0",
+        "source": "crm",
+        "crm_key": "Beneficiary1_Relationship"
+      },
+      {
+        "pdf_field": "Relationship 1.0.1.0",
+        "source": "crm",
+        "crm_key": "Beneficiary2_Relationship"
+      },
+      {
+        "pdf_field": "Relationship 1.0.1.1.0",
+        "source": "crm",
+        "crm_key": "Beneficiary3_Relationship"
+      },
+      {
+        "pdf_field": "Share 1.0.0",
+        "source": "crm",
+        "crm_key": "Beneficiary1_Share"
+      },
+      {
+        "pdf_field": "Share 1.0.1.0",
+        "source": "crm",
+        "crm_key": "Beneficiary2_Share"
+      },
+      {
+        "pdf_field": "Share 1.0.1.1.0",
+        "source": "crm",
+        "crm_key": "Beneficiary3_Share"
+      },
+      {
+        "pdf_field": "Return address",
+        "source": "needs_mapping",
+        "note": "Mailing address of employee"
+      },
+      {
+        "pdf_field": "Witness address1",
+        "source": "needs_mapping",
+        "note": "First witness address"
+      },
+      {
+        "pdf_field": "Witness address2",
+        "source": "needs_mapping",
+        "note": "Second witness address"
+      }
+    ]
+  },
+  "sf3107": {
+    "form_id": "sf3107",
+    "form_title": "Application for Immediate Retirement \u2013 FERS",
+    "pdf_file": "sf3107.pdf",
+    "created": "2026-04-22",
+    "fields": [
+      {
+        "pdf_field": "Name",
+        "source": "crm",
+        "crm_key": "fullName",
+        "transform": "last_first_mi"
+      },
+      {
+        "pdf_field": "Other Names",
+        "source": "crm",
+        "crm_key": "OtherNames",
+        "note": "Other names used; may not exist in CRM"
+      },
+      {
+        "pdf_field": "Address",
+        "source": "crm",
+        "crm_key": "homeAddress"
+      },
+      {
+        "pdf_field": "Address line 2",
+        "source": "crm",
+        "crm_key": "homeAddress2"
+      },
+      {
+        "pdf_field": "Address line 3",
+        "source": "derived",
+        "transform": "city_state_zip"
+      },
+      {
+        "pdf_field": "phone number",
+        "source": "crm",
+        "crm_key": "homePhone"
+      },
+      {
+        "pdf_field": "email",
+        "source": "crm",
+        "crm_key": "email"
+      },
+      {
+        "pdf_field": "DOB",
+        "source": "crm",
+        "crm_key": "DateOfBirth",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "SSN",
+        "source": "crm",
+        "crm_key": "SSN"
+      },
+      {
+        "pdf_field": "USA Y",
+        "source": "crm",
+        "crm_key": "USCitizen",
+        "transform": "check_if_true"
+      },
+      {
+        "pdf_field": "USA N",
+        "source": "crm",
+        "crm_key": "USCitizen",
+        "transform": "check_if_false"
+      },
+      {
+        "pdf_field": "disability y",
+        "source": "crm",
+        "crm_key": "Disability",
+        "transform": "check_if_true"
+      },
+      {
+        "pdf_field": "disability n",
+        "source": "crm",
+        "crm_key": "Disability",
+        "transform": "check_if_false"
+      },
+      {
+        "pdf_field": "dept",
+        "source": "crm",
+        "crm_key": "Department"
+      },
+      {
+        "pdf_field": "dept2",
+        "source": "crm",
+        "crm_key": "Agency"
+      },
+      {
+        "pdf_field": "dept3",
+        "source": "derived",
+        "transform": "agency_city_state_zip"
+      },
+      {
+        "pdf_field": "sep date",
+        "source": "crm",
+        "crm_key": "SeparationDate",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "title",
+        "source": "crm",
+        "crm_key": "JobTitle"
+      },
+      {
+        "pdf_field": "pay plan",
+        "source": "crm",
+        "crm_key": "PayPlan"
+      },
+      {
+        "pdf_field": "6. pay plan",
+        "source": "crm",
+        "crm_key": "PayPlan"
+      },
+      {
+        "pdf_field": "armed forces y",
+        "source": "crm",
+        "crm_key": "MilitaryService",
+        "transform": "check_if_true"
+      },
+      {
+        "pdf_field": "armed forces n",
+        "source": "crm",
+        "crm_key": "MilitaryService",
+        "transform": "check_if_false"
+      },
+      {
+        "pdf_field": "military retired pay y",
+        "source": "crm",
+        "crm_key": "MilitaryRetiredPay",
+        "transform": "check_if_true"
+      },
+      {
+        "pdf_field": "military retired pay n",
+        "source": "crm",
+        "crm_key": "MilitaryRetiredPay",
+        "transform": "check_if_false"
+      },
+      {
+        "pdf_field": "married y",
+        "source": "crm",
+        "crm_key": "MaritalStatus",
+        "transform": "check_if_eq:Married"
+      },
+      {
+        "pdf_field": "married n",
+        "source": "crm",
+        "crm_key": "MaritalStatus",
+        "transform": "check_if_eq:Single"
+      },
+      {
+        "pdf_field": "Spouse's Name",
+        "source": "crm",
+        "crm_key": "SpouseName",
+        "transform": "last_first_mi"
+      },
+      {
+        "pdf_field": "Spouse's DOB",
+        "source": "crm",
+        "crm_key": "SpouseDOB",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "Spouse's SSN",
+        "source": "crm",
+        "crm_key": "SpouseSSN"
+      },
+      {
+        "pdf_field": "Place of marriage",
+        "source": "crm",
+        "crm_key": "PlaceOfMarriage",
+        "note": "City and state"
+      },
+      {
+        "pdf_field": "marriage date",
+        "source": "crm",
+        "crm_key": "MarriageDate",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "maximum",
+        "source": "crm",
+        "crm_key": "SurvivorElection",
+        "transform": "check_if_eq:Maximum"
+      },
+      {
+        "pdf_field": "partial",
+        "source": "crm",
+        "crm_key": "SurvivorElection",
+        "transform": "check_if_eq:Partial"
+      },
+      {
+        "pdf_field": "no regular",
+        "source": "crm",
+        "crm_key": "SurvivorElection",
+        "transform": "check_if_eq:None"
+      },
+      {
+        "pdf_field": "insurable",
+        "source": "crm",
+        "crm_key": "SurvivorElection",
+        "transform": "check_if_eq:InsurableInterest"
+      },
+      {
+        "pdf_field": "FEHB Y",
+        "source": "crm",
+        "crm_key": "FEHB",
+        "transform": "check_if_true"
+      },
+      {
+        "pdf_field": "FEHB N",
+        "source": "crm",
+        "crm_key": "FEHB",
+        "transform": "check_if_false"
+      },
+      {
+        "pdf_field": "FEGLI Y",
+        "source": "crm",
+        "crm_key": "FEGLI_Basic",
+        "transform": "check_if_truthy"
+      },
+      {
+        "pdf_field": "FEGLI N",
+        "source": "crm",
+        "crm_key": "FEGLI_Basic",
+        "transform": "check_if_falsy"
+      },
+      {
+        "pdf_field": "to checking",
+        "source": "crm",
+        "crm_key": "BankAccountType",
+        "transform": "check_if_eq:Checking"
+      },
+      {
+        "pdf_field": "savings account",
+        "source": "crm",
+        "crm_key": "BankAccountType",
+        "transform": "check_if_eq:Savings"
+      },
+      {
+        "pdf_field": "checking account",
+        "source": "crm",
+        "crm_key": "BankAccountType",
+        "transform": "check_if_eq:Checking"
+      },
+      {
+        "pdf_field": "routing number",
+        "source": "crm",
+        "crm_key": "BankRoutingNumber"
+      },
+      {
+        "pdf_field": "checking/savings",
+        "source": "crm",
+        "crm_key": "BankAccountNumber"
+      },
+      {
+        "pdf_field": "financial inst name",
+        "source": "crm",
+        "crm_key": "BankName"
+      },
+      {
+        "pdf_field": "date signed I",
+        "source": "derived",
+        "transform": "today_date"
+      },
+      {
+        "pdf_field": "dependent 1",
+        "source": "crm",
+        "crm_key": "Dependent1_Name"
+      },
+      {
+        "pdf_field": "dependent 2",
+        "source": "crm",
+        "crm_key": "Dependent2_Name"
+      },
+      {
+        "pdf_field": "dependent 3",
+        "source": "crm",
+        "crm_key": "Dependent3_Name"
+      },
+      {
+        "pdf_field": "dependent 4",
+        "source": "crm",
+        "crm_key": "Dependent4_Name"
+      },
+      {
+        "pdf_field": "dependent 5",
+        "source": "crm",
+        "crm_key": "Dependent5_Name"
+      },
+      {
+        "pdf_field": "dependent 6",
+        "source": "crm",
+        "crm_key": "Dependent6_Name"
+      },
+      {
+        "pdf_field": "dependent 7",
+        "source": "crm",
+        "crm_key": "Dependent7_Name"
+      },
+      {
+        "pdf_field": "dependent 8",
+        "source": "crm",
+        "crm_key": "Dependent8_Name"
+      },
+      {
+        "pdf_field": "dependent 1 DOB",
+        "source": "crm",
+        "crm_key": "Dependent1_DOB",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "dependent 2 DOB",
+        "source": "crm",
+        "crm_key": "Dependent2_DOB",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "dependent 3 DOB",
+        "source": "crm",
+        "crm_key": "Dependent3_DOB",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "dependent 4 DOB",
+        "source": "crm",
+        "crm_key": "Dependent4_DOB",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "dependent 5 DOB",
+        "source": "crm",
+        "crm_key": "Dependent5_DOB",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "dependent 6 DOB",
+        "source": "crm",
+        "crm_key": "Dependent6_DOB",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "dependent 7 DOB",
+        "source": "crm",
+        "crm_key": "Dependent7_DOB",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "dependent 8 DOB",
+        "source": "crm",
+        "crm_key": "Dependent8_DOB",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "Branch Service",
+        "source": "needs_mapping",
+        "note": "Military branch \u2013 Schedule A"
+      },
+      {
+        "pdf_field": "serial number",
+        "source": "needs_mapping",
+        "note": "Military serial # \u2013 Schedule A"
+      },
+      {
+        "pdf_field": "active duty from",
+        "source": "needs_mapping",
+        "note": "Active duty start \u2013 Schedule A"
+      },
+      {
+        "pdf_field": "active duty to",
+        "source": "needs_mapping",
+        "note": "Active duty end \u2013 Schedule A"
+      },
+      {
+        "pdf_field": "grade",
+        "source": "needs_mapping",
+        "note": "Military grade \u2013 Schedule A"
+      }
+    ]
+  },
+  "sf3108": {
+    "form_id": "sf3108",
+    "form_title": "Application to Make Deposit or Redeposit",
+    "pdf_file": "sf3108.pdf",
+    "created": "2026-04-22",
+    "fields": [
+      {
+        "pdf_field": "name",
+        "source": "crm",
+        "crm_key": "fullName",
+        "transform": "last_first_mi"
+      },
+      {
+        "pdf_field": "other names",
+        "source": "crm",
+        "crm_key": "OtherNames"
+      },
+      {
+        "pdf_field": "birthdate",
+        "source": "crm",
+        "crm_key": "DateOfBirth",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "Applicant's Address1",
+        "source": "crm",
+        "crm_key": "homeAddress"
+      },
+      {
+        "pdf_field": "Applicant's Address2",
+        "source": "derived",
+        "transform": "city_state_zip"
+      },
+      {
+        "pdf_field": "Applicant's SSN",
+        "source": "crm",
+        "crm_key": "SSN"
+      },
+      {
+        "pdf_field": "Last employed agency name",
+        "source": "crm",
+        "crm_key": "Department"
+      },
+      {
+        "pdf_field": "Last employed agency location",
+        "source": "crm",
+        "crm_key": "Agency"
+      },
+      {
+        "pdf_field": "Applicant's Job position",
+        "source": "crm",
+        "crm_key": "JobTitle"
+      },
+      {
+        "pdf_field": "area code",
+        "source": "crm",
+        "crm_key": "homePhone",
+        "transform": "extract_area_code"
+      },
+      {
+        "pdf_field": "telephone number",
+        "source": "crm",
+        "crm_key": "homePhone",
+        "transform": "extract_phone_number"
+      },
+      {
+        "pdf_field": "Email Address",
+        "source": "crm",
+        "crm_key": "email"
+      },
+      {
+        "pdf_field": "date signed",
+        "source": "derived",
+        "transform": "today_date"
+      },
+      {
+        "pdf_field": "separation date",
+        "source": "crm",
+        "crm_key": "SeparationDate",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "deductions Y",
+        "source": "crm",
+        "crm_key": "RetirementDeductions",
+        "transform": "check_if_true"
+      },
+      {
+        "pdf_field": "deductions N",
+        "source": "crm",
+        "crm_key": "RetirementDeductions",
+        "transform": "check_if_false"
+      },
+      {
+        "pdf_field": "agency name 1.0",
+        "source": "crm",
+        "crm_key": "ServicePeriod1_Agency"
+      },
+      {
+        "pdf_field": "agency name 1.1",
+        "source": "crm",
+        "crm_key": "ServicePeriod2_Agency"
+      },
+      {
+        "pdf_field": "agency name 1.2",
+        "source": "crm",
+        "crm_key": "ServicePeriod3_Agency"
+      },
+      {
+        "pdf_field": "agency name 1.3",
+        "source": "crm",
+        "crm_key": "ServicePeriod4_Agency"
+      },
+      {
+        "pdf_field": "agency name 1.4",
+        "source": "crm",
+        "crm_key": "ServicePeriod5_Agency"
+      },
+      {
+        "pdf_field": "agency location 1.0",
+        "source": "crm",
+        "crm_key": "ServicePeriod1_Location"
+      },
+      {
+        "pdf_field": "agency location 1.1",
+        "source": "crm",
+        "crm_key": "ServicePeriod2_Location"
+      },
+      {
+        "pdf_field": "agency location 1.2",
+        "source": "crm",
+        "crm_key": "ServicePeriod3_Location"
+      },
+      {
+        "pdf_field": "agency location 1.3",
+        "source": "crm",
+        "crm_key": "ServicePeriod4_Location"
+      },
+      {
+        "pdf_field": "agency location 1.4",
+        "source": "crm",
+        "crm_key": "ServicePeriod5_Location"
+      },
+      {
+        "pdf_field": "Job position 1.0",
+        "source": "crm",
+        "crm_key": "ServicePeriod1_JobTitle"
+      },
+      {
+        "pdf_field": "Job position 1.1",
+        "source": "crm",
+        "crm_key": "ServicePeriod2_JobTitle"
+      },
+      {
+        "pdf_field": "Job position 1.2",
+        "source": "crm",
+        "crm_key": "ServicePeriod3_JobTitle"
+      },
+      {
+        "pdf_field": "Job position 1.3",
+        "source": "crm",
+        "crm_key": "ServicePeriod4_JobTitle"
+      },
+      {
+        "pdf_field": "Job position 1.4",
+        "source": "crm",
+        "crm_key": "ServicePeriod5_JobTitle"
+      },
+      {
+        "pdf_field": "Period of Service Beginning Date 1.0",
+        "source": "crm",
+        "crm_key": "ServicePeriod1_StartDate",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "Period of Service Beginning Date 1.1",
+        "source": "crm",
+        "crm_key": "ServicePeriod2_StartDate",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "Period of Service Beginning Date 1.2",
+        "source": "crm",
+        "crm_key": "ServicePeriod3_StartDate",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "Period of Service Beginning Date 1.3",
+        "source": "crm",
+        "crm_key": "ServicePeriod4_StartDate",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "Period of Service Beginning Date 1.4",
+        "source": "crm",
+        "crm_key": "ServicePeriod5_StartDate",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "Period of Service Ending Date 1.0",
+        "source": "crm",
+        "crm_key": "ServicePeriod1_EndDate",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "Period of Service Ending Date 1.1",
+        "source": "crm",
+        "crm_key": "ServicePeriod2_EndDate",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "Period of Service Ending Date 1.2",
+        "source": "crm",
+        "crm_key": "ServicePeriod3_EndDate",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "Period of Service Ending Date 1.3",
+        "source": "crm",
+        "crm_key": "ServicePeriod4_EndDate",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "Period of Service Ending Date 1.4",
+        "source": "crm",
+        "crm_key": "ServicePeriod5_EndDate",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "claim number(s)",
+        "source": "needs_mapping",
+        "note": "CSA/CSF claim number if retired"
+      },
+      {
+        "pdf_field": "filed yes",
+        "source": "needs_mapping",
+        "note": "Has previously filed a claim?"
+      },
+      {
+        "pdf_field": "filed no",
+        "source": "needs_mapping",
+        "note": "Has previously filed a claim?"
+      }
+    ]
+  },
+  "fw4p": {
+    "form_id": "fw4p",
+    "form_title": "Withholding Certificate for Pension or Annuity Payments (W-4P)",
+    "pdf_file": "fw4p.pdf",
+    "created": "2026-04-22",
+    "note": "XFA form \u2013 fields have no tooltips; mapped by IRS W-4P 2024 field position",
+    "fields": [
+      {
+        "pdf_field": "topmostSubform[0].Page1[0].Step1a[0].f1_01[0]",
+        "source": "crm",
+        "crm_key": "firstName",
+        "note": "First name / MI"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page1[0].Step1a[0].f1_02[0]",
+        "source": "crm",
+        "crm_key": "lastName",
+        "note": "Last name"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page1[0].Step1a[0].f1_03[0]",
+        "source": "derived",
+        "transform": "city_state_zip",
+        "note": "City, State, ZIP"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page1[0].Step1a[0].f1_04[0]",
+        "source": "crm",
+        "crm_key": "homeAddress",
+        "note": "Street address"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page1[0].f1_05[0]",
+        "source": "crm",
+        "crm_key": "SSN"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page1[0].c1_1[0]",
+        "source": "crm",
+        "crm_key": "FilingStatus",
+        "transform": "check_if_eq:Single"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page1[0].c1_1[1]",
+        "source": "crm",
+        "crm_key": "FilingStatus",
+        "transform": "check_if_eq:MarriedFilingJointly"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page1[0].c1_1[2]",
+        "source": "crm",
+        "crm_key": "FilingStatus",
+        "transform": "check_if_eq:HeadOfHousehold"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page1[0].c1_2[0]",
+        "source": "crm",
+        "crm_key": "MultipleJobsOrSpouseWorks",
+        "transform": "check_if_true",
+        "note": "Step 2(b) checkbox"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page1[0].f1_06[0]",
+        "source": "crm",
+        "crm_key": "ChildTaxCreditAmount",
+        "note": "Step 3: qualifying children credit"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page1[0].f1_07[0]",
+        "source": "crm",
+        "crm_key": "OtherDependentsCredit",
+        "note": "Step 3: other dependents credit"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page1[0].f1_08[0]",
+        "source": "derived",
+        "transform": "sum_step3_credits"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page1[0].Step3_ReadOrder[0].f1_09[0]",
+        "source": "crm",
+        "crm_key": "OtherIncome",
+        "note": "Step 4a: other income not from jobs"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page1[0].Step3_ReadOrder[0].f1_10[0]",
+        "source": "crm",
+        "crm_key": "Deductions",
+        "note": "Step 4b: deductions"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page1[0].Step3_ReadOrder[0].f1_11[0]",
+        "source": "crm",
+        "crm_key": "ExtraWithholding",
+        "note": "Step 4c: extra withholding per period"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_01[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_02[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_03[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_04[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_05[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_06[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_07[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_08[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_09[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_10[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_11[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_12[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_13[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_14[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_15[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_16[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_17[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_18[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_19[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_20[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_21[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_22[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_23[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_24[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      },
+      {
+        "pdf_field": "topmostSubform[0].Page4[0].f4_25[0]",
+        "source": "needs_mapping",
+        "note": "W-4P Page 4 worksheet \u2013 agent completes"
+      }
+    ]
+  },
+  "sf2809": {
+    "form_id": "sf2809",
+    "form_title": "Health Benefits Election Form",
+    "pdf_file": "sf2809.pdf",
+    "created": "2026-04-22",
+    "fields": [
+      {
+        "pdf_field": "Name. Name",
+        "source": "crm",
+        "crm_key": "fullName",
+        "transform": "last_first_mi"
+      },
+      {
+        "pdf_field": "SS. SS",
+        "source": "crm",
+        "crm_key": "SSN"
+      },
+      {
+        "pdf_field": "DOB. DOB",
+        "source": "crm",
+        "crm_key": "DateOfBirth",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "address 1. address 1",
+        "source": "derived",
+        "transform": "full_home_address"
+      },
+      {
+        "pdf_field": "Preferred telephone number. Preferred telephone number",
+        "source": "crm",
+        "crm_key": "homePhone"
+      },
+      {
+        "pdf_field": "11 email address",
+        "source": "crm",
+        "crm_key": "email"
+      },
+      {
+        "pdf_field": "Sex1",
+        "source": "crm",
+        "crm_key": "Gender",
+        "transform": "radio:Male=Male,Female=Female"
+      },
+      {
+        "pdf_field": "Married1",
+        "source": "crm",
+        "crm_key": "MaritalStatus",
+        "transform": "radio:Yes=Married,No=Single"
+      },
+      {
+        "pdf_field": "OtherInsurance1",
+        "source": "crm",
+        "crm_key": "OtherInsurance",
+        "transform": "radio:Yes=true,No=false"
+      },
+      {
+        "pdf_field": "Med A",
+        "source": "crm",
+        "crm_key": "MedicarePartA",
+        "transform": "check_if_true"
+      },
+      {
+        "pdf_field": "Med B",
+        "source": "crm",
+        "crm_key": "MedicarePartB",
+        "transform": "check_if_true"
+      },
+      {
+        "pdf_field": "Med D",
+        "source": "crm",
+        "crm_key": "MedicarePartD",
+        "transform": "check_if_true"
+      },
+      {
+        "pdf_field": "  medical claim.  medical claim",
+        "source": "crm",
+        "crm_key": "MedicareBeneficiaryID"
+      },
+      {
+        "pdf_field": "current plan",
+        "source": "crm",
+        "crm_key": "CurrentFEHBPlan"
+      },
+      {
+        "pdf_field": "enrollment code",
+        "source": "crm",
+        "crm_key": "CurrentFEHBCode"
+      },
+      {
+        "pdf_field": "New Plan Name",
+        "source": "crm",
+        "crm_key": "NewFEHBPlan"
+      },
+      {
+        "pdf_field": "enrollment new",
+        "source": "crm",
+        "crm_key": "NewFEHBCode"
+      },
+      {
+        "pdf_field": "event",
+        "source": "crm",
+        "crm_key": "LifeEventCode"
+      },
+      {
+        "pdf_field": "event date 1",
+        "source": "crm",
+        "crm_key": "LifeEventDate",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": "13. FM1 Name",
+        "source": "crm",
+        "crm_key": "SpouseName",
+        "transform": "last_first_mi"
+      },
+      {
+        "pdf_field": "14. SS",
+        "source": "crm",
+        "crm_key": "SpouseSSN"
+      },
+      {
+        "pdf_field": "15. DOB",
+        "source": "crm",
+        "crm_key": "SpouseDOB",
+        "transform": "mm/dd/yyyy"
+      },
+      {
+        "pdf_field": " relation. relation",
+        "source": "static",
+        "static_value": "01",
+        "note": "01 = Spouse"
+      },
+      {
+        "pdf_field": "Sex2",
+        "source": "crm",
+        "crm_key": "SpouseGender",
+        "transform": "radio:Male=Male,Female=Female"
+      },
+      {
+        "pdf_field": "25 FM2 Name",
+        "source": "needs_mapping",
+        "note": "Family member 2 \u2013 not yet in CRM"
+      },
+      {
+        "pdf_field": "26 SSN FM2",
+        "source": "needs_mapping",
+        "note": "FM2 SSN"
+      },
+      {
+        "pdf_field": "27. DOB",
+        "source": "needs_mapping",
+        "note": "FM2 DOB"
+      },
+      {
+        "pdf_field": "37 FM3 Name",
+        "source": "needs_mapping",
+        "note": "Family member 3 \u2013 not yet in CRM"
+      },
+      {
+        "pdf_field": "38 SSn FM3",
+        "source": "needs_mapping",
+        "note": "FM3 SSN"
+      },
+      {
+        "pdf_field": "39. DOB",
+        "source": "needs_mapping",
+        "note": "FM3 DOB"
+      },
+      {
+        "pdf_field": "Policy number. Insurance Name",
+        "source": "needs_mapping",
+        "note": "Other insurance name"
+      },
+      {
+        "pdf_field": "Policy number. Policy number",
+        "source": "needs_mapping",
+        "note": "Other insurance policy#"
+      }
+    ]
+  }
+}

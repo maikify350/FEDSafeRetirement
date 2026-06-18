@@ -1,0 +1,15 @@
+{
+  "name": "fegli-mcp-ingest",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "FEGLI RAG ingestion script",
+  "scripts": {
+    "ingest": "node ingest.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "dotenv": "^16.0.0",
+    "openai": "^4.0.0",
+    "pdf-parse": "^1.1.1"
+  }
+}
