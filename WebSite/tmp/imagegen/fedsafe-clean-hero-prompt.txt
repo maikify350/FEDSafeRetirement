@@ -1,0 +1,11 @@
+Use case: photorealistic-natural
+Asset type: FedSafe Retirement website homepage hero background, clean 16:9 image with no embedded copy
+Primary request: Create a polished, realistic hero background for a federal retirement education website. The scene should be inspired by the provided Mike mockup composition but must contain no text, no buttons, no badges, no icons, no charts, no captions, no watermarks, and no logo marks in the image itself.
+Scene/backdrop: Calm home office or advisory office with a bright window, warm natural daylight, subtle bookshelves or neutral office details in the background.
+Subject: A mature federal or postal employee in his early 60s, professional but approachable, seated at a desk reviewing retirement paperwork beside a laptop. He should look thoughtful and confident, not worried. Clothing should be business casual in a light-to-medium blue shirt or pullover; avoid black clothing.
+Style/medium: Premium photorealistic website hero photography, natural proportions, realistic hands and paperwork, professional commercial polish.
+Composition/framing: Wide 16:9 landscape. Keep the person and desk activity primarily on the right half. Preserve clean negative space on the left half for website headline and buttons that will be added later in HTML. The left side should be bright and uncluttered, with enough visual calm for dark blue/red overlay text.
+Lighting/mood: Trustworthy, clear, optimistic, calm, education-first. Soft daylight, clean contrast, no harsh shadows.
+Color palette: FedSafe-friendly neutral whites, warm wood, light grays, navy blue accents, restrained red accents only if natural in the scene.
+Constraints: No embedded text. No buttons. No icons. No badges. No logos. No shield logo. No mug logo. No distorted text-like artifacts. No black shirts or black pants. Do not make it look like a stock-photo collage. Keep it realistic and suitable for federal employees nearing retirement.
+Avoid: outdoor scene, tents, formal suits, black wardrobe, huge logos, beach-shirt look, exaggerated smiles, messy paperwork, text artifacts, fake unreadable typography.

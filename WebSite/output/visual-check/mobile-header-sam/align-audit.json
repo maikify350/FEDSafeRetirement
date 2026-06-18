@@ -1,0 +1,254 @@
+[
+  {
+    "page": "/",
+    "width": 390,
+    "issues": [],
+    "metrics": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "logoImg": {
+        "left": 18,
+        "top": 32,
+        "right": 62.484375,
+        "bottom": 82,
+        "width": 44.484375,
+        "height": 50
+      },
+      "sam": {
+        "left": 69.484375,
+        "top": 32,
+        "right": 108.828125,
+        "bottom": 82,
+        "width": 39.34375,
+        "height": 50
+      },
+      "phone": {
+        "left": 196.1875,
+        "top": 18,
+        "right": 289.1875,
+        "bottom": 46,
+        "width": 93,
+        "height": 28
+      },
+      "menu": {
+        "left": 328.796875,
+        "top": 32,
+        "right": 361.1875,
+        "bottom": 32,
+        "width": 32.390625,
+        "height": 0
+      },
+      "brokenImages": 0
+    }
+  },
+  {
+    "page": "/main-contact/",
+    "width": 390,
+    "issues": [],
+    "metrics": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "logoImg": {
+        "left": 18,
+        "top": 32,
+        "right": 62.484375,
+        "bottom": 82,
+        "width": 44.484375,
+        "height": 50
+      },
+      "sam": {
+        "left": 69.484375,
+        "top": 32,
+        "right": 108.828125,
+        "bottom": 82,
+        "width": 39.34375,
+        "height": 50
+      },
+      "phone": {
+        "left": 196.1875,
+        "top": 18,
+        "right": 289.1875,
+        "bottom": 46,
+        "width": 93,
+        "height": 28
+      },
+      "menu": {
+        "left": 328.796875,
+        "top": 32,
+        "right": 361.1875,
+        "bottom": 32,
+        "width": 32.390625,
+        "height": 0
+      },
+      "brokenImages": 0
+    }
+  },
+  {
+    "page": "/benefits-analysis/",
+    "width": 390,
+    "issues": [],
+    "metrics": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "logoImg": {
+        "left": 18,
+        "top": 32,
+        "right": 62.484375,
+        "bottom": 82,
+        "width": 44.484375,
+        "height": 50
+      },
+      "sam": {
+        "left": 69.484375,
+        "top": 32,
+        "right": 108.828125,
+        "bottom": 82,
+        "width": 39.34375,
+        "height": 50
+      },
+      "phone": {
+        "left": 196.1875,
+        "top": 18,
+        "right": 289.1875,
+        "bottom": 46,
+        "width": 93,
+        "height": 28
+      },
+      "menu": {
+        "left": 328.796875,
+        "top": 32,
+        "right": 361.1875,
+        "bottom": 32,
+        "width": 32.390625,
+        "height": 0
+      },
+      "brokenImages": 0
+    }
+  },
+  {
+    "page": "/",
+    "width": 360,
+    "issues": [],
+    "metrics": {
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "logoImg": {
+        "left": 18,
+        "top": 32,
+        "right": 62.484375,
+        "bottom": 82,
+        "width": 44.484375,
+        "height": 50
+      },
+      "sam": {
+        "left": 69.484375,
+        "top": 32,
+        "right": 108.828125,
+        "bottom": 82,
+        "width": 39.34375,
+        "height": 50
+      },
+      "phone": {
+        "left": 169.796875,
+        "top": 18,
+        "right": 262.796875,
+        "bottom": 46,
+        "width": 93,
+        "height": 28
+      },
+      "menu": {
+        "left": 302.40625,
+        "top": 32,
+        "right": 334.796875,
+        "bottom": 32,
+        "width": 32.390625,
+        "height": 0
+      },
+      "brokenImages": 0
+    }
+  },
+  {
+    "page": "/main-contact/",
+    "width": 360,
+    "issues": [],
+    "metrics": {
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "logoImg": {
+        "left": 18,
+        "top": 32,
+        "right": 62.484375,
+        "bottom": 82,
+        "width": 44.484375,
+        "height": 50
+      },
+      "sam": {
+        "left": 69.484375,
+        "top": 32,
+        "right": 108.828125,
+        "bottom": 82,
+        "width": 39.34375,
+        "height": 50
+      },
+      "phone": {
+        "left": 169.796875,
+        "top": 18,
+        "right": 262.796875,
+        "bottom": 46,
+        "width": 93,
+        "height": 28
+      },
+      "menu": {
+        "left": 302.40625,
+        "top": 32,
+        "right": 334.796875,
+        "bottom": 32,
+        "width": 32.390625,
+        "height": 0
+      },
+      "brokenImages": 0
+    }
+  },
+  {
+    "page": "/benefits-analysis/",
+    "width": 360,
+    "issues": [],
+    "metrics": {
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "logoImg": {
+        "left": 18,
+        "top": 32,
+        "right": 62.484375,
+        "bottom": 82,
+        "width": 44.484375,
+        "height": 50
+      },
+      "sam": {
+        "left": 69.484375,
+        "top": 32,
+        "right": 108.828125,
+        "bottom": 82,
+        "width": 39.34375,
+        "height": 50
+      },
+      "phone": {
+        "left": 169.796875,
+        "top": 18,
+        "right": 262.796875,
+        "bottom": 46,
+        "width": 93,
+        "height": 28
+      },
+      "menu": {
+        "left": 302.40625,
+        "top": 32,
+        "right": 334.796875,
+        "bottom": 32,
+        "width": 32.390625,
+        "height": 0
+      },
+      "brokenImages": 0
+    }
+  }
+]
