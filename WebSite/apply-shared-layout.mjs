@@ -607,7 +607,9 @@ function applyFooterLinks(html, prefix) {
 
   const footerPattern = /(<div id="footer-outer"[^>]*>)([\s\S]*?)(<\/div><!--\/footer-outer-->)/;
   if (!footerPattern.test(next)) {
-    throw new Error('Could not find footer-outer block.');
+    // Some legacy/special pages do not contain the canonical footer wrapper.
+    // Skip strict footer injection for those pages instead of failing the full build.
+    return next;
   }
 
   return next.replace(footerPattern, `$1\n${block}\n$3`);
