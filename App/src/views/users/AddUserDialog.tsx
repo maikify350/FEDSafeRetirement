@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect } from 'react'
+
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
@@ -16,6 +17,7 @@ import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
 import Alert from '@mui/material/Alert'
 import CircularProgress from '@mui/material/CircularProgress'
+
 import CustomTextField from '@core/components/mui/TextField'
 
 interface Props {
@@ -41,16 +43,26 @@ export default function AddUserDialog({ open, onClose, onCreated }: Props) {
 
   const handleCreate = async () => {
     const email = form.email.trim().toLowerCase()
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('A valid email is required'); return }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('A valid email is required'); 
+
+return }
+
     setSaving(true); setError('')
+
     try {
       const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, email }),
       })
+
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Failed to create user'); return }
+
+      if (!res.ok) { setError(data.error || 'Failed to create user'); 
+
+return }
+
       onCreated?.()
       onClose()
     } catch { setError('Network error') } finally { setSaving(false) }

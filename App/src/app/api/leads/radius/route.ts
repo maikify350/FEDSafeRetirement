@@ -16,7 +16,9 @@
  *   search, state, gender, favorite, filters, stateCounts, facilities
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient } from '@/utils/supabase/server'
 
 // ── Geocode an address via Mapbox ────────────────────────────────────
@@ -24,6 +26,7 @@ import { createClient } from '@/utils/supabase/server'
 // by city name as well as radius — robust to mis-geocoded PO-box facilities.
 async function geocodeAddress(address: string): Promise<{ lat: number; lon: number; city: string | null } | null> {
   const mapboxKey = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
+
   if (!mapboxKey) return null
 
   const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${mapboxKey}&limit=1`
@@ -35,7 +38,9 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lon: numb
   const [lon, lat] = feat.center
   const placeCtx = (feat.context ?? []).find((c: any) => typeof c.id === 'string' && c.id.startsWith('place'))
   const city = placeCtx?.text ?? (feat.place_type?.includes('place') ? feat.text : null) ?? null
-  return { lat, lon, city }
+
+  
+return { lat, lon, city }
 }
 
 export async function GET(request: NextRequest) {
@@ -53,6 +58,7 @@ export async function GET(request: NextRequest) {
   const includeFacilities  = searchParams.get('facilities') === 'true'
 
   let parsedFilters: any[] = []
+
   try { parsedFilters = JSON.parse(filtersRaw) } catch { /* ignore */ }
 
   const supabase = await createClient()
@@ -63,6 +69,7 @@ export async function GET(request: NextRequest) {
   if (mode === 'exclude') {
     const zonesRaw = searchParams.get('zones') ?? '[]'
     let zones: { address: string; radius: number }[] = []
+
     try { zones = JSON.parse(zonesRaw) } catch { /* ignore */ }
 
     if (zones.length === 0) {
@@ -73,11 +80,14 @@ export async function GET(request: NextRequest) {
     const geocodeResults = await Promise.all(
       zones.map(async (z) => {
         const coords = await geocodeAddress(z.address)
-        return coords ? { ...coords, radius_miles: z.radius, address: z.address } : null
+
+        
+return coords ? { ...coords, radius_miles: z.radius, address: z.address } : null
       })
     )
 
     const failedZones = zones.filter((_, i) => !geocodeResults[i])
+
     if (failedZones.length > 0) {
       return NextResponse.json({
         error: `Could not geocode: ${failedZones.map(z => z.address).join(', ')}`,
@@ -102,7 +112,8 @@ export async function GET(request: NextRequest) {
 
     if (dataResult.error) {
       console.error('[API /leads/radius] Exclusion RPC Error:', dataResult.error.message)
-      return NextResponse.json({ error: dataResult.error.message }, { status: 500 })
+      
+return NextResponse.json({ error: dataResult.error.message }, { status: 500 })
     }
 
     const rows = (dataResult.data ?? []).filter((r: any) => r.lead_data !== null)
@@ -181,9 +192,11 @@ export async function GET(request: NextRequest) {
     }
 
     const coords = await geocodeAddress(address)
+
     if (!coords) {
       return NextResponse.json({ error: 'Could not geocode the provided address' }, { status: 404 })
     }
+
     lat = coords.lat
     lon = coords.lon
   }
@@ -204,11 +217,13 @@ export async function GET(request: NextRequest) {
 
   if (dataResult.error) {
     console.error('[API /leads/radius] RPC Error:', dataResult.error.message)
-    return NextResponse.json({ error: dataResult.error.message }, { status: 500 })
+    
+return NextResponse.json({ error: dataResult.error.message }, { status: 500 })
   }
 
   const rows = (dataResult.data ?? []).filter((r: any) => r.lead_data !== null)
   const total = rows.length > 0 ? Number(rows[0].total_count) : 0
+
   const leads = rows.map((r: any) => ({
     ...r.lead_data,
     distance_miles: parseFloat(r.distance_miles?.toFixed(1) ?? '0'),

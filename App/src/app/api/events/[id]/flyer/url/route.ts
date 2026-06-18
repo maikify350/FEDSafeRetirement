@@ -7,7 +7,9 @@
  * admin-only, only Replace/Remove is.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 
 const BUCKET = 'flyers'
@@ -17,13 +19,16 @@ type Ctx = { params: Promise<{ id: string }> }
 
 export async function GET(_request: NextRequest, ctx: Ctx) {
   const { id } = await ctx.params
+
   if (!id) return NextResponse.json({ error: 'event id is required' }, { status: 400 })
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdminClient()
+
   const { data: row, error } = await admin
     .from('events')
     .select('flyer_path, flyer_filename')

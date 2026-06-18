@@ -20,7 +20,9 @@
  *   format=csv  → text/csv attachment with the standard lead-export columns.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient } from '@/utils/supabase/server'
 import type { ColFilterValue } from '@/lib/columnFilter'
 
@@ -31,8 +33,10 @@ type Lead = Record<string, any>
 function escapeCsvCell(v: unknown): string {
   if (v === null || v === undefined) return ''
   const s = String(v)
+
   if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`
-  return s
+  
+return s
 }
 
 function leadsToCsv(leads: Lead[]): string {
@@ -40,19 +44,23 @@ function leadsToCsv(leads: Lead[]): string {
     'First Name', 'Last Name', 'Occupation', 'Grade', 'Annual Salary', 'Hourly Rate',
     'Facility', 'City', 'State', 'Zip', 'Duty Date', 'Years of Service',
   ]
+
   const rows = leads.map(r => [
     r.first_name, r.last_name, r.occupation_title ?? '', r.grade_level ?? '',
     r.annual_salary ?? '', r.hourly_rate ?? '',
     r.facility_name ?? '', r.facility_city ?? '', r.facility_state ?? '', r.facility_zip_code ?? '',
     r.entered_on_duty_date ?? '', r.years_of_service ?? '',
   ])
-  return [headers, ...rows].map(row => row.map(escapeCsvCell).join(',')).join('\n')
+
+  
+return [headers, ...rows].map(row => row.map(escapeCsvCell).join(',')).join('\n')
 }
 
 function conditionToPostgrest(column: string, cond: { op: string; value: string }): string | null {
   const v = cond.value.trim()
   const isZip = column === 'facility_zip_code' || column === 'personal_zip'
   const likeMethod = isZip ? 'like' : 'ilike'
+
   switch (cond.op) {
     case 'contains':    return `${column}.${likeMethod}.%${v}%`
     case 'notContains': return `${column}.not.${likeMethod}.%${v}%`
@@ -69,6 +77,7 @@ function conditionToPostgrest(column: string, cond: { op: string; value: string 
 function applyConditionToQuery(query: any, column: string, cond: { op: string; value: string }) {
   const v = cond.value.trim()
   const isZip = column === 'facility_zip_code' || column === 'personal_zip'
+
   switch (cond.op) {
     case 'contains':    return isZip ? query.like(column, `%${v}%`) : query.ilike(column, `%${v}%`)
     case 'notContains': return query.not(column, isZip ? 'like' : 'ilike', `%${v}%`)
@@ -97,14 +106,16 @@ export async function GET(request: NextRequest) {
 
   let sorting: { id: string; desc: boolean }[] = []
   let columnFilters: { id: string; value: ColFilterValue }[] = []
+
   try { sorting       = JSON.parse(sortRaw)    } catch { /* ignore */ }
   try { columnFilters = JSON.parse(filtersRaw) } catch { /* ignore */ }
 
   const hasColumnFilters = columnFilters.length > 0
+
   // Supabase / PostgREST caps responses at 1,000 rows regardless of the
   // limit/range we ask for, so we always paginate in 1,000-row chunks.
   const PAGE = 1000
-  let leads: Lead[] = []
+  const leads: Lead[] = []
 
   if (!hasColumnFilters) {
     // Fast path — search_leads RPC, paginated.
@@ -112,8 +123,10 @@ export async function GET(request: NextRequest) {
     const sortDesc = sorting.length > 0 ? sorting[0].desc : false
 
     let offset = 0
+
     while (offset < max) {
       const limit = Math.min(PAGE, max - offset)
+
       const { data, error } = await supabase.rpc('search_leads', {
         p_search:    search.trim(),
         p_state:     stateParam,
@@ -124,13 +137,17 @@ export async function GET(request: NextRequest) {
         p_limit:     limit,
         p_offset:    offset,
       })
+
       if (error) {
         console.error('[API /leads/export] RPC Error:', error.message)
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        
+return NextResponse.json({ error: error.message }, { status: 500 })
       }
+
       const batch = (data ?? [])
         .filter((r: any) => r.leads_data !== null)
         .map((r: any) => r.leads_data as Lead)
+
       if (batch.length === 0) break
       leads.push(...batch)
       if (batch.length < limit) break
@@ -143,6 +160,7 @@ export async function GET(request: NextRequest) {
 
       if (search.trim()) {
         const term = search.trim()
+
         if (term.length < 3) {
           q = q.or(`first_name.ilike.${term}%,last_name.ilike.${term}%,facility_state.ilike.${term}%`)
         } else {
@@ -152,19 +170,24 @@ export async function GET(request: NextRequest) {
 
       for (const cf of columnFilters) {
         const { id: columnId, value: filterValue } = cf
+
         if (!filterValue?.conditions) continue
 
         const activeConditions = filterValue.conditions.filter(c =>
           c.op === 'isEmpty' || c.op === 'isNotEmpty' || c.value.trim() !== ''
         )
+
         if (activeConditions.length === 0) continue
 
         if (filterValue.combinator === 'or') {
           const orParts: string[] = []
+
           for (const cond of activeConditions) {
             const part = conditionToPostgrest(columnId, cond)
+
             if (part) orParts.push(part)
           }
+
           if (orParts.length > 0) q = q.or(orParts.join(','))
         } else {
           for (const cond of activeConditions) {
@@ -177,22 +200,29 @@ export async function GET(request: NextRequest) {
     }
 
     let offset = 0
+
     while (offset < max) {
       const limit = Math.min(PAGE, max - offset)
       let dataQuery = applyFilters(supabase.from('leads').select('*'))
+
       if (sorting.length > 0) {
         for (const s of sorting) dataQuery = dataQuery.order(s.id, { ascending: !s.desc })
       } else {
         dataQuery = dataQuery.order('last_name', { ascending: true })
       }
+
       dataQuery = dataQuery.range(offset, offset + limit - 1)
 
       const { data, error } = await dataQuery
+
       if (error) {
         console.error('[API /leads/export] PostgREST Error:', error.message)
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        
+return NextResponse.json({ error: error.message }, { status: 500 })
       }
+
       const batch = (data ?? []) as Lead[]
+
       if (batch.length === 0) break
       leads.push(...batch)
       if (batch.length < limit) break
@@ -203,7 +233,9 @@ export async function GET(request: NextRequest) {
   if (format === 'csv') {
     const csv = leadsToCsv(leads)
     const stamp = new Date().toISOString().slice(0, 10)
-    return new NextResponse(csv, {
+
+    
+return new NextResponse(csv, {
       status: 200,
       headers: {
         'Content-Type':        'text/csv; charset=utf-8',

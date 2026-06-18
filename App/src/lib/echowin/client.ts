@@ -17,11 +17,15 @@ async function echoFetch(path: string, init: RequestInit = {}) {
       ...(init.headers ?? {}),
     },
   })
+
   if (!res.ok) {
     const text = await res.text()
+
     throw new Error(`echowin ${init.method ?? 'GET'} ${path} → ${res.status}: ${text}`)
   }
-  return res.json()
+
+  
+return res.json()
 }
 
 // ── Calls ────────────────────────────────────────────────────────────────────
@@ -51,11 +55,13 @@ export async function listCalls(params: {
   after?: string   // ISO date — createdAt >= after
 } = {}): Promise<{ data: EchoCall[]; pagination: { totalCount: number; totalPages: number; page: number; limit: number } }> {
   const q = new URLSearchParams()
+
   if (params.page)    q.set('page',    String(params.page))
   if (params.limit)   q.set('limit',   String(params.limit))
   if (params.agentId) q.set('agentId', params.agentId)
   if (params.after)   q.set('after',   params.after)
-  return echoFetch(`/calls?${q}`)
+  
+return echoFetch(`/calls?${q}`)
 }
 
 export async function getCall(callId: string): Promise<EchoCall> {
@@ -76,9 +82,11 @@ export interface EchoContact {
 
 export async function listContacts(params: { search?: string; limit?: number } = {}): Promise<{ data: EchoContact[] }> {
   const q = new URLSearchParams()
+
   if (params.search) q.set('search', params.search)
   if (params.limit)  q.set('limit',  String(params.limit))
-  return echoFetch(`/contacts?${q}`)
+  
+return echoFetch(`/contacts?${q}`)
 }
 
 /**
@@ -90,11 +98,15 @@ export async function listContacts(params: { search?: string; limit?: number } =
 export async function findContactByNumber(number: string): Promise<EchoContact | null> {
   if (!number) return null
   const digits = (s: string) => s.replace(/\D/g, '')
+
   try {
     const { data } = await listContacts({ search: number, limit: 5 })
+
     if (!data?.length) return null
     const target = digits(number)
-    return data.find(c => digits(c.number) === target) ?? data[0] ?? null
+
+    
+return data.find(c => digits(c.number) === target) ?? data[0] ?? null
   } catch {
     return null
   }

@@ -7,7 +7,9 @@
  * DELETE ?id=...                 — Delete attendee
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createAdminClient } from '@/utils/supabase/server'
 
 const ATTENDEE_SELECT = `
@@ -35,7 +37,8 @@ export async function GET(req: NextRequest) {
     .order('first_name', { ascending: true })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data ?? [])
+  
+return NextResponse.json(data ?? [])
 }
 
 // ── POST ────────────────────────────────────────────────────────────────────
@@ -47,6 +50,7 @@ export async function POST(req: NextRequest) {
   if (!event_fk) {
     return NextResponse.json({ error: 'event_fk is required' }, { status: 400 })
   }
+
   if (!first_name?.trim() && !last_name?.trim()) {
     return NextResponse.json({ error: 'At least first or last name is required' }, { status: 400 })
   }
@@ -67,7 +71,8 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data, { status: 201 })
+  
+return NextResponse.json(data, { status: 201 })
 }
 
 // ── PATCH ───────────────────────────────────────────────────────────────────
@@ -75,6 +80,7 @@ export async function PATCH(req: NextRequest) {
   const supabase = createAdminClient()
   const { searchParams } = new URL(req.url)
   const id = searchParams.get('id')
+
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
   const body = await req.json()
@@ -92,6 +98,7 @@ export async function PATCH(req: NextRequest) {
   // Handle check-in toggle
   if (body.checked_in !== undefined) {
     updates.checked_in = body.checked_in
+
     if (body.checked_in) {
       updates.check_in_time = new Date().toISOString()
       updates.no_show = false
@@ -108,7 +115,8 @@ export async function PATCH(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  
+return NextResponse.json(data)
 }
 
 // ── DELETE ──────────────────────────────────────────────────────────────────
@@ -116,9 +124,12 @@ export async function DELETE(req: NextRequest) {
   const supabase = createAdminClient()
   const { searchParams } = new URL(req.url)
   const id = searchParams.get('id')
+
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
   const { error } = await supabase.from('event_attendees').delete().eq('id', id)
+
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ ok: true })
+  
+return NextResponse.json({ ok: true })
 }

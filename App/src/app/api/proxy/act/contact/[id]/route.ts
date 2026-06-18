@@ -5,7 +5,9 @@
  * Uses master credentials on the backend to avoid exposing them in the extension.
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+
 import { actRequest } from '@/lib/act-api';
 
 const CORS = {
@@ -37,8 +39,10 @@ export async function GET(
     return NextResponse.json(data, { status: 200, headers: CORS });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
+
     console.error('[/api/proxy/act/contact] Error:', msg);
-    return NextResponse.json(
+    
+return NextResponse.json(
       { success: false, error: msg },
       { status: 500, headers: CORS }
     );

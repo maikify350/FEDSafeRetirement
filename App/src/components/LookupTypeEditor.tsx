@@ -7,6 +7,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react'
+
 import {
   DndContext,
   closestCenter,
@@ -117,6 +118,7 @@ function SortableRow({
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.id })
+
   const theme = useTheme()
   const [editing, setEditing] = useState(false)
   const [draftValue, setDraftValue] = useState(item.value)
@@ -149,10 +151,12 @@ function SortableRow({
   const handleSave = () => {
     if (!draftValue.trim()) return
     if (hasAbbreviation && draftAbbr.trim().length !== 2) return
+
     const patch: Partial<LookupItem> = {
       value: draftValue.trim(),
       label: draftLabel.trim() || draftValue.trim(),
     }
+
     if (hasAbbreviation) patch.abbreviation = draftAbbr.toUpperCase()
     onUpdate(item.id, patch)
     setEditing(false)
@@ -391,9 +395,11 @@ export default function LookupTypeEditor({
   // ── Fetch ─────────────────────────────────────────────────────────────────
   const fetchItems = useCallback(async () => {
     setLoading(true)
+
     try {
       const res = await fetch(`/api/lookups/${lookupType}?activeOnly=false`)
       const data = await res.json()
+
       if (Array.isArray(data)) setItems(data)
       else setError(data.error || 'Failed to load')
     } catch { setError('Network error') }
@@ -446,12 +452,15 @@ export default function LookupTypeEditor({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ value, label, abbreviation, sort_order: items.length, isActive: true, isDefault: false }),
     })
+
     const data = await res.json()
+
     if (data.id) setItems(prev => [...prev, data])
   }, [lookupType, items.length])
 
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event
+
     if (!over || active.id === over.id) return
     setItems(prev => {
       const oldIdx = prev.findIndex(i => i.id === active.id)
@@ -460,6 +469,7 @@ export default function LookupTypeEditor({
       
       // Fire-and-forget single bulk reorder save
       const payload = reordered.map((item, idx) => ({ id: item.id, sort_order: idx }))
+
       fetch('/api/lookups/reorder', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -474,6 +484,7 @@ export default function LookupTypeEditor({
   const visibleItems = toggleable && !showInactive
     ? items.filter(i => i.is_active !== false)
     : items
+
   const inactiveCount = items.filter(i => i.is_active === false).length
   const activeCount = items.length - inactiveCount
 

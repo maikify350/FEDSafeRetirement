@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+
 import FedSafeAIPanel from '@/components/FedSafeAIPanel'
 
 export default function AIAssistantPage() {

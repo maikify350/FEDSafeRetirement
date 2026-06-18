@@ -6,7 +6,9 @@
  * POST /api/fegli-rates-annuitant                        — Create a new rate row (admin only)
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { applyOData, parseODataSelect } from '@/utils/odata'
 
@@ -23,17 +25,21 @@ export async function GET(request: NextRequest) {
 
   // ?age=42 → find the band where age_min <= 42 AND age_max >= 42
   const age = params.get('age')
+
   if (age) {
     const ageNum = parseInt(age, 10)
+
     query = query.lte('age_min', ageNum).gte('age_max', ageNum)
   }
 
   // ?ageMin=40 → exact match on age_min
   const ageMin = params.get('ageMin')
+
   if (ageMin) query = query.eq('age_min', parseInt(ageMin, 10))
 
   // ?ageMax=44 → exact match on age_max
   const ageMax = params.get('ageMax')
+
   if (ageMax) query = query.eq('age_max', parseInt(ageMax, 10))
 
   // Apply OData query options ($orderby, $top, $skip, $filter)
@@ -51,11 +57,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
+
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   // Check admin role
   const admin = createAdminClient()
   const { data: userRow } = await admin.from('users').select('role').eq('id', authUser.id).single()
+
   if (userRow?.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 })
   }
@@ -64,14 +72,18 @@ export async function POST(request: NextRequest) {
 
   // Validate required fields
   const errors: string[] = []
+
   if (body.age_min === undefined || body.age_min === null) errors.push('age_min is required')
   if (body.age_max === undefined || body.age_max === null) errors.push('age_max is required')
+
   if (body.age_min !== undefined && body.age_max !== undefined && body.age_min > body.age_max) {
     errors.push('age_min must be ≤ age_max')
   }
+
   if (body.basic_75 < 0 || body.basic_50 < 0 || body.basic_0 < 0 || body.opt_a < 0 || body.opt_b < 0 || body.opt_c < 0) {
     errors.push('Rates must be ≥ 0')
   }
+
   if (errors.length) {
     return NextResponse.json({ error: errors.join('; ') }, { status: 400 })
   }

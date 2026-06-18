@@ -9,7 +9,9 @@
  * 6. Returns the updated form
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 
 export const maxDuration = 60
@@ -20,10 +22,12 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   // ── Auth: admin only ────────────────────────────────────────────────────────
   const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
+
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdminClient()
   const { data: userRow } = await admin.from('users').select('role').eq('id', authUser.id).single()
+
   if (userRow?.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 })
   }
@@ -42,6 +46,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   // Server-side only: prefer OPENAI_API_KEY; fall back to the (deprecated)
   // NEXT_PUBLIC_* name during rollout so the running deploy doesn't break.
   const openaiKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY
+
   if (!openaiKey || openaiKey.includes('n0tr3al')) {
     return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 })
   }
@@ -81,11 +86,13 @@ Rules:
   })
 
   const chatData = await chatRes.json()
+
   if (!chatRes.ok) {
     return NextResponse.json({ error: `OpenAI error: ${chatData.error?.message}` }, { status: 500 })
   }
 
   const summary: string = chatData.choices?.[0]?.message?.content?.trim() ?? ''
+
   if (!summary) {
     return NextResponse.json({ error: 'Empty summary generated' }, { status: 500 })
   }
@@ -104,7 +111,9 @@ Rules:
 
   if (!ttsRes.ok) {
     const errText = await ttsRes.text()
-    return NextResponse.json({ error: `TTS error: ${errText}` }, { status: 500 })
+
+    
+return NextResponse.json({ error: `TTS error: ${errText}` }, { status: 500 })
   }
 
   const audioBuffer = await ttsRes.arrayBuffer()

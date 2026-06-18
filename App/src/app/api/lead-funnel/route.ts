@@ -7,7 +7,9 @@
  * PATCH /api/lead-funnel                — Mark records as processed { ids: [...], status: 'imported' }
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { applyOData, parseODataSelect } from '@/utils/odata'
 
@@ -30,14 +32,17 @@ export async function GET(request: NextRequest) {
 
   // ?status=pending
   const status = params.get('status')
+
   if (status) query = query.eq('status', status)
 
   // ?state=SC
   const state = params.get('state')
+
   if (state) query = query.eq('state', state)
 
   // ?processed=false
   const processed = params.get('processed')
+
   if (processed !== null) query = query.eq('processed', processed === 'true')
 
   // Apply OData ($orderby, $top, $skip, $filter)
@@ -57,6 +62,7 @@ export async function POST(request: NextRequest) {
   // Validate webhook secret
   const secret = request.headers.get('x-overflow-webhook-secret')
     || request.headers.get('x-webhook-secret')
+
   const expectedSecret = process.env.WEBHOOK_SECRET
 
   // If WEBHOOK_SECRET is set, enforce it. Otherwise skip validation (dev mode).
@@ -65,6 +71,7 @@ export async function POST(request: NextRequest) {
   }
 
   let body: any
+
   try {
     body = await request.json()
   } catch {
@@ -79,9 +86,11 @@ export async function POST(request: NextRequest) {
   // Extract account values from the accounts array
   let tspValue: number | null = null
   let otherAcctValue: number | null = null
+
   if (Array.isArray(lead.accounts)) {
     for (const acct of lead.accounts) {
       const name = (acct.name || acct.type?.name || '').toLowerCase()
+
       if (name === 'tsp') tspValue = parseFloat(acct.cashValue) || null
       else if (name === 'other') otherAcctValue = parseFloat(acct.cashValue) || null
     }
@@ -130,12 +139,14 @@ export async function POST(request: NextRequest) {
 
   // Manual dedup: check if ext_appointment_id already exists
   let existingId: string | null = null
+
   if (row.ext_appointment_id) {
     const { data: existing } = await admin
       .from('lead_funnel')
       .select('id')
       .eq('ext_appointment_id', row.ext_appointment_id)
       .maybeSingle()
+
     existingId = existing?.id ?? null
   }
 
@@ -169,6 +180,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
+
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
@@ -179,11 +191,13 @@ export async function PATCH(request: NextRequest) {
   }
 
   const validStatuses = ['pending', 'imported', 'error', 'skipped']
+
   if (!validStatuses.includes(newStatus)) {
     return NextResponse.json({ error: `status must be one of: ${validStatuses.join(', ')}` }, { status: 400 })
   }
 
   const admin = createAdminClient()
+
   const updatePayload: Record<string, any> = {
     status: newStatus,
     processed: newStatus === 'imported',

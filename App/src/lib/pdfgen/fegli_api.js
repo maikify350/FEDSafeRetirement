@@ -34,13 +34,16 @@ const FEGLI_API = {
         const explicitCode = String(customFields.feglicodeactive || "").trim().toUpperCase();
         const payPeriodCost = PDF_Preparer_API.toNumber(customFields.fegliperpayperiodcalc || customFields.fegliperpayperiod);
         const resolvedCode = explicitCode || PDF_Preparer_API.decipherActiveCode(salary, currentAge, payPeriodCost, employeeRates) || "C0";
+
         const activeFegli = PDF_Preparer_API.calculateActiveFEGLI({
             salary,
             age: currentAge,
             code: resolvedCode
         }, employeeRates);
+
         const activeElection = PDF_Preparer_API.getComponentsFromLetter(resolvedCode.charAt(0));
         const optionCMultiple = Math.min(5, Math.max(0, parseInt(String(resolvedCode).slice(1), 10) || 0));
+
         const currentCost = PDF_Preparer_API.roundMoney(
             activeFegli.basicPremium +
             activeFegli.optAPremium +
@@ -78,6 +81,7 @@ const FEGLI_API = {
         const hasA = PDF_Preparer_API.parseBoolean(customFields.optiona_retire !== undefined ? customFields.optiona_retire : customFields.optiona);
         const bMult = Math.min(5, Math.max(0, parseInt(customFields.optionb_retire !== undefined ? customFields.optionb_retire : customFields.optionb, 10) || 0));
         const cMult = Math.min(5, Math.max(0, parseInt(customFields.optionc_retire !== undefined ? customFields.optionc_retire : customFields.optionc, 10) || 0));
+
         const retireeFegli = PDF_Preparer_API.calculateRetireeFEGLI({
             salary,
             age: retireAge,
@@ -86,6 +90,7 @@ const FEGLI_API = {
             bMult,
             cMult
         }, annuitantRates);
+
         const retirementCost = PDF_Preparer_API.roundMoney(
             retireeFegli.basicPremium +
             retireeFegli.optAPremium +

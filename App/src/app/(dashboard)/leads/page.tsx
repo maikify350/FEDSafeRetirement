@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import LeadsView from '@/views/leads/LeadsView'
 
 export const metadata: Metadata = {

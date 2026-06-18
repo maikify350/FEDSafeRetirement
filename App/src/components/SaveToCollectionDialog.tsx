@@ -9,6 +9,7 @@
  */
 
 import { useState } from 'react'
+
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
@@ -71,10 +72,17 @@ export default function SaveToCollectionDialog({
 
   const handleSave = async () => {
     setError('')
-    if (mode === 'existing' && !selectedId) { setError('Please select a collection.'); return }
-    if (mode === 'new' && !newName.trim()) { setError('Please enter a collection name.'); return }
+
+    if (mode === 'existing' && !selectedId) { setError('Please select a collection.'); 
+
+return }
+
+    if (mode === 'new' && !newName.trim()) { setError('Please enter a collection name.'); 
+
+return }
 
     setSaving(true)
+
     try {
       if (mode === 'existing') {
         const res = await fetch(`/api/collections/${selectedId}`, {
@@ -82,8 +90,10 @@ export default function SaveToCollectionDialog({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ filter_criteria: filterCriteria }),
         })
+
         if (!res.ok) throw new Error('Failed to update collection')
         const data = await res.json()
+
         onSaved({ id: data.id, name: data.name, isNew: false })
       } else {
         const res = await fetch('/api/collections', {
@@ -95,10 +105,13 @@ export default function SaveToCollectionDialog({
             filter_criteria: filterCriteria,
           }),
         })
+
         if (!res.ok) throw new Error('Failed to create collection')
         const data = await res.json()
+
         onSaved({ id: data.id, name: data.name, isNew: true })
       }
+
       handleClose()
     } catch (e: any) {
       setError(e.message ?? 'Something went wrong')

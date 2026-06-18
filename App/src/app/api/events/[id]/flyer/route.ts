@@ -6,7 +6,9 @@
  * client bypasses storage RLS, with a session-based admin role check.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 
 export const maxDuration = 30
@@ -24,9 +26,11 @@ async function requireAdmin(request: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
+
     if (user) {
       userId = user.id
       const { data: row } = await admin.from('users').select('role').eq('id', user.id).single()
+
       isAdmin = row?.role === 'admin'
     }
   } catch { /* fall through */ }
@@ -39,6 +43,7 @@ async function requireAdmin(request: NextRequest) {
   const referer = request.headers.get('referer') || ''
   const host    = request.headers.get('host')    || ''
   const sameOrigin = origin.includes(host) || referer.includes(host)
+
   if (sameOrigin) return { admin, userId }
 
   return null
@@ -46,24 +51,30 @@ async function requireAdmin(request: NextRequest) {
 
 export async function POST(request: NextRequest, ctx: Ctx) {
   const { id } = await ctx.params
+
   if (!id) return NextResponse.json({ error: 'event id is required' }, { status: 400 })
 
   const auth = await requireAdmin(request)
+
   if (!auth) return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 })
   const { admin, userId } = auth
 
   const formData = await request.formData()
   const file = formData.get('file') as File | null
+
   if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+
   if (!file.name.toLowerCase().endsWith('.pdf')) {
     return NextResponse.json({ error: 'Only PDF files are accepted' }, { status: 400 })
   }
+
   if (file.size > MAX_BYTES) {
     return NextResponse.json({ error: `File exceeds ${MAX_BYTES / 1024 / 1024} MB limit` }, { status: 400 })
   }
 
   const arrayBuffer = await file.arrayBuffer()
   const bytes = new Uint8Array(arrayBuffer)
+
   // Stable path so replacements overwrite the previous file. Original
   // filename is preserved separately in the events row for download UX.
   const path = `${id}/flyer.pdf`
@@ -100,9 +111,11 @@ export async function POST(request: NextRequest, ctx: Ctx) {
 
 export async function DELETE(request: NextRequest, ctx: Ctx) {
   const { id } = await ctx.params
+
   if (!id) return NextResponse.json({ error: 'event id is required' }, { status: 400 })
 
   const auth = await requireAdmin(request)
+
   if (!auth) return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 })
   const { admin } = auth
 

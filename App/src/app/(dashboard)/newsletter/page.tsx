@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import NewsletterView from '@/views/newsletter/NewsletterView'
 
 export const metadata: Metadata = {

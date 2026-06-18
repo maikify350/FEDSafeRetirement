@@ -28,6 +28,7 @@ const progressListeners = new Set<ProgressListener>()
 const playingListeners  = new Set<PlayingListener>()
 
 function notifyProgress(c: number, d: number) { progressListeners.forEach(fn => fn(c, d)) }
+
 function notifyPlaying(p: boolean)            { playingListeners.forEach(fn => fn(p)) }
 
 /** Fully stop & destroy the current audio element. Idempotent. */
@@ -50,25 +51,31 @@ export function useVoiceExplainerAudio(audioUrl: string | null | undefined) {
   useEffect(() => {
     const onProgress: ProgressListener = (c, d) => { setCurrentTime(c); setDuration(d) }
     const onPlaying:  PlayingListener  = (p) => setIsPlaying(p)
+
     progressListeners.add(onProgress)
     playingListeners.add(onPlaying)
-    return () => { progressListeners.delete(onProgress); playingListeners.delete(onPlaying) }
+    
+return () => { progressListeners.delete(onProgress); playingListeners.delete(onPlaying) }
   }, [])
 
   // Load (or swap) audio when URL changes — URL is the ONLY dependency
   useEffect(() => {
-    if (!audioUrl) { stopVoiceExplainer(); return }
+    if (!audioUrl) { stopVoiceExplainer(); 
+
+return }
 
     // Same file already loaded — just sync UI state
     if (gAudio && gAudio.dataset['src'] === audioUrl) {
       notifyPlaying(!gAudio.paused)
       notifyProgress(gAudio.currentTime, gAudio.duration || 0)
-      return
+      
+return
     }
 
     // New URL — destroy previous, load fresh
     stopVoiceExplainer()
     const audio = new Audio(audioUrl)
+
     audio.dataset['src'] = audioUrl
     audio.preload = 'metadata'
     gAudio = audio

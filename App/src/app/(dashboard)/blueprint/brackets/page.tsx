@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import BracketsView from '@/views/blueprint/BracketsView'
 
 export const metadata: Metadata = {

@@ -10,7 +10,8 @@
  * instead of the full 155+ char Supabase URL.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
 
 export async function GET(
   _req: NextRequest,

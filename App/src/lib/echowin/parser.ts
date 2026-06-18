@@ -6,6 +6,7 @@
  */
 
 import OpenAI from 'openai'
+
 import type { EchoCall } from './client'
 
 const openai = new OpenAI({
@@ -46,6 +47,7 @@ export async function parseCallTranscript(call: EchoCall): Promise<ParsedRegistr
   const dialogue = lines
     .map((t, i) => {
       let who: string
+
       if (hasCaller) {
         who = t.speaker === 'caller' ? 'CALLER' : 'AGENT'
       } else {
@@ -55,9 +57,12 @@ export async function parseCallTranscript(call: EchoCall): Promise<ParsedRegistr
         const prevIsQuestion = prev?.text?.trim().endsWith('?') || prev?.text?.trim().endsWith('...')
         const isShort = t.text.trim().length < 80
         const isQuestion = t.text.trim().endsWith('?')
+
         who = (!isQuestion && isShort && prevIsQuestion) ? 'CALLER' : 'AGENT'
       }
-      return `${who}: ${t.text.trim()}`
+
+      
+return `${who}: ${t.text.trim()}`
     })
     .join('\n')
 
@@ -109,14 +114,18 @@ Rules:
 
     const text = response.choices[0]?.message?.content?.trim() ?? ''
     const jsonMatch = text.match(/\{[\s\S]*\}/)
+
     if (!jsonMatch) return emptyResult(call.summary)
 
     const parsed = JSON.parse(jsonMatch[0]) as ParsedRegistration
+
     parsed.rawSummary = call.summary
-    return parsed
+    
+return parsed
   } catch (err) {
     console.error('[echowin/parser] OpenAI failed:', err)
-    return emptyResult(call.summary)
+    
+return emptyResult(call.summary)
   }
 }
 

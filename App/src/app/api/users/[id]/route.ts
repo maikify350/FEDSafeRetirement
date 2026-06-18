@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 
 export async function GET(
@@ -8,6 +10,7 @@ export async function GET(
   const { id } = await params
   const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
+
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdminClient()
@@ -22,8 +25,10 @@ export async function GET(
   }
 
   const { data, error } = await admin.from('users').select('*').eq('id', id).single()
+
   if (error) return NextResponse.json({ error: error.message }, { status: 404 })
-  return NextResponse.json(data)
+  
+return NextResponse.json(data)
 }
 
 export async function PUT(
@@ -33,6 +38,7 @@ export async function PUT(
   const { id } = await params
   const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
+
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdminClient()
@@ -60,11 +66,14 @@ export async function PUT(
   for (const key of allowed) {
     if (key in body) updates[key] = body[key]
   }
+
   updates.mod_by = authUser.email ?? 'system'
 
   const { data, error } = await admin.from('users').update(updates).eq('id', id).select().single()
+
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  
+return NextResponse.json(data)
 }
 
 export async function DELETE(
@@ -74,12 +83,14 @@ export async function DELETE(
   const { id } = await params
   const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
+
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdminClient()
 
   // Only admins may delete users
   const { data: callerRow } = await admin.from('users').select('role').eq('id', authUser.id).single()
+
   if (callerRow?.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 })
   }
@@ -91,10 +102,12 @@ export async function DELETE(
 
   // Delete from users table first
   const { error: dbError } = await admin.from('users').delete().eq('id', id)
+
   if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 })
 
   // Delete from Supabase Auth
   const { error: authError } = await admin.auth.admin.deleteUser(id)
+
   if (authError) {
     // Row already gone from our table — log but don't fail the request
     console.warn('[DELETE /api/users/:id] Auth delete warning:', authError.message)

@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react'
+
 import Dialog from '@mui/material/Dialog'
 import DialogContent from '@mui/material/DialogContent'
 import DialogActions from '@mui/material/DialogActions'
@@ -31,14 +32,17 @@ export default function PushToActDialog({ open, onClose, count }: PushToActDialo
     if (!open) {
       setPhase('sending')
       setProgress(0)
-      return
+      
+return
     }
 
     // Simulate progress over 10 seconds
     const startTime = Date.now()
+
     timerRef.current = setInterval(() => {
       const elapsed = Date.now() - startTime
       const pct = Math.min((elapsed / 10000) * 100, 100)
+
       setProgress(pct)
 
       if (pct >= 100) {

@@ -10,6 +10,7 @@
  */
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import Chip from '@mui/material/Chip'
@@ -17,6 +18,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import { createColumnHelper } from '@tanstack/react-table'
 
 import EntityListView from '@/components/EntityListView'
+import { downloadBlob, downloadJson } from '@/utils/exportDownload'
 import LeadAddDialog from './LeadAddDialog'
 import { useLeadFunnelData, type LeadFunnelRow } from '@/hooks/useLeadFunnelData'
 
@@ -24,12 +26,14 @@ const columnHelper = createColumnHelper<LeadFunnelRow>()
 
 const formatDate = (v: string | null) => {
   if (!v) return '—'
-  return new Date(v).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  
+return new Date(v).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
 const formatDateTime = (v: string | null) => {
   if (!v) return '—'
-  return new Date(v).toLocaleString('en-US', {
+  
+return new Date(v).toLocaleString('en-US', {
     year: 'numeric', month: 'short', day: 'numeric',
     hour: 'numeric', minute: '2-digit'
   })
@@ -37,7 +41,8 @@ const formatDateTime = (v: string | null) => {
 
 const formatCurrency = (v: number | null) => {
   if (v === null || v === undefined) return '—'
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v)
+  
+return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v)
 }
 
 const statusColor = (status: string): 'warning' | 'success' | 'error' | 'default' | 'info' => {
@@ -53,6 +58,7 @@ const statusColor = (status: string): 'warning' | 'success' | 'error' | 'default
 export default function LeadFunnelView() {
   // ── Pull state from shared context (persists across navigation) ──────────
   const ctx = useLeadFunnelData()
+
   const {
     leads, loading, search,
     setSearch,
@@ -69,6 +75,7 @@ export default function LeadFunnelView() {
   useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true
+
       if (markStaleCheckOnResume()) {
         fetchLeads()
       }
@@ -182,12 +189,6 @@ export default function LeadFunnelView() {
     import_error: false,
   }
 
-  const downloadBlob = (content: string, filename: string, mime: string) => {
-    const blob = new Blob([content], { type: mime })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url; a.download = filename
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
-  }
 
   if (loading && leads.length === 0) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}><CircularProgress /></Box>
@@ -210,9 +211,10 @@ export default function LeadFunnelView() {
           const csv = ['Status,First,Last,Email,Phone,State,City,Source,ApptDate,TSP'].concat(
             rows.map(r => `${r.status},${r.first_name},${r.last_name},${r.email},${r.cell_phone || r.phone},${r.state},${r.city},${r.source},${r.appointment_date},${r.tsp_value}`)
           ).join('\n')
+
           downloadBlob(csv, 'lead_funnel.csv', 'text/csv')
         }}
-        onExportJson={(rows) => downloadBlob(JSON.stringify(rows, null, 2), 'lead_funnel.json', 'application/json')}
+        onExportJson={(rows) => downloadJson(rows, 'lead_funnel.json')}
         emptyMessage='No leads in the funnel yet. Leads will appear here when they arrive via webhook.'
       />
 

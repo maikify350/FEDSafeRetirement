@@ -10,6 +10,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 import { createAdminClient } from '@/utils/supabase/server'
+import { verifyTurnstile } from '../_turnstile'
 
 const ALLOWED_FORM_TYPES = new Set([
   'retirement-review',
@@ -116,6 +117,12 @@ export async function POST(request: NextRequest) {
     return json({ ok: true, skipped: true })
   }
 
+  const turnstile = await verifyTurnstile(body, request)
+
+  if (!turnstile.ok) {
+    return json({ error: turnstile.error }, { status: 400 })
+  }
+
   const formTypeRaw = asString(body.formType, 80) || 'generic'
   const formType = ALLOWED_FORM_TYPES.has(formTypeRaw) ? formTypeRaw : 'generic'
   const firstName = asString(body.firstName || body.first_name, 120)
@@ -162,6 +169,7 @@ export async function POST(request: NextRequest) {
       referrer,
       userAgent: request.headers.get('user-agent'),
       submittedAt: new Date().toISOString(),
+      turnstile: turnstile.details,
     },
   }
 

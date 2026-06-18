@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 
@@ -32,6 +34,7 @@ export async function POST(req: NextRequest) {
     }
 
     const userMessage = messages[messages.length - 1]?.content as string
+
     if (!userMessage) {
       return NextResponse.json({ error: 'No user message found' }, { status: 400 })
     }
@@ -41,6 +44,7 @@ export async function POST(req: NextRequest) {
       model: 'text-embedding-3-small',
       input: userMessage,
     })
+
     const queryEmbedding = embeddingRes.data[0].embedding
 
     // 2. Retrieve top-5 relevant chunks from Supabase
@@ -85,14 +89,17 @@ export async function POST(req: NextRequest) {
 
     // 6. Return a ReadableStream for real-time SSE streaming
     const encoder = new TextEncoder()
+
     const readable = new ReadableStream({
       async start(controller) {
         for await (const chunk of stream) {
           const delta = chunk.choices[0]?.delta?.content
+
           if (delta) {
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: delta })}\n\n`))
           }
         }
+
         controller.enqueue(encoder.encode('data: [DONE]\n\n'))
         controller.close()
       },
@@ -108,6 +115,8 @@ export async function POST(req: NextRequest) {
   } catch (err: unknown) {
     console.error('[chat/rag] Error:', err)
     const message = err instanceof Error ? err.message : 'Internal server error'
-    return NextResponse.json({ error: message }, { status: 500 })
+
+    
+return NextResponse.json({ error: message }, { status: 500 })
   }
 }

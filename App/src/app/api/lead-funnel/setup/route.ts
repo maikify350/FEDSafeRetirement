@@ -4,6 +4,7 @@
  * This is a one-time setup endpoint — run once, then forget.
  */
 import { NextResponse } from 'next/server'
+
 import { createAdminClient } from '@/utils/supabase/server'
 
 export async function POST() {

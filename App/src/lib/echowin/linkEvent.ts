@@ -16,6 +16,7 @@ export async function resolveEventIdByCity(
 ): Promise<string | null> {
   if (!conferenceLocation) return null
   const city = conferenceLocation.split(',')[0]?.trim()
+
   if (!city) return null
 
   const { data } = await supabase

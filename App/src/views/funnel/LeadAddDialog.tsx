@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react'
+
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
@@ -31,6 +32,7 @@ const US_STATES = [
 export default function LeadAddDialog({ open, onClose, onSaved }: Props) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
   const [form, setForm] = useState({
     first_name: '',
     last_name: '',
@@ -54,7 +56,8 @@ export default function LeadAddDialog({ open, onClose, onSaved }: Props) {
   const handleSave = async () => {
     if (!form.first_name && !form.last_name && !form.email) {
       setError('At least first name, last name, or email is required')
-      return
+      
+return
     }
 
     setSaving(true)
@@ -97,7 +100,8 @@ export default function LeadAddDialog({ open, onClose, onSaved }: Props) {
 
       if (!res.ok) {
         setError(result.error || 'Failed to create lead')
-        return
+        
+return
       }
 
       // Reset form and close

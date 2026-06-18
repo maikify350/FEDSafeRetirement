@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import CollectionsView from '@/views/collections/CollectionsView'
 
 export const metadata: Metadata = {

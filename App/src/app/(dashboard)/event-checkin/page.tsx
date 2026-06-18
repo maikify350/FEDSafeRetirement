@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import EventCheckInView from '@/views/event-checkin/EventCheckInView'
 
 export const metadata: Metadata = {

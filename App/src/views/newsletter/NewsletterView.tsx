@@ -11,6 +11,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import Chip from '@mui/material/Chip'
@@ -31,6 +32,7 @@ import Checkbox from '@mui/material/Checkbox'
 import { createColumnHelper } from '@tanstack/react-table'
 
 import EntityListView from '@/components/EntityListView'
+import { downloadBlob, downloadJson } from '@/utils/exportDownload'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -60,7 +62,8 @@ const columnHelper = createColumnHelper<SubscriberWithAction>()
 
 const formatDateTime = (v: string | null) => {
   if (!v) return '—'
-  return new Date(v).toLocaleString('en-US', {
+  
+return new Date(v).toLocaleString('en-US', {
     year: 'numeric', month: 'short', day: 'numeric',
     hour: 'numeric', minute: '2-digit',
   })
@@ -99,6 +102,7 @@ function SubscriberDialog({
     sms_consent: true,
     source_page: '',
   })
+
   const [loading, setLoading] = useState(false)
   const [saving, setSaving]   = useState(false)
   const [error, setError]     = useState('')
@@ -141,10 +145,21 @@ function SubscriberDialog({
   }
 
   const handleSave = async () => {
-    if (!form.first_name.trim()) { setError('First name is required'); return }
-    if (!form.last_name.trim())  { setError('Last name is required');  return }
-    if (!form.cell_phone.trim()) { setError('Cell phone is required'); return }
-    if (!form.personal_email.trim()) { setError('Personal email is required'); return }
+    if (!form.first_name.trim()) { setError('First name is required'); 
+
+return }
+
+    if (!form.last_name.trim())  { setError('Last name is required');  
+
+return }
+
+    if (!form.cell_phone.trim()) { setError('Cell phone is required'); 
+
+return }
+
+    if (!form.personal_email.trim()) { setError('Personal email is required'); 
+
+return }
 
     setSaving(true)
     setError('')
@@ -163,7 +178,8 @@ function SubscriberDialog({
 
       if (!res.ok) {
         setError(result.error || 'Failed to save')
-        return
+        
+return
       }
 
       onSaved(result)
@@ -390,6 +406,7 @@ export default function NewsletterView() {
         <Typography className='text-sm'>{formatDateTime(row.original.mod_dt)}</Typography>
       ),
     }),
+
     // Delete action column
     columnHelper.display({
       id: 'delete',
@@ -427,15 +444,6 @@ export default function NewsletterView() {
     mod_dt: false,
   }
 
-  // ── Export helpers ─────────────────────────────────────────────────────────
-
-  const downloadBlob = (content: string, filename: string, mime: string) => {
-    const blob = new Blob([content], { type: mime })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url; a.download = filename
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
-  }
-
   // ── Loading state ─────────────────────────────────────────────────────────
 
   if (loading && subscribers.length === 0) {
@@ -469,11 +477,10 @@ export default function NewsletterView() {
               `${r.status},${r.first_name},${r.last_name},${r.personal_email},${r.cell_phone},${r.sms_consent},${r.source_page || ''},${r.cre_dt}`
             )
           ).join('\n')
+
           downloadBlob(csv, 'newsletter_subscribers.csv', 'text/csv')
         }}
-        onExportJson={(rows) =>
-          downloadBlob(JSON.stringify(rows, null, 2), 'newsletter_subscribers.json', 'application/json')
-        }
+        onExportJson={(rows) => downloadJson(rows, 'newsletter_subscribers.json')}
         emptyMessage='No newsletter subscribers yet. They will appear here when users sign up on the website.'
       />
 

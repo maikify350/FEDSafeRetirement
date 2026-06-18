@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
@@ -30,17 +31,23 @@ import Alert from '@mui/material/Alert'
 // ── Countdown Hook ────────────────────────────────────────────────────────────
 function useCountdown(eventDate: string | null, eventTime: string | null) {
   const [now, setNow] = useState(new Date())
+
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000)
-    return () => clearInterval(id)
+
+    
+return () => clearInterval(id)
   }, [])
   if (!eventDate || !eventTime) return null
   const target = new Date(`${eventDate}T${eventTime}`)
   const diff = target.getTime() - now.getTime()
+
   if (diff <= 0) return 'LIVE'
   const hrs = Math.floor(diff / 3600000)
   const mins = Math.floor((diff % 3600000) / 60000)
-  return `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}`
+
+  
+return `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}`
 }
 
 // ── Compact Stat Pill ─────────────────────────────────────────────────────────
@@ -62,9 +69,12 @@ function StatPill({ value, label, color }: { value: string | number; label: stri
 // ── Countdown Badge ───────────────────────────────────────────────────────────
 function CountdownBadge({ eventDate, eventTime }: { eventDate: string | null; eventTime: string | null }) {
   const countdown = useCountdown(eventDate, eventTime)
+
   if (!countdown) return null
   const isLive = countdown === 'LIVE'
-  return (
+
+  
+return (
     <Box sx={{
       px: 1, py: 0.25, borderRadius: 1.5, ml: 1, whiteSpace: 'nowrap',
       bgcolor: isLive ? '#10b98120' : '#6366f118',
@@ -126,28 +136,36 @@ const initials = (a: Attendee) => `${a.first_name?.[0] || ''}${a.last_name?.[0] 
 
 function fmtDate(d: string | null) {
   if (!d) return ''
-  return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+  
+return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
 }
+
 function fmtTime(t: string | null) {
   if (!t) return ''
   const [h, m] = t.split(':').map(Number)
-  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`
+
+  
+return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`
 }
 
 const TYPE_LABELS: Record<number, string> = { 1: 'Invitee', 2: 'Lead', 3: 'Guest' }
+
 // Two-color scheme: GREEN for subscribers (invitees + leads), BLUE for guests
 const COLOR_SUBSCRIBER = '#10b981' // green
 const COLOR_GUEST      = '#3b82f6' // blue
+
 const TYPE_COLORS: Record<number, string> = {
   1: COLOR_SUBSCRIBER,
   2: COLOR_SUBSCRIBER,
   3: COLOR_GUEST,
 }
+
 const TYPE_BG: Record<number, string> = {
   1: '#10b98118',
   2: '#10b98118',
   3: '#3b82f618',
 }
+
 const TYPE_ICONS: Record<number, string> = {
   1: 'tabler-user-check',
   2: 'tabler-user-star',
@@ -197,6 +215,7 @@ function AttendeeDialog({
       } else {
         setForm({ ...EMPTY_ATTENDEE_FORM, attendee_type: defaultType ?? (parentId ? 3 : 2) })
       }
+
       setError('')
     }
   }, [open, existing, parentId, defaultType])
@@ -204,14 +223,18 @@ function AttendeeDialog({
   const handleSave = async () => {
     if (!form.first_name.trim() && !form.last_name.trim()) {
       setError('Please enter at least a first or last name.')
-      return
+      
+return
     }
+
     setSaving(true)
     setError('')
+
     try {
       const isEdit = !!existing
       const url = isEdit ? `/api/event-attendees?id=${existing!.id}` : '/api/event-attendees'
       const method = isEdit ? 'PATCH' : 'POST'
+
       const payload: Record<string, unknown> = {
         first_name: form.first_name,
         last_name: form.last_name,
@@ -220,24 +243,33 @@ function AttendeeDialog({
         attendee_type: form.attendee_type,
         notes: form.notes || null,
       }
+
       if (!isEdit) {
         payload.event_fk = eventId
         payload.parent_fk = parentId || null
       }
+
       const res = await fetch(url, {
         method, headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
+
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Save failed'); return }
+
+      if (!res.ok) { setError(data.error || 'Save failed'); 
+
+return }
+
       onSaved(data)
     } catch { setError('Network error') } finally { setSaving(false) }
   }
 
   const isGuest = !!parentId
+
   const title = existing
     ? `Edit ${TYPE_LABELS[existing.attendee_type]}`
     : isGuest ? 'Add Guest' : 'Add Attendee'
+
   const icon = existing ? 'tabler-user-edit' : isGuest ? 'tabler-user-plus' : 'tabler-user-plus'
 
   return (
@@ -581,6 +613,7 @@ export default function EventCheckInView() {
   const [snack, setSnack] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
     open: false, message: '', severity: 'success',
   })
+
   const showSnack = (message: string, severity: 'success' | 'error' | 'info' = 'success') =>
     setSnack({ open: true, message, severity })
 
@@ -588,9 +621,11 @@ export default function EventCheckInView() {
   useEffect(() => {
     (async () => {
       setLoading(true)
+
       try {
         const res = await fetch('/api/events')
         const data = await res.json()
+
         if (Array.isArray(data)) setEvents(data)
       } finally { setLoading(false) }
     })()
@@ -598,11 +633,16 @@ export default function EventCheckInView() {
 
   // ── Fetch attendees when event changes ────────────────────────────────
   const fetchAttendees = useCallback(async (eventId: string) => {
-    if (!eventId) { setAttendees([]); return }
+    if (!eventId) { setAttendees([]); 
+
+return }
+
     setLoadingAttendees(true)
+
     try {
       const res = await fetch(`/api/event-attendees?event_id=${eventId}`)
       const data = await res.json()
+
       if (Array.isArray(data)) setAttendees(data)
     } finally { setLoadingAttendees(false) }
   }, [])
@@ -619,6 +659,7 @@ export default function EventCheckInView() {
   const { topLevel, guestsByParent } = useMemo(() => {
     const tl: Attendee[] = []
     const gMap: Record<string, Attendee[]> = {}
+
     attendees.forEach(a => {
       if (a.parent_fk) {
         if (!gMap[a.parent_fk]) gMap[a.parent_fk] = []
@@ -627,20 +668,26 @@ export default function EventCheckInView() {
         tl.push(a)
       }
     })
+
     // Sort guests alphabetically within each parent
     Object.values(gMap).forEach(arr => arr.sort((a, b) => fullName(a).localeCompare(fullName(b))))
-    return { topLevel: tl, guestsByParent: gMap }
+    
+return { topLevel: tl, guestsByParent: gMap }
   }, [attendees])
 
   // Search filter
   const filtered = useMemo(() => {
     if (!search.trim()) return topLevel
     const q = search.toLowerCase()
-    return topLevel.filter(a => {
+
+    
+return topLevel.filter(a => {
       const nameMatch = fullName(a).toLowerCase().includes(q)
       const guests = guestsByParent[a.id] || []
       const guestMatch = guests.some(g => fullName(g).toLowerCase().includes(q))
-      return nameMatch || guestMatch ||
+
+      
+return nameMatch || guestMatch ||
         (a.phone || '').includes(q) ||
         (a.email || '').toLowerCase().includes(q)
     })
@@ -669,6 +716,7 @@ export default function EventCheckInView() {
   const handleCheckIn = async (id: string, checked: boolean) => {
     // Optimistic update
     setAttendees(prev => prev.map(a => a.id === id ? { ...a, checked_in: checked, no_show: checked ? false : a.no_show, check_in_time: checked ? new Date().toISOString() : null } : a))
+
     try {
       await fetch(`/api/event-attendees?id=${id}`, {
         method: 'PATCH',
@@ -684,8 +732,10 @@ export default function EventCheckInView() {
 
   const handleMarkNoShow = async (id: string, noShow: boolean) => {
     setAttendees(prev => prev.map(a => a.id === id ? { ...a, no_show: noShow, checked_in: noShow ? false : a.checked_in } : a))
+
     try {
       const body: Record<string, unknown> = { no_show: noShow }
+
       if (noShow) body.checked_in = false
       await fetch(`/api/event-attendees?id=${id}`, {
         method: 'PATCH',
@@ -701,6 +751,7 @@ export default function EventCheckInView() {
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return
+
     try {
       await fetch(`/api/event-attendees?id=${deleteTarget.id}`, { method: 'DELETE' })
       setAttendees(prev => prev.filter(a => a.id !== deleteTarget.id && a.parent_fk !== deleteTarget.id))
@@ -737,6 +788,7 @@ export default function EventCheckInView() {
       setAttendees(prev => [...prev, saved])
       showSnack(`${TYPE_LABELS[saved.attendee_type]} added!`)
     }
+
     setDialogOpen(false)
     setEditTarget(null)
     setGuestParentId(null)
@@ -814,6 +866,7 @@ export default function EventCheckInView() {
           <CircularProgress />
         </Box>
       ) : !selectedEventId ? (
+
         // Empty state
         <Box sx={{
           flex: 1, display: 'flex', flexDirection: 'column',

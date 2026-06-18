@@ -8,7 +8,9 @@
  * POST /api/irs-brackets                                         — Create (admin only)
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { applyOData, parseODataSelect } from '@/utils/odata'
 
@@ -25,21 +27,26 @@ export async function GET(request: NextRequest) {
 
   // ?filingStatus=Single → filter by filing status
   const filingStatus = params.get('filingStatus')
+
   if (filingStatus) query = query.eq('filing_status', filingStatus)
 
   // ?income=75000 → find the bracket where floor <= 75000 AND ceiling >= 75000
   const income = params.get('income')
+
   if (income) {
     const incomeNum = parseFloat(income)
+
     query = query.lte('floor', incomeNum).gte('ceiling', incomeNum)
   }
 
   // ?floor=36551 → exact match on floor
   const floor = params.get('floor')
+
   if (floor) query = query.eq('floor', parseFloat(floor))
 
   // ?ceiling=74550 → exact match on ceiling
   const ceiling = params.get('ceiling')
+
   if (ceiling) query = query.eq('ceiling', parseFloat(ceiling))
 
   // Apply OData query options
@@ -59,11 +66,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
+
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   // Check admin role
   const admin = createAdminClient()
   const { data: userRow } = await admin.from('users').select('role').eq('id', authUser.id).single()
+
   if (userRow?.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 })
   }
@@ -72,14 +81,18 @@ export async function POST(request: NextRequest) {
 
   // Validate required fields
   const errors: string[] = []
+
   if (!body.filing_status) errors.push('filing_status is required')
   if (body.floor === undefined || body.floor === null) errors.push('floor is required')
   if (body.ceiling === undefined || body.ceiling === null) errors.push('ceiling is required')
+
   if (body.floor !== undefined && body.ceiling !== undefined && body.floor > body.ceiling) {
     errors.push('floor must be ≤ ceiling')
   }
+
   if (body.base_tax < 0 || body.base_tax > 1) errors.push('base_tax must be between 0 and 1')
   if (body.marginal_rate < 0 || body.marginal_rate > 1) errors.push('marginal_rate must be between 0 and 1')
+
   if (errors.length) {
     return NextResponse.json({ error: errors.join('; ') }, { status: 400 })
   }

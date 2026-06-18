@@ -24,8 +24,10 @@ const CORS_HEADERS = {
 
 function json(data: unknown, init?: ResponseInit) {
   const headers = new Headers(init?.headers)
+
   Object.entries(CORS_HEADERS).forEach(([k, v]) => headers.set(k, v))
-  return NextResponse.json(data, { ...init, headers })
+  
+return NextResponse.json(data, { ...init, headers })
 }
 
 export async function OPTIONS() {
@@ -46,9 +48,11 @@ export async function GET(request: NextRequest) {
   }
 
   const { data, error } = await query
+
   if (error) return json({ error: error.message }, { status: 500 })
 
   const rows = (data ?? [])
+
     // Only return people who actually have bio content to publish.
     .filter(u => (u.bio_short && u.bio_short.trim()) || (u.bio_long && u.bio_long.trim()))
     .map(u => ({

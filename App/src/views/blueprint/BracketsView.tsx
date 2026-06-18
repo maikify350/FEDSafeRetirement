@@ -6,6 +6,7 @@
  */
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
+
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import Box from '@mui/material/Box'
@@ -13,6 +14,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import { createColumnHelper } from '@tanstack/react-table'
 
 import EntityListView from '@/components/EntityListView'
+import { downloadBlob, downloadJson } from '@/utils/exportDownload'
 import BracketEditDialog from './BracketEditDialog'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 
@@ -39,20 +41,23 @@ const statusColors: Record<string, 'primary' | 'secondary'> = {
 
 const formatDate = (v: string | null) => {
   if (!v) return '—'
-  return new Date(v).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  
+return new Date(v).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
 const formatCurrency = (v: number) => v.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
 
 const formatPercent = (v: number) => {
   if (v === 0) return '0%'
-  return `${(v * 100).toFixed(1)}%`
+  
+return `${(v * 100).toFixed(1)}%`
 }
 
 /** Open a print-friendly PDF-style window with a formatted table */
 function printBracketsTable(rows: IrsBracket[]) {
   const fmtCur = (v: number) => v.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
   const fmtPct = (v: number) => v === 0 ? '0%' : `${(v * 100).toFixed(1)}%`
+
   const html = `<!DOCTYPE html>
 <html><head><title>IRS 2026 Brackets</title>
 <style>
@@ -83,7 +88,9 @@ function printBracketsTable(rows: IrsBracket[]) {
     </tbody>
   </table>
 </body></html>`
+
   const iframe = document.createElement('iframe')
+
   iframe.style.position = 'fixed'
   iframe.style.width = '0'
   iframe.style.height = '0'
@@ -91,6 +98,7 @@ function printBracketsTable(rows: IrsBracket[]) {
   iframe.style.left = '-9999px'
   document.body.appendChild(iframe)
   const doc = iframe.contentDocument || iframe.contentWindow?.document
+
   if (doc) {
     doc.open()
     doc.write(html)
@@ -98,6 +106,7 @@ function printBracketsTable(rows: IrsBracket[]) {
     iframe.contentWindow?.focus()
     iframe.contentWindow?.print()
   }
+
   setTimeout(() => document.body.removeChild(iframe), 1000)
 }
 
@@ -111,9 +120,11 @@ export default function BracketsView() {
 
   const fetchBrackets = useCallback(async () => {
     setLoading(true)
+
     try {
       const res = await fetch('/api/irs-brackets?includeAudit=true')
       const data = await res.json()
+
       if (Array.isArray(data)) setBrackets(data)
     } catch { /* ignore */ } finally { setLoading(false) }
   }, [])
@@ -177,12 +188,6 @@ export default function BracketsView() {
     fetchBrackets()
   }, [fetchBrackets])
 
-  const downloadBlob = (content: string, filename: string, mime: string) => {
-    const blob = new Blob([content], { type: mime })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url; a.download = filename
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
-  }
 
   if (loading && brackets.length === 0) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}><CircularProgress /></Box>
@@ -205,9 +210,10 @@ export default function BracketsView() {
           const csv = ['FilingStatus,Floor,Ceiling,BaseTax,MarginalRate'].concat(
             rows.map(r => `"${r.filing_status}",${r.floor},${r.ceiling},${r.base_tax},${r.marginal_rate}`)
           ).join('\n')
+
           downloadBlob(csv, 'irs_brackets.csv', 'text/csv')
         }}
-        onExportJson={(rows) => downloadBlob(JSON.stringify(rows, null, 2), 'irs_brackets.json', 'application/json')}
+        onExportJson={(rows) => downloadJson(rows, 'irs_brackets.json')}
         emptyMessage='No tax brackets found.'
         onRowDoubleClick={isAdmin ? (r) => setEditBracket(r) : undefined}
         onRowEdit={isAdmin ? (r) => setEditBracket(r) : undefined}

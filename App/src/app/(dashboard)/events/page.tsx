@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import EventsView from '@/views/events/EventsView'
 
 export const metadata: Metadata = {

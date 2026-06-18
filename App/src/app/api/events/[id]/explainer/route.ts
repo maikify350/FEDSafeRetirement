@@ -11,7 +11,9 @@
  * explicit user click, never automatically.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 
 // ElevenLabs TTS for ~300 words → ~10–20 s server time. Vercel Pro caps
@@ -19,6 +21,7 @@ import { createClient, createAdminClient } from '@/utils/supabase/server'
 export const maxDuration = 60
 
 const BUCKET = 'flyers'
+
 const STATE_NAMES: Record<string, string> = {
   AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California',
   CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware', DC: 'District of Columbia',
@@ -44,9 +47,11 @@ async function requireAdmin(request: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
+
     if (user) {
       userId = user.id
       const { data: row } = await admin.from('users').select('role').eq('id', user.id).single()
+
       isAdmin = row?.role === 'admin'
     }
   } catch { /* fall through */ }
@@ -56,8 +61,10 @@ async function requireAdmin(request: NextRequest) {
   const origin  = request.headers.get('origin')  || ''
   const referer = request.headers.get('referer') || ''
   const host    = request.headers.get('host')    || ''
+
   if (origin.includes(host) || referer.includes(host)) return { admin, userId }
-  return null
+  
+return null
 }
 
 function buildScript(event: {
@@ -77,6 +84,7 @@ function buildScript(event: {
     /zoom|virtual|webinar|online/i.test(event.description || '')
 
   const stateName = STATE_NAMES[event.state_fk] || event.state_fk
+
   const where = isVirtual
     ? 'online — wherever you are in the country'
     : `in ${event.city}, ${stateName}`
@@ -126,6 +134,7 @@ function phoneticize(text: string): string {
 async function openaiTTS(text: string, speed: number = 1.0, voice: string = 'onyx'): Promise<Uint8Array> {
   const apiKey =
     process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY
+
   if (!apiKey) throw new Error('OPENAI_API_KEY not configured')
 
   // Per-event voice overrides OPENAI_TTS_VOICE env var. Valid: alloy, echo,
@@ -154,18 +163,24 @@ async function openaiTTS(text: string, speed: number = 1.0, voice: string = 'ony
 
   if (!res.ok) {
     const errText = await res.text()
+
     throw new Error(`OpenAI TTS ${res.status}: ${errText.slice(0, 300)}`)
   }
+
   const buf = await res.arrayBuffer()
-  return new Uint8Array(buf)
+
+  
+return new Uint8Array(buf)
 }
 
 async function elevenLabsTTS(text: string, voiceId?: string, speed: number = 1.0): Promise<Uint8Array> {
   const apiKey = process.env.ELEVENLABS_TTS_STT_APIKEY || process.env.ELEVEN_LABS_KEY || process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY
+
   if (!apiKey) throw new Error('ElevenLabs API key not configured (ELEVENLABS_TTS_STT_APIKEY)')
 
   // voiceId comes from the per-event selector; fall back to env override or Rachel.
   const resolvedVoiceId = voiceId || process.env.ELEVENLABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM'
+
   // eleven_multilingual_v2 supports speed; turbo models do not.
   // Speed range for ElevenLabs is 0.7–1.2 per their API; we map our 0.5–2.0
   // UI range into that window so extreme values don't silently clamp.
@@ -193,25 +208,34 @@ async function elevenLabsTTS(text: string, voiceId?: string, speed: number = 1.0
 
   if (!res.ok) {
     const errText = await res.text()
+
     throw new Error(`ElevenLabs ${res.status}: ${errText.slice(0, 300)}`)
   }
+
   const buf = await res.arrayBuffer()
-  return new Uint8Array(buf)
+
+  
+return new Uint8Array(buf)
 }
 
 async function generateTTS(text: string, speed: number, voice: string, provider: string): Promise<{ mp3: Uint8Array; provider: string }> {
   const p = provider || (process.env.TTS_PROVIDER || 'openai')
+
   if (p === 'elevenlabs' || p === 'eleven') {
     return { mp3: await elevenLabsTTS(text, voice, speed), provider: 'elevenlabs' }
   }
-  return { mp3: await openaiTTS(text, speed, voice), provider: 'openai' }
+
+  
+return { mp3: await openaiTTS(text, speed, voice), provider: 'openai' }
 }
 
 export async function POST(request: NextRequest, ctx: Ctx) {
   const { id } = await ctx.params
+
   if (!id) return NextResponse.json({ error: 'event id is required' }, { status: 400 })
 
   const auth = await requireAdmin(request)
+
   if (!auth) return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 })
   const { admin, userId } = auth
 
@@ -239,8 +263,10 @@ export async function POST(request: NextRequest, ctx: Ctx) {
   let bodySpeed:    number | undefined
   let bodyVoice:    string | undefined
   let bodyProvider: string | undefined
+
   try {
     const body = await request.json().catch(() => null)
+
     if (body && typeof body.script   === 'string')                           bodyScript   = body.script
     if (body && typeof body.speed    === 'number' && Number.isFinite(body.speed)) bodySpeed = body.speed
     if (body && typeof body.voice    === 'string' && body.voice.length > 0)  bodyVoice    = body.voice
@@ -255,6 +281,7 @@ export async function POST(request: NextRequest, ctx: Ctx) {
         : buildScript(event as any)
 
   const savedSpeed = Number((event as any).explainer_speed)
+
   const resolvedSpeed: number = Math.min(2.0, Math.max(0.5,
     bodySpeed !== undefined
       ? bodySpeed
@@ -266,8 +293,10 @@ export async function POST(request: NextRequest, ctx: Ctx) {
 
   let mp3: Uint8Array
   let providerUsed = ''
+
   try {
     const result = await generateTTS(phoneticize(resolvedScript), resolvedSpeed, resolvedVoice, resolvedProvider)
+
     mp3 = result.mp3
     providerUsed = result.provider
   } catch (e: any) {
@@ -275,6 +304,7 @@ export async function POST(request: NextRequest, ctx: Ctx) {
   }
 
   const path = `${id}/explainer.mp3`
+
   const { error: upErr } = await admin.storage
     .from(BUCKET)
     .upload(path, mp3, { contentType: 'audio/mpeg', upsert: true })
@@ -284,6 +314,7 @@ export async function POST(request: NextRequest, ctx: Ctx) {
   }
 
   const nowIso = new Date().toISOString()
+
   const { error: rowErr } = await admin
     .from('events')
     .update({
@@ -312,9 +343,11 @@ export async function POST(request: NextRequest, ctx: Ctx) {
 
 export async function DELETE(request: NextRequest, ctx: Ctx) {
   const { id } = await ctx.params
+
   if (!id) return NextResponse.json({ error: 'event id is required' }, { status: 400 })
 
   const auth = await requireAdmin(request)
+
   if (!auth) return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 })
   const { admin } = auth
 

@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react'
+
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
@@ -64,6 +65,7 @@ const LOOKUP_CATALOGUE: LookupCategory[] = [
 export default function ConfigurationView() {
   const theme = useTheme()
   const [selected, setSelected] = useState<LookupDef | null>(null)
+
   const [expandedCategories, setExpandedCategories] = useState<string[]>(
     LOOKUP_CATALOGUE.map(cat => cat.category) // Start with all expanded
   )

@@ -11,7 +11,9 @@
  */
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+
 import { useSearchParams, useRouter } from 'next/navigation'
+
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import Checkbox from '@mui/material/Checkbox'
@@ -28,6 +30,10 @@ import Badge from '@mui/material/Badge'
 
 import { createColumnHelper, type ColumnFiltersState, type SortingState } from '@tanstack/react-table'
 
+import Snackbar from '@mui/material/Snackbar'
+
+import Alert from '@mui/material/Alert'
+
 import EntityListView from '@/components/EntityListView'
 import { isConditionActive, type ColFilterValue } from '@/lib/columnFilter'
 import { useLeadsData, type Lead } from '@/hooks/useLeadsData'
@@ -37,35 +43,30 @@ import PushToActDialog from '@/components/PushToActDialog'
 import SaveToCollectionDialog, { type FilterCriteria } from '@/components/SaveToCollectionDialog'
 import FacilityMapDialog from '@/components/FacilityMapDialog'
 import RadiusSearchDialog from '@/components/RadiusSearchDialog'
-import Snackbar from '@mui/material/Snackbar'
-import Alert from '@mui/material/Alert'
+import { buildCsv, downloadBlob, downloadJson } from '@/utils/exportDownload'
 
 type LeadWithAction = Lead & { action?: string }
 
 const columnHelper = createColumnHelper<LeadWithAction>()
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-const downloadBlob = (content: string, filename: string, mime: string) => {
-  const blob = new Blob([content], { type: mime })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url; a.setAttribute('download', filename)
-  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
-}
-
 const getLocalDateString = () => {
   const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+
+  
+return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 }
 
 const formatCurrency = (v: number | null) => {
   if (v === null || v === undefined) return '—'
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v)
+  
+return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v)
 }
 
 const formatDate = (v: string | null) => {
   if (!v) return '—'
-  return new Date(v).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  
+return new Date(v).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
 // ── Export field definitions (available for field picker) ────────────────────
@@ -93,6 +94,7 @@ const LEAD_EXPORT_FIELDS = [
 export default function LeadsView() {
   // ── Pull ALL state from the shared context (persists across navigation) ──
   const ctx = useLeadsData()
+
   const {
     leads, totalRows, loading,
     currentPage, pageSize,
@@ -148,6 +150,7 @@ export default function LeadsView() {
     if (!didMountRef.current) {
       didMountRef.current = true
       refreshCollections()
+
       if (markStaleCheckOnResume()) {
         fetchLeads()
       }
@@ -158,13 +161,16 @@ export default function LeadsView() {
   // ── Auto-apply collection from ?collection= query param ──────────────────
   useEffect(() => {
     const collId = searchParams.get('collection')
+
     if (collId) {
       const apply = async () => {
         await handleCollectionChange(collId)
         router.replace('/leads', { scroll: false })
       }
+
       apply()
     }
+
   // Only run once on mount
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -173,14 +179,18 @@ export default function LeadsView() {
   const handleCollectionChange = useCallback(async (collId: string) => {
     setCollectionFilter(collId)
     setCurrentPage(0)
+
     if (!collId) {
       setRadiusActive(null)
-      return
+      
+return
     }
+
     try {
       const res = await fetch(`/api/collections/${collId}`)
       const coll = await res.json()
       const fc = coll?.filter_criteria as FilterCriteria | null
+
       if (!fc) return
 
       if (fc.state)    setStateFilter(fc.state)
@@ -192,11 +202,14 @@ export default function LeadsView() {
       // Re-run a saved radius search and load the first page into the grid
       if (fc.radius && fc.radius.center) {
         setLoading(true)
+
         try {
           const activeFilters = (fc.columnFilters ?? [])
             .filter(cf => {
               const val = cf.value as ColFilterValue
-              return val?.conditions?.some(isConditionActive)
+
+              
+return val?.conditions?.some(isConditionActive)
             })
             .map(cf => ({ id: cf.id, value: cf.value }))
 
@@ -212,14 +225,17 @@ export default function LeadsView() {
             ...(fc.gender && fc.gender !== 'all' ? { gender: fc.gender } : {}),
             ...(fc.favorite ? { favorite: 'true' } : {}),
           })
+
           const rr = await fetch(`/api/leads/radius?${params}`)
           const json = await rr.json()
+
           if (!json.error) {
             setLeads(json.data)
             setTotalRows(json.total)
 
             // Sync ref to prevent immediate re-fetch
             const activeKey = `${fc.radius.center.lat}-${fc.radius.center.lon}-${fc.radius.radius}`
+
             lastFiltersRef.current = {
               debouncedSearch: fc.search ?? '',
               columnFilters: fc.columnFilters ?? [],
@@ -260,17 +276,23 @@ export default function LeadsView() {
   // Build human-readable filter summary chips
   const filterSummaryChips = useMemo(() => {
     const chips: string[] = []
+
     if (radiusActive) chips.push(`Radius: ${radiusActive.radius} mi from ${radiusActive.address}`)
     if (stateFilter !== 'all') chips.push(`State: ${stateFilter}`)
     if (genderFilter !== 'all') chips.push(`Gender: ${genderFilter === 'M' ? 'Male' : 'Female'}`)
     if (favoriteFilter) chips.push('Favorites only')
     if (globalFilter.trim()) chips.push(`Search: "${globalFilter.trim()}"`)
+
     const activeColFilters = columnFilters.filter(cf => {
       const val = cf.value as ColFilterValue
-      return val?.conditions?.some(isConditionActive)
+
+      
+return val?.conditions?.some(isConditionActive)
     })
+
     if (activeColFilters.length > 0) chips.push(`${activeColFilters.length} column filter${activeColFilters.length > 1 ? 's' : ''}`)
-    return chips
+    
+return chips
   }, [stateFilter, genderFilter, favoriteFilter, globalFilter, columnFilters, radiusActive])
 
   // Debounced search — updates debouncedSearch in context
@@ -282,7 +304,8 @@ export default function LeadsView() {
       setDebouncedSearch(globalFilter)
       setCurrentPage(0)  // Reset to first page on new search
     }, 400)
-    return () => { if (searchTimer.current) clearTimeout(searchTimer.current) }
+    
+return () => { if (searchTimer.current) clearTimeout(searchTimer.current) }
   }, [globalFilter, setDebouncedSearch, setCurrentPage])
 
   // ── Re-fetch when filter/pagination deps change (but NOT on first mount if cached) ──
@@ -292,8 +315,11 @@ export default function LeadsView() {
     // Skip the very first effect if we already have cached data
     if (isFirstFetchSkipped.current) {
       isFirstFetchSkipped.current = false
-      return
+      
+return
     }
+
+
     // Skip when radius search is active — radius has its own pagination
     if (radiusActive) return
     fetchLeads()
@@ -318,6 +344,7 @@ export default function LeadsView() {
   // ── Radius search handler ─────────────────────────────────────────────────
   const handleRadiusResults = useCallback((result: any) => {
     setLeads(result.data)
+
     // Phase-1 metadata only (1 row). The filter-change effect fires on radius
     // activation and fetches the real first page from the server.
     setTotalRows(result.total)
@@ -346,7 +373,8 @@ export default function LeadsView() {
   // Build a consistent activeKey for radius de-duplication
   const buildRadiusKey = (ra: typeof radiusActive) => {
     if (!ra) return null
-    return ra.mode === 'exclude'
+    
+return ra.mode === 'exclude'
       ? `exclude-${ra.exclusionZones?.map((z: any) => `${z.lat}-${z.lon}-${z.radius}`).join('|') ?? 'all'}`
       : `${ra.center.lat}-${ra.center.lon}-${ra.radius}`
   }
@@ -357,14 +385,18 @@ export default function LeadsView() {
   // re-queries the server with the new constraints.
   const buildRadiusParams = useCallback((page: number, size: number): URLSearchParams | null => {
     if (!radiusActive) return null
+
     const activeFilters = columnFilters
       .filter(cf => {
         const val = cf.value as ColFilterValue
-        return val?.conditions?.some(isConditionActive)
+
+        
+return val?.conditions?.some(isConditionActive)
       })
       .map(cf => ({ id: cf.id, value: cf.value }))
 
     const params = new URLSearchParams()
+
     if (radiusActive.mode === 'exclude') {
       params.set('mode', 'exclude')
       params.set('zones', JSON.stringify(
@@ -375,6 +407,7 @@ export default function LeadsView() {
       params.set('lon', String(radiusActive.center.lon))
       params.set('radius', String(radiusActive.radius))
     }
+
     params.set('page', String(page))
     params.set('pageSize', String(size))
     params.set('stateCounts', 'false')
@@ -383,17 +416,21 @@ export default function LeadsView() {
     if (stateFilter !== 'all') params.set('state', stateFilter)
     if (genderFilter !== 'all') params.set('gender', genderFilter)
     if (favoriteFilter) params.set('favorite', 'true')
-    return params
+    
+return params
   }, [radiusActive, columnFilters, debouncedSearch, stateFilter, genderFilter, favoriteFilter])
 
   // Radius pagination / filter re-fetch (server-side, both modes)
   const fetchRadiusPage = useCallback(async (page: number, size: number) => {
     const params = buildRadiusParams(page, size)
+
     if (!params) return
     setLoading(true)
+
     try {
       const res = await fetch(`/api/leads/radius?${params}`)
       const json = await res.json()
+
       if (!json.error) {
         setLeads(json.data)
         setTotalRows(json.total)
@@ -410,6 +447,7 @@ export default function LeadsView() {
 
     if (radiusActive) {
       const prev = lastFiltersRef.current
+
       const filtersChanged =
         prev.debouncedSearch !== debouncedSearch ||
         prev.columnFilters !== columnFilters ||
@@ -448,18 +486,21 @@ export default function LeadsView() {
   // ── Export ────────────────────────────────────────────────────────────────
   const exportToCSV = (rows: LeadWithAction[]) => {
     const headers = ['First Name', 'Last Name', 'Occupation', 'Grade', 'Annual Salary', 'Hourly Rate', 'Facility', 'City', 'State', 'Zip', 'Duty Date', 'Years of Service']
+
     const csvRows = rows.map(r => [
       r.first_name, r.last_name, r.occupation_title || '', r.grade_level || '',
       r.annual_salary ?? '', r.hourly_rate ?? '', r.facility_name || '',
       r.facility_city || '', r.facility_state || '', r.facility_zip_code || '',
       r.entered_on_duty_date || '', r.years_of_service ?? ''
     ])
-    const csv = [headers.join(','), ...csvRows.map(r => r.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(','))].join('\n')
+
+    const csv = buildCsv(headers, csvRows)
+
     downloadBlob(csv, `leads_${getLocalDateString()}.csv`, 'text/csv;charset=utf-8;')
   }
 
   const exportToJSON = (rows: LeadWithAction[]) => {
-    downloadBlob(JSON.stringify(rows, null, 2), `leads_${getLocalDateString()}.json`, 'application/json')
+    downloadJson(rows, `leads_${getLocalDateString()}.json`)
   }
 
   // Full-result-set export. Routes to the radius-export endpoint when a
@@ -468,6 +509,7 @@ export default function LeadsView() {
   const handleExportAll = useCallback(async (): Promise<LeadWithAction[] | null> => {
     try {
       let url: string
+
       if (radiusActive) {
         // Exclude mode: batch-fetch every matching row from the server, using
         // the CURRENT grid filters (buildRadiusParams reads them live, so the
@@ -479,28 +521,37 @@ export default function LeadsView() {
           const allData: any[] = []
 
           const concurrency = 4
+
           for (let start = 0; start < batchCount; start += concurrency) {
             const batch = Array.from(
               { length: Math.min(concurrency, batchCount - start) },
               (_, i) => {
                 const params = buildRadiusParams(start + i, BATCH)!
-                return fetch(`/api/leads/radius?${params}`).then(r => r.json())
+
+                
+return fetch(`/api/leads/radius?${params}`).then(r => r.json())
               }
             )
+
             const results = await Promise.all(batch)
+
             for (const json of results) {
               if (json.error) throw new Error(json.error)
               allData.push(...(json.data ?? []))
             }
           }
-          return allData as LeadWithAction[]
+
+          
+return allData as LeadWithAction[]
         }
 
         // For include mode: use existing export endpoint
         const activeFilters = columnFilters
           .filter(cf => {
             const val = cf.value as ColFilterValue
-            return val?.conditions?.some(isConditionActive)
+
+            
+return val?.conditions?.some(isConditionActive)
           })
           .map(cf => ({ id: cf.id, value: cf.value }))
 
@@ -515,6 +566,7 @@ export default function LeadsView() {
           ...(genderFilter !== 'all' ? { gender: genderFilter } : {}),
           ...(favoriteFilter ? { favorite: 'true' } : {}),
         })
+
         url = `/api/leads/radius/export?${params}`
       } else {
         const params = new URLSearchParams({
@@ -526,12 +578,15 @@ export default function LeadsView() {
           filters:  JSON.stringify(columnFilters ?? []),
           format:   'json',
         })
+
         url = `/api/leads/export?${params}`
       }
 
       const res = await fetch(url)
+
       if (!res.ok) throw new Error(await res.text())
       const json = await res.json()
+
       if (json?.capped) {
         setSaveSnackbar({
           open: true,
@@ -539,10 +594,13 @@ export default function LeadsView() {
           severity: 'error',
         })
       }
-      return (json.data ?? []) as LeadWithAction[]
+
+      
+return (json.data ?? []) as LeadWithAction[]
     } catch {
       setSaveSnackbar({ open: true, message: 'Export failed — please try again.', severity: 'error' })
-      return null
+      
+return null
     }
   }, [radiusActive, totalRows, buildRadiusParams, globalFilter, debouncedSearch, stateFilter, genderFilter, favoriteFilter, sorting, columnFilters])
 
@@ -553,7 +611,9 @@ export default function LeadsView() {
       header: () => <i className='tabler-star text-sm' />,
       cell: ({ row }: any) => {
         const lead = row.original as Lead
-        return (
+
+        
+return (
           <IconButton
             size='small'
             onClick={(e: React.MouseEvent) => {
@@ -614,7 +674,9 @@ export default function LeadsView() {
         cell: ({ row }) => {
           const lead = row.original
           const hasAddress = !!(lead.facility_address || lead.facility_city || lead.facility_state || lead.facility_zip_code)
-          return (
+
+          
+return (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
               <Typography className='text-sm' noWrap sx={{ flex: 1, minWidth: 0 }}>
                 {lead.facility_name || '—'}
@@ -651,7 +713,9 @@ export default function LeadsView() {
         header: 'State', size: 80,
         cell: ({ row }) => {
           const st = row.original.facility_state
-          return st ? (
+
+          
+return st ? (
             <Chip label={st} size='small' variant='tonal' color='info' sx={{ fontSize: 11, height: 22, fontWeight: 600 }} />
           ) : <Typography className='text-sm'>—</Typography>
         },
@@ -672,9 +736,12 @@ export default function LeadsView() {
         header: 'Years', size: 130,
         cell: ({ row }) => {
           const yos = row.original.years_of_service
+
           if (yos === null || yos === undefined) return <Typography className='text-sm'>—</Typography>
           const color = yos >= 20 ? 'success' : yos >= 10 ? 'warning' : 'default'
-          return (
+
+          
+return (
             <Tooltip title={`${yos} years of service`}>
               <Chip label={`${yos} yrs`} size='small' color={color} variant='tonal' sx={{ fontSize: 11, height: 22 }} />
             </Tooltip>
@@ -689,9 +756,11 @@ export default function LeadsView() {
         header: 'Gender', size: 90,
         cell: ({ row }) => {
           const g = (row.original as any).gender
+
           if (g === 'M') return <Chip label='Male'   size='small' color='info'  variant='tonal' sx={{ fontSize: 11, height: 22 }} />
           if (g === 'F') return <Chip label='Female' size='small' color='error' variant='tonal' sx={{ fontSize: 11, height: 22 }} />
-          return <Typography className='text-sm'>—</Typography>
+          
+return <Typography className='text-sm'>—</Typography>
         },
       }),
       columnHelper.accessor('source_file', {
@@ -728,6 +797,7 @@ export default function LeadsView() {
   const toggleFavorite = useCallback(async (id: string, isFav: boolean) => {
     // Optimistic update
     setLeads(prev => prev.map(l => l.id === id ? { ...l, is_favorite: isFav } : l))
+
     try {
       await fetch(`/api/leads/${id}/favorite`, {
         method: 'PATCH',
@@ -742,6 +812,7 @@ export default function LeadsView() {
 
   const handleClearAllFavorites = useCallback(async () => {
     setClearingFavs(true)
+
     try {
       await fetch('/api/leads/favorites', { method: 'DELETE' })
       setLeads(prev => prev.map(l => ({ ...l, is_favorite: false })))

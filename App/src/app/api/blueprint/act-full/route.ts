@@ -22,7 +22,8 @@
  *   Rep (Christopher)   984e429c-c188-4ab5-b8b8-21d18a4618f0
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 const CORS = {
@@ -46,6 +47,7 @@ async function getActToken(
   database: string,
 ): Promise<string> {
   const creds = Buffer.from(`${username}:${password}`).toString('base64')
+
   const resp = await fetch(`${base}/authorize`, {
     headers: {
       Authorization: `Basic ${creds}`,
@@ -53,9 +55,12 @@ async function getActToken(
     },
     signal: AbortSignal.timeout(10_000),
   })
+
   if (!resp.ok) throw new Error(`ACT auth failed: HTTP ${resp.status}`)
   const raw = await resp.text()
-  return raw.replace(/^"|"$/g, '').replace(/[\r\n]/g, '').trim()
+
+  
+return raw.replace(/^"|"$/g, '').replace(/[\r\n]/g, '').trim()
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -105,16 +110,23 @@ function transformValue(raw: unknown): unknown {
   //   "2-Yes"      → "Yes"
   // Only strip when the PREFIX portion is purely numeric.
   const sortPrefixMatch = trimmed.match(/^(\d+)\s*-\s*(.+)$/)
+
   if (sortPrefixMatch) {
     const rest = sortPrefixMatch[2]
+
+
     // Skip stripping if the "rest" looks like an ISO date continuation
     // e.g. "10-15T00:00:00+00:00" — "10" is the month, not an ACT sort prefix
     if (/^\d{1,2}T\d/.test(rest) || rest.includes('T00:00')) {
       return trimmed || null
     }
+
+
     // Strip trailing % from numeric values
     const cleaned = rest.replace(/%$/, '').trim()
-    return cleaned
+
+    
+return cleaned
   }
 
   return trimmed || null   // normalise empty strings to null
@@ -138,10 +150,13 @@ async function fetchContact(
     },
     signal: AbortSignal.timeout(15_000),
   })
+
   if (!resp.ok) {
     throw new Error(`ACT contact fetch failed for ${contactId}: HTTP ${resp.status}`)
   }
-  return resp.json() as Promise<Record<string, unknown>>
+
+  
+return resp.json() as Promise<Record<string, unknown>>
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -173,9 +188,12 @@ async function fetchContactFieldSchema(
       },
       signal: AbortSignal.timeout(10_000),
     })
+
     if (!resp.ok) return FALLBACK_ALWAYS_PRESENT
 
     const data = await resp.json() as unknown
+
+
     // ACT returns an array of field definition objects.
     // The `fieldName` property uses the format "customfields/rawName" or just "rawName".
     const defs: Record<string, unknown>[] = Array.isArray(data)
@@ -190,14 +208,18 @@ async function fetchContactFieldSchema(
       .map(def => {
         const raw = String(def.fieldName ?? def.name ?? def.id ?? '')
         const stripped = raw.replace(/^customfields\//i, '').replace(/^homeaddress\//i, '').replace(/^businessaddress\//i, '')
-        return cleanKey(stripped)
+
+        
+return cleanKey(stripped)
       })
       .filter(k => Boolean(k) && !k.includes('/') && !ADDRESS_SUBFIELDS.has(k))
 
     // Always merge the fallback list — some fields (e.g. liquid, stocksbonds) may
     // not appear in the metadata response but are known to exist in this database.
     const merged = Array.from(new Set([...schemaKeys, ...FALLBACK_ALWAYS_PRESENT]))
-    return merged
+
+    
+return merged
   } catch {
     return FALLBACK_ALWAYS_PRESENT
   }
@@ -234,6 +256,7 @@ function flattenContact(
   for (const [key, value] of Object.entries(contact)) {
     if (key === 'customFields') continue
     const cleaned = cleanKey(key)
+
     fields[cleaned] = transformValue(value)
   }
 
@@ -244,9 +267,12 @@ function flattenContact(
   // automatically from other fields (DOB, SpouseDOB). Never write back to them
   // via the PDF fill or any update endpoint.
   const blob = (contact.customFields ?? {}) as Record<string, unknown>
+
   for (const [rawKey, value] of Object.entries(blob)) {
     const cleaned = cleanKey(rawKey)
     const transformed = transformValue(value)
+
+
     // Prefer non-null values; custom field overrides root on collision
     if (!(cleaned in fields) || (fields[cleaned] === null && transformed !== null)) {
       fields[cleaned] = transformed
@@ -265,30 +291,39 @@ function flattenContact(
   //    otherwise → thisYear - age - 1.
   const bdRaw = fields['birthday']
   const ageRaw = fields['ageyy'] ?? fields['age']
+
   if (typeof bdRaw === 'string' && ageRaw !== null && ageRaw !== undefined) {
     const age = parseInt(String(ageRaw), 10)
+
     if (!isNaN(age)) {
       let mm = '', dd = ''
 
       // Format 1: "10/15"  (slash-separated, no year)
       if (bdRaw.includes('/') && !bdRaw.match(/\d{4}/)) {
         const parts = bdRaw.split('/')
+
         mm = parts[0]; dd = parts[1]
       }
+
       // Format 2: "10-15T00:00:00+00:00"  (ACT ISO birthday — no year, T-separated time)
       else if (/^\d{1,2}-\d{1,2}T/.test(bdRaw)) {
         const parts = bdRaw.split('T')[0].split('-')
+
         mm = parts[0]; dd = parts[1]
       }
+
       // Format 3: full ISO "1957-10-11T..."  (already has year)
       else if (/^\d{4}-\d{2}-\d{2}T/.test(bdRaw)) {
         const d = new Date(bdRaw)
+
         if (!isNaN(d.getTime())) {
           mm = String(d.getUTCMonth() + 1).padStart(2, '0')
           dd = String(d.getUTCDate()).padStart(2, '0')
           const yr = d.getUTCFullYear()
+
           fields['birthday'] = `${mm}/${dd}/${yr}`
         }
+
         mm = '' // already set above, skip year derivation below
       }
 
@@ -298,6 +333,7 @@ function flattenContact(
         const now = new Date()
         const thisYearBday = new Date(now.getFullYear(), parseInt(mm, 10) - 1, parseInt(dd, 10))
         const birthYear = now.getFullYear() - age - (thisYearBday > now ? 1 : 0)
+
         fields['birthday'] = `${mm}/${dd}/${birthYear}`
       }
     }
@@ -307,8 +343,10 @@ function flattenContact(
   //    ACT returns these as "150000.00" — we want "150000".
   for (const key of WHOLE_CURRENCY_FIELDS) {
     const v = fields[key]
+
     if (typeof v === 'string' && v.includes('.')) {
       const parsed = parseFloat(v)
+
       if (!isNaN(parsed)) {
         fields[key] = Math.trunc(parsed).toString()
       }
@@ -336,6 +374,7 @@ function extractRepInfo(repContact: Record<string, unknown>): {
 
   // Email — may be nested under emailAddress object or at root
   const emailObj = repContact.emailAddress as Record<string, unknown> | null
+
   const email =
     (repContact.email as string) ??
     (emailObj?.address as string) ??
@@ -374,6 +413,7 @@ export async function GET(req: NextRequest) {
   }
 
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
   if (!UUID_RE.test(contactId)) {
     return NextResponse.json(
       { success: false, error: `Invalid contactId: "${contactId}" — expected a UUID` },
@@ -419,23 +459,32 @@ export async function GET(req: NextRequest) {
       // Search all keys case-insensitively before flattening happens.
       const keys = Object.keys(clientContact)
       const rmIdKey = keys.find(k => k.toLowerCase() === 'recordmanagerid')
+
       if (rmIdKey && typeof clientContact[rmIdKey] === 'string') {
         return clientContact[rmIdKey] as string
       }
+
+
       // Fallback: owner field
       const ownerKey = keys.find(k => k.toLowerCase() === 'owner')
       const ownerVal = ownerKey ? clientContact[ownerKey] : null
+
       if (typeof ownerVal === 'string' && UUID_RE.test(ownerVal)) return ownerVal
+
       if (ownerVal && typeof ownerVal === 'object') {
         const oid = (ownerVal as Record<string, unknown>).id
+
         if (typeof oid === 'string') return oid
       }
-      return null
+
+      
+return null
     })()
 
     if (repId && UUID_RE.test(repId)) {
       try {
         const repFull = await fetchContact(base, token, database, repId)
+
         rep = extractRepInfo(repFull)
       } catch {
         // Non-critical — still return the name from the embedded string if available
@@ -457,8 +506,10 @@ export async function GET(req: NextRequest) {
       {
         success:   true,
         contactId,
+
         // Rep/agent info at the top level for easy access
         rep: rep ?? { id: null, name: null, email: null, phone: null },
+
         // All client fields — flat, normalized, lookup-values cleaned, fully populated
         fields,
         _meta: {
@@ -473,8 +524,10 @@ export async function GET(req: NextRequest) {
     )
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e)
+
     console.error('[/api/blueprint/act-full] Error:', msg)
-    return NextResponse.json(
+    
+return NextResponse.json(
       { success: false, error: msg },
       { status: 500, headers: CORS },
     )

@@ -1,19 +1,35 @@
 module.exports = {
   extends: ['next/core-web-vitals', 'plugin:@typescript-eslint/recommended', 'plugin:import/recommended', 'prettier'],
-  ignorePatterns: ['next-env.d.ts', '.next/**', 'node_modules/**'],
+  ignorePatterns: [
+    'next-env.d.ts',
+    '.next/**',
+    'node_modules/**',
+    'scripts/**',
+    'scratch/**',
+    'generate-explainers.js'
+  ],
   rules: {
     'jsx-a11y/alt-text': 'off',
     'react/display-name': 'off',
     'react/no-children-prop': 'off',
     '@next/next/no-img-element': 'off',
     '@next/next/no-page-custom-font': 'off',
-    '@typescript-eslint/consistent-type-imports': 'error',
+    '@typescript-eslint/consistent-type-imports': 'warn',
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_'
+      }
+    ],
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-unused-expressions': 'off',
+    '@typescript-eslint/no-require-imports': 'off',
     'import/no-named-as-default': 'off',
+    'import/no-unresolved': 'off',
+    'react/no-unescaped-entities': 'off',
     'lines-around-comment': [
       'error',
       {

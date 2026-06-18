@@ -2,15 +2,17 @@
 
 // React Imports
 import { useState } from 'react'
+
 import { useRouter } from 'next/navigation'
 
 // MUI Imports
+import Link from 'next/link'
+
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { styled, useTheme } from '@mui/material/styles'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import Alert from '@mui/material/Alert'
-import Link from 'next/link'
 
 // Third-party Imports
 import classnames from 'classnames'
@@ -64,6 +66,7 @@ const ForgotPassword = ({ mode }: { mode: SystemMode }) => {
 
     try {
       const supabase = createClient()
+
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
       })

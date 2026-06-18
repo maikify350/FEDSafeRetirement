@@ -11,10 +11,12 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { flexRender, type Header } from '@tanstack/react-table'
 import classnames from 'classnames'
+
 import {
   FILTER_OPS,
   DEFAULT_FILTER_VALUE,
@@ -88,15 +90,19 @@ function FilterPopover({
         onClose()
       }
     }
+
     document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    
+return () => document.removeEventListener('mousedown', handler)
   }, [anchorRef, onClose])
 
   const setCondition = (index: 0 | 1 | 2 | 3, c: FilterCondition) => {
     setDraft(d => {
       const next = { ...d, conditions: [...d.conditions] as ColFilterValue['conditions'] }
+
       next.conditions[index] = c
-      return next
+      
+return next
     })
   }
 
@@ -115,16 +121,20 @@ function FilterPopover({
   const [visibleCount, setVisibleCount] = useState<number>(() => {
     const active = (raw?.conditions ?? DEFAULT_FILTER_VALUE.conditions)
       .filter(isConditionActive).length
-    return Math.max(1, active)
+
+    
+return Math.max(1, active)
   })
 
   const removeCondition = (idx: 0 | 1 | 2 | 3) => {
     // Shift remaining conditions up, fill last slot with empty default
     setDraft(d => {
       const next = [...d.conditions] as ColFilterValue['conditions']
+
       for (let i = idx; i < 3; i++) next[i] = next[i + 1]
       next[3] = { op: 'contains', value: '' }
-      return { ...d, conditions: next }
+      
+return { ...d, conditions: next }
     })
     setVisibleCount(v => Math.max(1, v - 1))
   }
@@ -221,6 +231,7 @@ function FilterInput({ column }: { column: Header<any, unknown>['column'] }) {
   const btnRef = useRef<HTMLButtonElement>(null)
 
   const filterVal = column.getFilterValue() as ColFilterValue | undefined
+
   const isActive =
     filterVal?.conditions.some(c => c.op === 'isEmpty' || c.op === 'isNotEmpty' || c.value.trim() !== '') ?? false
 
@@ -230,10 +241,12 @@ function FilterInput({ column }: { column: Header<any, unknown>['column'] }) {
 
   // Show a compact summary when a filter is active
   let summary = ''
+
   if (isActive && filterVal) {
     const parts = filterVal.conditions
       .filter(c => c.op === 'isEmpty' || c.op === 'isNotEmpty' || c.value.trim() !== '')
       .map(c => (c.op === 'isEmpty' || c.op === 'isNotEmpty') ? c.op : `"${c.value}"`)
+
     summary = parts.join(` ${filterVal.combinator.toUpperCase()} `)
   }
 

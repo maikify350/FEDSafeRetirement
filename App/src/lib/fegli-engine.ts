@@ -33,7 +33,9 @@ export interface FegliResult {
 
 function calculateBIA(salary: number): { base: number; total: number } {
   const roundedBase = Math.ceil(salary / 1000) * 1000
-  return { base: roundedBase, total: roundedBase + 2000 }
+
+  
+return { base: roundedBase, total: roundedBase + 2000 }
 }
 
 export function getOPMLetter(hasA: boolean, bMult: number, hasC: boolean): string {
@@ -45,12 +47,16 @@ export function getOPMLetter(hasA: boolean, bMult: number, hasC: boolean): strin
     4: ['S', 'T', 'U', 'V'],
     5: ['W', 'X', 'Y', 'Z'],
   }
+
   const col = !hasA && !hasC ? 0 : hasA && !hasC ? 1 : !hasA && hasC ? 2 : 3
-  return map[bMult][col]
+
+  
+return map[bMult][col]
 }
 
 function getComponentsFromLetter(letter: string): { bMult: number; hasA: boolean; hasC: boolean } {
   let bMult = 0
+
   if ('CDEF'.includes(letter)) bMult = 0
   else if ('GHIJ'.includes(letter)) bMult = 1
   else if ('KLMN'.includes(letter)) bMult = 2
@@ -60,7 +66,9 @@ function getComponentsFromLetter(letter: string): { bMult: number; hasA: boolean
 
   const hasA = 'DFHJLNPRTVXZ'.includes(letter)
   const hasC = 'EFIJMNQRUVYZ'.includes(letter)
-  return { bMult, hasA, hasC }
+
+  
+return { bMult, hasA, hasC }
 }
 
 function decipherActiveCode(
@@ -70,6 +78,7 @@ function decipherActiveCode(
   rateTable: FegliRateBand[]
 ): string {
   const rates = rateTable.find(r => age >= r.age_min && age <= r.age_max)
+
   if (!rates) return 'C0'
 
   const bia = calculateBIA(salary)
@@ -83,6 +92,7 @@ function decipherActiveCode(
       for (let a = 0; a <= 1; a++) {
         const hasA = a === 1
         const hasC = c > 0
+
         const test =
           basicPrem +
           a * rates.opt_a +
@@ -91,6 +101,7 @@ function decipherActiveCode(
 
         if (test > biWeeklyCost + 0.05) continue
         const diff = biWeeklyCost - test
+
         if (diff < minDiff) {
           minDiff = diff
           bestMatch = getOPMLetter(hasA, b, hasC) + c
@@ -98,7 +109,9 @@ function decipherActiveCode(
       }
     }
   }
-  return bestMatch
+
+  
+return bestMatch
 }
 
 /** Strip currency symbols/commas then parse as float */
@@ -128,6 +141,7 @@ export function executeFegliCalculation(
 
   // Resolve FEGLI code
   let finalCode = 'C0'
+
   if (existingCode !== '') {
     finalCode = existingCode.toUpperCase()
   } else if (biWeeklyCost > 0) {

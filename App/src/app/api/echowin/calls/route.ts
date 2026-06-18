@@ -5,7 +5,9 @@
  * Query params: page, limit, agentId, after (ISO date)
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { listCalls } from '@/lib/echowin/client'
 
 export async function GET(req: NextRequest) {
@@ -18,9 +20,13 @@ export async function GET(req: NextRequest) {
       agentId: searchParams.get('agentId') ?? undefined,
       after:   searchParams.get('after')   ?? undefined,
     })
-    return NextResponse.json(data)
+
+    
+return NextResponse.json(data)
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: msg }, { status: 500 })
+
+    
+return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

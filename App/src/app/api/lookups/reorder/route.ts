@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient } from '@/utils/supabase/server'
 
 export async function PATCH(request: NextRequest) {
@@ -29,6 +31,7 @@ export async function PATCH(request: NextRequest) {
   const results = await Promise.all(promises)
   
   const hasErrors = results.some(r => r.error)
+
   if (hasErrors) {
     return NextResponse.json({ error: 'Some updates failed' }, { status: 500 })
   }

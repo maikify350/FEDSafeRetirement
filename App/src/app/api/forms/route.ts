@@ -4,7 +4,9 @@
  * POST /api/forms               — Create (admin only)
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 
 const DATA_COLS = 'id, form_id, aka, title, description, tags, source_url, instruct_pages, fill_pages, form_url, summary, explainer_url, mapping'
@@ -19,29 +21,35 @@ export async function GET(request: NextRequest) {
   let query = supabase.from('forms').select(selectCols)
 
   const tags = params.get('tags')
+
   if (tags) query = query.ilike('tags', `%${tags}%`)
 
   const formId = params.get('form_id')
+
   if (formId) query = query.eq('form_id', formId)
 
   const { data, error } = await query.order('form_id', { ascending: true })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data ?? [])
+  
+return NextResponse.json(data ?? [])
 }
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
+
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdminClient()
   const { data: userRow } = await admin.from('users').select('role').eq('id', authUser.id).single()
+
   if (userRow?.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 })
   }
 
   const body = await request.json()
+
   if (!body.form_id?.trim()) return NextResponse.json({ error: 'form_id is required' }, { status: 400 })
   if (!body.title?.trim()) return NextResponse.json({ error: 'title is required' }, { status: 400 })
 
@@ -67,5 +75,6 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data, { status: 201 })
+  
+return NextResponse.json(data, { status: 201 })
 }

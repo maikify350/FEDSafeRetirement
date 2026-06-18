@@ -11,7 +11,9 @@
  * CORS: open to all origins so the Chrome extension on Act.com can reach it.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createAdminClient } from '@/utils/supabase/server'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -43,6 +45,7 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     const salary = rawFields.salaryamount
     const retireAge = rawFields.feglicostage
+
     if (!salary || !retireAge) {
       return NextResponse.json(
         {
@@ -60,6 +63,7 @@ export async function POST(request: NextRequest) {
 
     // Fetch annuitant rate table from Supabase
     const admin = createAdminClient()
+
     const { data: rateTable, error: rateError } = await admin
       .from('fegli_rates_annuitant')
       .select('id, age_min, age_max, basic_75, basic_50, basic_0, opt_a, opt_b, opt_c')
@@ -87,8 +91,10 @@ export async function POST(request: NextRequest) {
     )
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e)
+
     console.error('[/api/proxy/calculateretirement] Error:', msg)
-    return NextResponse.json(
+    
+return NextResponse.json(
       { success: false, error: msg },
       { status: 500, headers: CORS }
     )

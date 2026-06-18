@@ -12,7 +12,9 @@
  * Admin-only (matches the rest of the explainer routes).
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 
 const STATE_NAMES: Record<string, string> = {
@@ -51,6 +53,7 @@ function buildDefaultScript(event: {
     /zoom|virtual|webinar|online/i.test(event.description || '')
 
   const stateName = STATE_NAMES[event.state_fk] || event.state_fk
+
   const where = isVirtual
     ? 'online — wherever you are in the country'
     : `in ${event.city}, ${stateName}`
@@ -83,8 +86,10 @@ async function requireAdmin(request: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
+
     if (user) {
       const { data: row } = await admin.from('users').select('role').eq('id', user.id).single()
+
       isAdmin = row?.role === 'admin'
     }
   } catch { /* fall through */ }
@@ -94,15 +99,19 @@ async function requireAdmin(request: NextRequest) {
   const origin  = request.headers.get('origin')  || ''
   const referer = request.headers.get('referer') || ''
   const host    = request.headers.get('host')    || ''
+
   if (origin.includes(host) || referer.includes(host)) return admin
-  return null
+  
+return null
 }
 
 export async function GET(request: NextRequest, ctx: Ctx) {
   const { id } = await ctx.params
+
   if (!id) return NextResponse.json({ error: 'event id is required' }, { status: 400 })
 
   const admin = await requireAdmin(request)
+
   if (!admin) return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 })
 
   const { data: event, error } = await admin
@@ -118,6 +127,7 @@ export async function GET(request: NextRequest, ctx: Ctx) {
   const saved = (typeof (event as any).explainer_script === 'string' && (event as any).explainer_script.trim().length > 0)
     ? (event as any).explainer_script as string
     : null
+
   const savedSpeed = Number((event as any).explainer_speed)
   const speed = Number.isFinite(savedSpeed) && savedSpeed > 0 ? savedSpeed : 1.0
   const voice    = typeof (event as any).explainer_voice    === 'string' && (event as any).explainer_voice.length    > 0 ? (event as any).explainer_voice    : 'onyx'
@@ -135,29 +145,37 @@ export async function GET(request: NextRequest, ctx: Ctx) {
 
 export async function PUT(request: NextRequest, ctx: Ctx) {
   const { id } = await ctx.params
+
   if (!id) return NextResponse.json({ error: 'event id is required' }, { status: 400 })
 
   const admin = await requireAdmin(request)
+
   if (!admin) return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 })
 
   let body: any
+
   try { body = await request.json() } catch { body = null }
+
   if (!body || typeof body.script !== 'string') {
     return NextResponse.json({ error: 'Body must be { script: string }' }, { status: 400 })
   }
 
   const trimmed = body.script.trim()
+
   // Empty string clears the override and reverts to the default template.
   const value = trimmed.length === 0 ? null : body.script
 
   const VALID_PROVIDERS = ['openai', 'elevenlabs']
   const updates: Record<string, any> = { explainer_script: value }
+
   if (typeof body.speed    === 'number' && Number.isFinite(body.speed)) {
     updates.explainer_speed = Math.min(2.0, Math.max(0.5, body.speed))
   }
+
   if (typeof body.voice    === 'string' && body.voice.length > 0) {
     updates.explainer_voice = body.voice
   }
+
   if (typeof body.provider === 'string' && VALID_PROVIDERS.includes(body.provider)) {
     updates.explainer_provider = body.provider
   }
@@ -168,5 +186,6 @@ export async function PUT(request: NextRequest, ctx: Ctx) {
     .eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ ok: true, cleared: value === null, speed: updates.explainer_speed })
+  
+return NextResponse.json({ ok: true, cleared: value === null, speed: updates.explainer_speed })
 }

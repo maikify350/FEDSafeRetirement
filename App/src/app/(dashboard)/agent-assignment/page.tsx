@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import AgentAssignmentView from '@/views/agent-assignment/AgentAssignmentView'
 
 export const metadata: Metadata = {

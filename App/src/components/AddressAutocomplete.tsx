@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
+
 import MuiAutocomplete from '@mui/material/Autocomplete'
 import CircularProgress from '@mui/material/CircularProgress'
+
 import CustomTextField from '@core/components/mui/TextField'
 
 type Prediction = {
@@ -37,7 +39,9 @@ interface AddressAutocompleteProps {
  */
 function isPOBox(input: string): boolean {
   const normalized = input.trim().toUpperCase().replace(/\./g, '').replace(/\s+/g, ' ')
-  return (
+
+  
+return (
     normalized.startsWith('PO BOX') ||
     normalized.startsWith('P O BOX') ||
     normalized.startsWith('POBOX') ||
@@ -83,7 +87,9 @@ export default function AddressAutocomplete({
   useEffect(() => {
     if (autoFocus && inputRef.current) {
       const t = setTimeout(() => inputRef.current?.focus(), 80)
-      return () => clearTimeout(t)
+
+      
+return () => clearTimeout(t)
     }
   }, [autoFocus])
 
@@ -92,18 +98,22 @@ export default function AddressAutocomplete({
 
     // Detect PO Box — disable autocomplete for manual entry
     const poBoxDetected = isPOBox(input)
+
     setIsPOBoxDetected(poBoxDetected)
 
     if (input.length < 3 || poBoxDetected) {
       setOptions([])
-      return
+      
+return
     }
 
     debounceRef.current = setTimeout(async () => {
       setLoading(true)
+
       try {
         const res = await fetch(`/api/places/autocomplete?input=${encodeURIComponent(input)}`)
         const data = await res.json()
+
         setOptions(data.predictions ?? [])
       } catch {
         setOptions([])
@@ -115,6 +125,7 @@ export default function AddressAutocomplete({
 
   const handleSelect = useCallback(async (prediction: Prediction | null) => {
     if (!prediction) return
+
     // Update the text field immediately with the selected description
     onChange(prediction.description)
     setInputValue(prediction.description)
@@ -124,6 +135,8 @@ export default function AddressAutocomplete({
     try {
       const res = await fetch(`/api/places/details?placeId=${encodeURIComponent(prediction.place_id)}`)
       const place: PlaceResult = await res.json()
+
+
       // Override street with the short form (e.g. "123 Main St" not full description)
       if (place.street) onChange(place.street)
       setInputValue(place.street || prediction.description)

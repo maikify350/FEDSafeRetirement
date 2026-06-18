@@ -8,7 +8,9 @@
  *   https://fedsafe-retirement.vercel.app/api/echowin/webhook
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createAdminClient } from '@/utils/supabase/server'
 import { parseCallTranscript } from '@/lib/echowin/parser'
 import { storeRecording } from '@/lib/echowin/recordings'
@@ -23,6 +25,7 @@ export async function POST(req: NextRequest) {
   // so it never breaks ingestion until you opt in. To enable: set the env var and
   // append ?key=<secret> to the webhook URL configured in echowin.
   const webhookSecret = process.env.ECHOWIN_WEBHOOK_SECRET
+
   if (webhookSecret && req.nextUrl.searchParams.get('key') !== webhookSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -31,6 +34,7 @@ export async function POST(req: NextRequest) {
   // NOT the full call object. Resolve the real call from echowin's API using
   // whatever identifier was sent — a call id if present, otherwise the phone.
   let body: Record<string, any>
+
   try {
     body = await req.json()
   } catch {
@@ -42,12 +46,14 @@ export async function POST(req: NextRequest) {
   const phone  = body.phone ?? body.from ?? null
 
   let payload: EchoCall | null = null
+
   try {
     if (callId) {
       payload = await getCall(String(callId))
     } else if (phone) {
       // echowin ignores `after`, so scan the most recent calls for this number.
       const { data } = await listCalls({ limit: 30 })
+
       payload = data.find(c => digits(c.from) === digits(String(phone))) ?? null
     }
   } catch (err) {
@@ -77,8 +83,10 @@ export async function POST(req: NextRequest) {
   // NOT pull contact names — for unparsed calls they're caller-ID junk.)
   const firstName = parsed.firstName, lastName = parsed.lastName
   let email = parsed.email
+
   if (!email) {
     const contact = await findContactByNumber(payload.from)
+
     if (contact?.email) email = contact.email
   }
 
@@ -126,7 +134,8 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     console.error('[echowin/webhook] Supabase upsert error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    
+return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
   console.log(`[echowin/webhook] Saved: ${payload.id} — ${[firstName, lastName].filter(Boolean).join(' ') || payload.from} → ${parsed.conferenceLocation ?? 'unknown location'}`)

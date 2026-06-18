@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
 
 /**
  * GET /api/places/cities?input=Fairf&state=Virginia
@@ -20,14 +21,17 @@ export async function GET(req: NextRequest) {
   }
 
   const apiKey = process.env.GOOGLE_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_API_KEY
+
   if (!apiKey) {
     return NextResponse.json({ error: 'Google API key not configured' }, { status: 500 })
   }
 
   try {
     const url = new URL('https://maps.googleapis.com/maps/api/place/autocomplete/json')
+
     // Combine city input with state name so Google scopes results correctly
     const queryText = state ? `${input}, ${state}, US` : `${input}, US`
+
     url.searchParams.set('input', queryText)
     url.searchParams.set('types', '(cities)')
     url.searchParams.set('components', 'country:us')
@@ -42,6 +46,7 @@ export async function GET(req: NextRequest) {
       (data.predictions ?? []).map((p: { place_id: string; description: string; terms?: { value: string }[] }) => ({
         place_id: p.place_id,
         description: p.description,
+
         // "terms[0]" is the city name (e.g. "Fairfax" from "Fairfax, Virginia, USA")
         city: p.terms?.[0]?.value ?? p.description.split(',')[0].trim(),
       }))
@@ -49,6 +54,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ predictions })
   } catch (err) {
     console.error('[places/cities] Error:', err)
-    return NextResponse.json({ predictions: [] }, { status: 500 })
+    
+return NextResponse.json({ predictions: [] }, { status: 500 })
   }
 }

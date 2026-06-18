@@ -14,6 +14,7 @@ export async function storeRecording(
 ): Promise<string> {
   try {
     const res = await fetch(echowinUrl)
+
     if (!res.ok) throw new Error(`echowin fetch ${res.status}`)
 
     const buffer = Buffer.from(await res.arrayBuffer())
@@ -31,9 +32,12 @@ export async function storeRecording(
     if (error) throw error
 
     const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
-    return data.publicUrl
+
+    
+return data.publicUrl
   } catch (err) {
     console.error('[echowin/recordings] storage failed, using original URL:', err)
-    return echowinUrl
+    
+return echowinUrl
   }
 }

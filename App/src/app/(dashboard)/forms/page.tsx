@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import FormsView from '@/views/forms/FormsView'
 
 export const metadata: Metadata = {

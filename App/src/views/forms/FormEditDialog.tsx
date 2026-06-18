@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
@@ -14,6 +15,7 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import CircularProgress from '@mui/material/CircularProgress'
+
 import CustomTextField from '@core/components/mui/TextField'
 import EntityEditDialog from '@/components/EntityEditDialog'
 import ConfirmDialog from '@/components/ConfirmDialog'
@@ -97,6 +99,7 @@ export default function FormEditDialog({ open, onClose, form, onSaved, isAdmin }
       setFields({ ...EMPTY })
       setMappingJson('[]')
     }
+
     setMappingError('')
     setDirty(false)
     setError('')
@@ -111,16 +114,25 @@ export default function FormEditDialog({ open, onClose, form, onSaved, isAdmin }
 
   // ── PDF Upload ──────────────────────────────────────────────────────────────
   const uploadPdf = useCallback(async (file: File) => {
-    if (!file.name.toLowerCase().endsWith('.pdf')) { setError('Only PDF files are accepted'); return }
+    if (!file.name.toLowerCase().endsWith('.pdf')) { setError('Only PDF files are accepted'); 
+
+return }
+
     setUploading(true)
     setError('')
+
     try {
       const fd = new FormData()
+
       fd.append('file', file)
       fd.append('form_id', fields.form_id || 'unknown')
       const res = await fetch('/api/forms/upload', { method: 'POST', body: fd })
       const data = await res.json()
-      if (!res.ok) { setError(data.error || `Upload failed (HTTP ${res.status})`); return }
+
+      if (!res.ok) { setError(data.error || `Upload failed (HTTP ${res.status})`); 
+
+return }
+
       setFields(prev => ({ ...prev, form_url: data.url }))
       setDirty(true)
     } catch (e: any) {
@@ -134,6 +146,7 @@ export default function FormEditDialog({ open, onClose, form, onSaved, isAdmin }
     e.preventDefault()
     setDragOver(false)
     const file = e.dataTransfer.files?.[0]
+
     if (file) uploadPdf(file)
   }, [uploadPdf])
 
@@ -141,44 +154,57 @@ export default function FormEditDialog({ open, onClose, form, onSaved, isAdmin }
   const parseCsvToMapping = (text: string) => {
     const lines = text.split(/\r?\n/).filter(l => l.trim())
     const result: { pdfField: string; crmField: string }[] = []
+
     lines.slice(1).forEach(line => {
       const cols: string[] = []
       let cur = '', inQ = false
+
       for (const ch of line) {
         if (ch === '"') inQ = !inQ
         else if (ch === ',' && !inQ) { cols.push(cur); cur = '' }
         else cur += ch
       }
+
       cols.push(cur)
       const pdfField = (cols[0] ?? '').trim()
       const crmField = (cols[1] ?? '').trim()
+
       if (pdfField) result.push({ pdfField, crmField })
     })
-    return result
+    
+return result
   }
 
   const handleCsvUpload = (file: File) => {
-    if (!file.name.toLowerCase().endsWith('.csv')) { setError('Only .csv files are accepted here'); return }
+    if (!file.name.toLowerCase().endsWith('.csv')) { setError('Only .csv files are accepted here'); 
+
+return }
+
     const reader = new FileReader()
+
     reader.onload = (e) => {
       const text = e.target?.result as string
       const rows = parseCsvToMapping(text)
       const json = JSON.stringify(rows, null, 2)
+
       setMappingJson(json)
       setDirty(true)
       setMappingError('')
     }
+
     reader.readAsText(file)
   }
 
   const handleCsvDrop = (e: React.DragEvent) => {
     e.preventDefault(); setCsvDragOver(false)
     const file = e.dataTransfer.files?.[0]
+
     if (file) handleCsvUpload(file)
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
+
     if (file) uploadPdf(file)
   }
 
@@ -186,10 +212,15 @@ export default function FormEditDialog({ open, onClose, form, onSaved, isAdmin }
   const handleGenerateExplainer = async () => {
     if (!form?.id) return
     setSummarizing(true); setError('')
+
     try {
       const res = await fetch(`/api/forms/${form.id}/summarize`, { method: 'POST' })
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Generation failed'); return }
+
+      if (!res.ok) { setError(data.error || 'Generation failed'); 
+
+return }
+
       setFields(prev => ({ ...prev, summary: data.summary, explainer_url: data.explainer_url }))
       setDirty(true)
       setSuccess(true)
@@ -198,27 +229,44 @@ export default function FormEditDialog({ open, onClose, form, onSaved, isAdmin }
 
   // ── Save ────────────────────────────────────────────────────────────────────
   const handleSave = async () => {
-    if (!fields.form_id.trim()) { setError('Form ID is required'); return }
-    if (!fields.title.trim()) { setError('Title is required'); return }
+    if (!fields.form_id.trim()) { setError('Form ID is required'); 
+
+return }
+
+    if (!fields.title.trim()) { setError('Title is required'); 
+
+return }
+
     // Validate mapping JSON
     let parsedMapping: object[] = []
+
     try {
       parsedMapping = JSON.parse(mappingJson)
       if (!Array.isArray(parsedMapping)) throw new Error('Must be a JSON array')
     } catch (e: any) {
-      setError(`Mapping JSON is invalid: ${e.message}`); return
+      setError(`Mapping JSON is invalid: ${e.message}`); 
+
+return
     }
+
     setSaving(true); setError('')
+
     try {
       const url = form ? `/api/forms/${form.id}` : '/api/forms'
       const method = form ? 'PUT' : 'POST'
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...fields, mapping: parsedMapping, version_no: form?.version_no ?? 1 }),
       })
+
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Failed to save'); return }
+
+      if (!res.ok) { setError(data.error || 'Failed to save'); 
+
+return }
+
       setSuccess(true); setDirty(false); onSaved?.()
     } catch { setError('Network error') } finally { setSaving(false) }
   }
@@ -227,12 +275,18 @@ export default function FormEditDialog({ open, onClose, form, onSaved, isAdmin }
   const handleDelete = async () => {
     if (!form) return
     setDeleting(true); setError('')
+
     try {
       const res = await fetch(`/api/forms/${form.id}`, { method: 'DELETE' })
+
       if (!res.ok) {
         const data = await res.json()
-        setError(data.error || 'Failed to delete'); return
+
+        setError(data.error || 'Failed to delete'); 
+
+return
       }
+
       setConfirmDelete(false)
       onSaved?.()
       onClose()
@@ -304,6 +358,7 @@ export default function FormEditDialog({ open, onClose, form, onSaved, isAdmin }
                     if (duration <= 0) return
                     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
                     const pct = (e.clientX - rect.left) / rect.width
+
                     seek(pct * duration)
                   }}
                   sx={{
@@ -505,7 +560,9 @@ export default function FormEditDialog({ open, onClose, form, onSaved, isAdmin }
             {(() => {
               try {
                 const arr = JSON.parse(mappingJson)
-                return Array.isArray(arr) && arr.length > 0
+
+                
+return Array.isArray(arr) && arr.length > 0
                   ? <Chip label={`${arr.length} rule${arr.length > 1 ? 's' : ''}`} size='small' color='success' variant='tonal' sx={{ fontSize: 10, height: 18 }} />
                   : <Chip label='empty' size='small' variant='outlined' sx={{ fontSize: 10, height: 18 }} />
               } catch { return <Chip label='invalid JSON' size='small' color='error' variant='tonal' sx={{ fontSize: 10, height: 18 }} /> }
@@ -539,7 +596,9 @@ export default function FormEditDialog({ open, onClose, form, onSaved, isAdmin }
             </Box>
           )}
           <input ref={csvInputRef} type='file' accept='.csv' hidden
-            onChange={e => { const f = e.target.files?.[0]; if (f) handleCsvUpload(f) }} />
+            onChange={e => { const f = e.target.files?.[0];
+
+ if (f) handleCsvUpload(f) }} />
 
           <Typography variant='caption' color='text.disabled' sx={{ display: 'block', mb: 1, lineHeight: 1.4 }}>
             Each entry: <code style={{fontSize:10}}>{'{\"pdfField\": \" Name. Name\", \"crmField\": \"lastname, firstname\"}'}</code>

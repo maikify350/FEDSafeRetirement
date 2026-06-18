@@ -3,7 +3,9 @@
  * GET /api/leads/[id] – Fetch a single lead record
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient } from '@/utils/supabase/server'
 
 export async function GET(
@@ -47,6 +49,7 @@ export async function PUT(
   ]
 
   const updates: Record<string, any> = {}
+
   for (const key of allowed) {
     if (key in body) {
       updates[key] = body[key]
@@ -59,6 +62,7 @@ export async function PUT(
 
   // Get current user for audit
   const { data: { user } } = await supabase.auth.getUser()
+
   updates.mod_by = user?.email ?? 'system'
 
   const { data, error } = await supabase
@@ -70,7 +74,8 @@ export async function PUT(
 
   if (error) {
     console.error('[API /leads/:id] Update error:', error.message)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    
+return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
   return NextResponse.json(data)

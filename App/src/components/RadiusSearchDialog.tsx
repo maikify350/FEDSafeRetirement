@@ -11,6 +11,7 @@
  */
 
 import { useState, useCallback, useEffect, useMemo } from 'react'
+
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
@@ -29,6 +30,7 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import Collapse from '@mui/material/Collapse'
 import ToggleButton from '@mui/material/ToggleButton'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+
 import AddressAutocomplete from '@/components/AddressAutocomplete'
 import RadiusMapDialog from '@/components/RadiusMapDialog'
 import { useLeadsData } from '@/hooks/useLeadsData'
@@ -102,6 +104,7 @@ const COL_LABELS: Record<string, string> = {
 }
 
 let _nextId = 0
+
 function makeId() { return `zone-${++_nextId}-${Date.now()}` }
 
 export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToCollection }: RadiusSearchDialogProps) {
@@ -130,19 +133,25 @@ export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToC
   // ── Filter descriptions ──────────────────────────────────────────────
   const activeFilterDescriptions = useMemo(() => {
     const desc: { key: string; label: string; icon: string }[] = []
+
     if (stateFilter !== 'all') desc.push({ key: 'state', label: `State = ${stateFilter}`, icon: 'tabler-map-pin' })
     if (genderFilter !== 'all') desc.push({ key: 'gender', label: `Gender = ${genderFilter === 'M' ? 'Male' : 'Female'}`, icon: 'tabler-users' })
     if (favoriteFilter) desc.push({ key: 'favorite', label: 'Favorites only', icon: 'tabler-star-filled' })
     if (debouncedSearch.trim()) desc.push({ key: 'search', label: `Search: "${debouncedSearch.trim()}"`, icon: 'tabler-search' })
+
     for (const cf of columnFilters) {
       const val = cf.value as ColFilterValue
+
       if (!val?.conditions) continue
       const active = val.conditions.filter(isConditionActive)
+
       if (active.length === 0) continue
       const colLabel = COL_LABELS[cf.id as string] ?? cf.id
+
       for (const cond of active) {
         const opLabel = OP_LABELS[cond.op] ?? cond.op
         const valueStr = cond.value.trim()
+
         if (cond.op === 'isEmpty' || cond.op === 'isNotEmpty') {
           desc.push({ key: `${cf.id}-${cond.op}`, label: `${colLabel} ${opLabel}`, icon: 'tabler-filter' })
         } else {
@@ -150,7 +159,9 @@ export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToC
         }
       }
     }
-    return desc
+
+    
+return desc
   }, [stateFilter, genderFilter, favoriteFilter, debouncedSearch, columnFilters])
 
   const hasActiveFilters = activeFilterDescriptions.length > 0
@@ -159,8 +170,10 @@ export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToC
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
+
       if (saved) {
         const p = JSON.parse(saved)
+
         if (p.searchMode) setSearchMode(p.searchMode)
         if (p.address) setAddress(p.address)
         if (p.radius) setRadius(p.radius)
@@ -186,13 +199,17 @@ export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToC
   const handleSearch = useCallback(async () => {
     if (searchMode === 'include' && !address.trim()) {
       setError('Please enter an address')
-      return
+      
+return
     }
+
     if (searchMode === 'exclude') {
       const filledZones = zones.filter(z => z.address.trim())
+
       if (filledZones.length === 0) {
         setError('Please enter at least one exclusion address')
-        return
+        
+return
       }
     }
 
@@ -205,7 +222,9 @@ export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToC
         ? columnFilters
             .filter(cf => {
               const val = cf.value as ColFilterValue
-              return val?.conditions?.some(isConditionActive)
+
+              
+return val?.conditions?.some(isConditionActive)
             })
             .map(cf => ({ id: cf.id, value: cf.value }))
         : []
@@ -214,15 +233,20 @@ export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToC
       // and pass it as the direct `state` param (uses btree index → 24x faster
       // than ILIKE through the filters array).
       let effectiveState = mergeFilters && stateFilter !== 'all' ? stateFilter : ''
+
       if (!effectiveState && mergeFilters) {
         const stateColFilter = activeFilters.find(f => f.id === 'facility_state')
+
         if (stateColFilter) {
           const val = stateColFilter.value as ColFilterValue
+
           const eqCond = val?.conditions?.find(
             c => (c.op === 'contains' || c.op === 'equals') && c.value.trim().length === 2
           )
+
           if (eqCond) {
             effectiveState = eqCond.value.trim().toUpperCase()
+
             // Remove from filters array to avoid double-filtering
             activeFilters = activeFilters.filter(f => f.id !== 'facility_state')
           }
@@ -244,6 +268,7 @@ export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToC
 
       if (searchMode === 'exclude') {
         const filledZones = zones.filter(z => z.address.trim())
+
         params = new URLSearchParams({
           mode: 'exclude',
           zones: JSON.stringify(filledZones.map(z => ({ address: z.address, radius: z.radius }))),
@@ -263,7 +288,8 @@ export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToC
 
       if (!res.ok || json.error) {
         setError(json.error || 'Search failed')
-        return
+        
+return
       }
 
       // Store the search params so we can re-fetch with full pageSize later
@@ -280,6 +306,7 @@ export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToC
   const fetchAllRows = useCallback(async (): Promise<any[] | null> => {
     if (!resultData?._searchParams) return null
     const total = resultData.total
+
     if (total === 0) return []
 
     const BATCH = 500
@@ -288,28 +315,37 @@ export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToC
 
     // Fetch batches in parallel (max 4 at a time to avoid overwhelming)
     const concurrency = 4
+
     for (let start = 0; start < batchCount; start += concurrency) {
       const batch = Array.from(
         { length: Math.min(concurrency, batchCount - start) },
         (_, i) => {
           const pageIdx = start + i
           const params = new URLSearchParams(resultData._searchParams ?? '')
+
           params.set('page', String(pageIdx))
           params.set('pageSize', String(BATCH))
           params.set('stateCounts', 'false')
-          return fetch(`/api/leads/radius?${params}`).then(r => r.json())
+          
+return fetch(`/api/leads/radius?${params}`).then(r => r.json())
         }
       )
+
       const results = await Promise.all(batch)
+
       for (const json of results) {
         if (json.error) {
           setError(json.error)
-          return null
+          
+return null
         }
+
         allData.push(...(json.data ?? []))
       }
     }
-    return allData
+
+    
+return allData
   }, [resultData])
 
   // Pass results to parent — export handler will fetch full data when needed
@@ -320,6 +356,7 @@ export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToC
       ...resultData,
       _searchAddress: searchMode === 'include' ? address : zones.map(z => z.address).join(' | '),
     }
+
     onResults(fullResult as any)
     onClose()
   }, [resultData, address, zones, searchMode, onResults, onClose])
@@ -328,8 +365,10 @@ export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToC
     if (!resultData || !onSaveToCollection) return
 
     setLoading(true)
+
     try {
       const allData = await fetchAllRows()
+
       if (!allData) return
 
       const fullResult = {
@@ -337,6 +376,7 @@ export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToC
         data: allData,
         _searchAddress: searchMode === 'include' ? address : zones.map(z => z.address).join(' | '),
       }
+
       onSaveToCollection(fullResult as any)
       onClose()
     } catch {
@@ -680,6 +720,7 @@ export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToC
                 </Box>
               </>
             ) : (
+
               /* ── INCLUDE MODE: Simple count ── */
               <Box
                 sx={{

@@ -1,5 +1,6 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+
+import { createServerClient } from '@supabase/ssr'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -41,15 +42,19 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && !isAuthRoute && !isApiRoute) {
     const url = request.nextUrl.clone()
+
     url.pathname = '/login'
-    return NextResponse.redirect(url)
+    
+return NextResponse.redirect(url)
   }
 
   // Redirect authenticated users away from auth pages
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone()
+
     url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+    
+return NextResponse.redirect(url)
   }
 
   return supabaseResponse

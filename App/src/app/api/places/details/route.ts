@@ -15,13 +15,16 @@ export async function GET(req: Request) {
   }
 
   const apiKey = process.env.GOOGLE_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_API_KEY
+
   if (!apiKey) {
     return NextResponse.json({ error: 'Google API key not configured' }, { status: 500 })
   }
 
   try {
     const url = new URL('https://maps.googleapis.com/maps/api/place/details/json')
+
     url.searchParams.set('place_id', placeId)
+
     // Request both address_components AND formatted_address so we can recover
     // the street number if the address_components don't include it
     url.searchParams.set('fields', 'address_components,formatted_address')
@@ -45,6 +48,7 @@ export async function GET(req: Request) {
 
     for (const c of components) {
       const hasType = (t: string) => c.types.includes(t)
+
       if (hasType('street_number'))                   streetNumber = c.long_name
       else if (hasType('route'))                      route = c.long_name
       else if (hasType('locality'))                   city = c.long_name
@@ -59,6 +63,7 @@ export async function GET(req: Request) {
     // e.g. "1234 Main St, Springfield, IL 62701, USA" → streetNumber = "1234"
     if (!streetNumber && route && data.result.formatted_address) {
       const match = (data.result.formatted_address as string).match(/^(\d+[-\w]*)\s/)
+
       if (match) streetNumber = match[1]
     }
 
@@ -72,6 +77,7 @@ export async function GET(req: Request) {
     })
   } catch (err) {
     console.error('[places/details] Error:', err)
-    return NextResponse.json({ error: 'Failed to fetch place details' }, { status: 500 })
+    
+return NextResponse.json({ error: 'Failed to fetch place details' }, { status: 500 })
   }
 }

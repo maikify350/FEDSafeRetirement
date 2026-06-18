@@ -116,6 +116,7 @@ const verticalMenuData = (): VerticalMenuDataType[] => [
     label: 'User Management',
     href: '/users',
     icon: 'tabler-user-cog',
+
     // TODO: conditionally show based on admin role
   },
   {

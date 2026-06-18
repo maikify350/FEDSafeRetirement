@@ -16,12 +16,14 @@ export async function GET(req: Request) {
   }
 
   const apiKey = process.env.GOOGLE_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_API_KEY
+
   if (!apiKey) {
     return NextResponse.json({ error: 'Google API key not configured' }, { status: 500 })
   }
 
   try {
     const url = new URL('https://maps.googleapis.com/maps/api/place/autocomplete/json')
+
     url.searchParams.set('input', input)
     url.searchParams.set('types', 'address')
     url.searchParams.set('language', 'en')
@@ -33,6 +35,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ predictions: data.predictions ?? [] })
   } catch (err) {
     console.error('[places/autocomplete] Error:', err)
-    return NextResponse.json({ predictions: [] }, { status: 500 })
+    
+return NextResponse.json({ predictions: [] }, { status: 500 })
   }
 }

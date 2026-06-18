@@ -6,18 +6,24 @@
  * function, fills the PDF template via pdf-lib, and returns base64 PDF.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
-import path from 'path'
-import fs from 'fs'
-import { createAdminClient } from '@/utils/supabase/server'
+import path, { resolve } from 'path'
+
+import fs, { readFileSync } from 'fs'
+
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { PDFDocument, StandardFonts, PDFName, PDFBool, PDFTextField } from 'pdf-lib'
+
+import { createAdminClient } from '@/utils/supabase/server'
+
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const _fontkitMod = require('@pdf-lib/fontkit')
+
 // Next.js may bundle the ESM build (exports default) or the UMD build (direct export)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fontkit: any = _fontkitMod.default ?? _fontkitMod
-import { readFileSync } from 'fs'
-import { resolve } from 'path'
 
 // ── Chris's PDF Preparer API ────────────────────────────────────────────────
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -30,13 +36,16 @@ const PDF_Preparer_API = require('@/lib/pdfgen/cowboy_pdf_preparer_api.js')
 function parseCsvLine(line: string): string[] {
   const result: string[] = []
   let cur = '', inQuote = false
+
   for (const ch of line) {
     if (ch === '"')                  inQuote = !inQuote
     else if (ch === ',' && !inQuote) { result.push(cur); cur = '' }
     else                             cur += ch
   }
+
   result.push(cur)
-  return result
+  
+return result
 }
 
 PDF_Preparer_API.loadDocumentFieldMap = function (mapFileName: string) {
@@ -49,7 +58,9 @@ PDF_Preparer_API.loadDocumentFieldMap = function (mapFileName: string) {
     const parts    = parseCsvLine(line)
     const pdfField = (parts[0] ?? '').trim()
     const crmField = (parts[1] ?? '').trim()
-    return { pdfField, crmField }
+
+    
+return { pdfField, crmField }
   })
 }
 
@@ -89,11 +100,13 @@ function loadBundledJson(filename: string): unknown[] {
     path.resolve(process.cwd(), 'src/lib/pdfgen', filename),
     path.resolve(__dirname, '..', '..', '..', '..', 'lib/pdfgen', filename),
   ]
+
   for (const p of candidates) {
     if (fs.existsSync(p)) {
       return JSON.parse(fs.readFileSync(p, 'utf-8'))
     }
   }
+
   throw new Error(`Bundled rate file not found: ${filename}`)
 }
 
@@ -166,6 +179,7 @@ export async function OPTIONS() {
 export async function POST(req: NextRequest) {
   // ── Parse request ──────────────────────────────────────────────────────────
   let body: Record<string, unknown>
+
   try {
     body = await req.json()
   } catch {
@@ -186,6 +200,7 @@ export async function POST(req: NextRequest) {
   }
 
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
   if (!UUID_RE.test(contactId)) {
     return NextResponse.json(
       { success: false, error: `Invalid contactId: "${contactId}"`, code: 'INVALID_CONTACT_ID' },
@@ -194,6 +209,7 @@ export async function POST(req: NextRequest) {
   }
 
   const formKey = FORM_KEY_MAP[formRaw]
+
   if (!formKey) {
     return NextResponse.json(
       {
@@ -214,6 +230,7 @@ export async function POST(req: NextRequest) {
       `${origin}/api/blueprint/act-full?contactId=${encodeURIComponent(contactId)}`,
       { signal: AbortSignal.timeout(30_000) },
     )
+
     actFullData = await res.json() as Record<string, unknown>
 
     if (!actFullData.success) {
@@ -244,6 +261,7 @@ export async function POST(req: NextRequest) {
     sf3108:    'SF-3108',
     blueprint: 'Blueprint',
   }
+
   const supabaseFormId = FORM_ID_MAP[formKey]
 
   type FormRow = { form_id: string; form_url: string | null; mapping: { pdfField: string; crmField: string }[] | null }
@@ -261,7 +279,9 @@ export async function POST(req: NextRequest) {
         signal: AbortSignal.timeout(10_000),
       },
     )
+
     const rows = await formsRes.json() as FormRow[]
+
     formRecord = rows?.[0]
     if (!formRecord) throw new Error(`No Supabase record for form_id "${supabaseFormId}"`)
   } catch (e: unknown) {
@@ -275,6 +295,7 @@ export async function POST(req: NextRequest) {
   // Override loadDocumentFieldMap with the mapping rows from Supabase.
   // This is synchronous — Chris's prefill functions call it internally.
   const mappingRows = Array.isArray(formRecord.mapping) ? formRecord.mapping : []
+
   PDF_Preparer_API.loadDocumentFieldMap = function (_mapFileName: string) {
     return mappingRows
   }
@@ -322,8 +343,10 @@ export async function POST(req: NextRequest) {
   }
 
   let pdfBytes: Uint8Array
+
   try {
     const pdfRes = await fetch(formRecord.form_url, { signal: AbortSignal.timeout(30_000) })
+
     if (!pdfRes.ok) throw new Error(`Template download HTTP ${pdfRes.status}`)
     pdfBytes = new Uint8Array(await pdfRes.arrayBuffer())
   } catch (e: unknown) {
@@ -349,6 +372,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true })
+
     pdfDoc.registerFontkit(fontkit)
     const form   = pdfDoc.getForm()
     const allFields = form.getFields()
@@ -366,6 +390,7 @@ export async function POST(req: NextRequest) {
     if (isXfa || isNoFields) {
       // ── XFA Path: delegate to Python /api/fill-xfa ──────────────────────────
       fillEngine = 'pypdf'
+
       // Use the stable production domain — VERCEL_URL may point to preview deployments
       const selfOrigin = 'https://fedsafe-retirement.vercel.app'
 
@@ -396,24 +421,31 @@ export async function POST(req: NextRequest) {
     } else {
       // ── AcroForm Path: use pdf-lib (existing logic) ─────────────────────────
       const fieldIndex = new Map<string, string>()
+
       for (const f of allFields) {
         const actual  = f.getName()
         const trimmed = actual.trim()
+
         if (!fieldIndex.has(trimmed)) fieldIndex.set(trimmed, actual)
         if (!fieldIndex.has(actual))  fieldIndex.set(actual, actual)
       }
 
       for (const [key, val] of Object.entries(prefillResult.mappedFields)) {
         const actualName = fieldIndex.get(key) ?? fieldIndex.get(key.trim())
+
         if (!actualName) continue
         const strVal = String(val)
         let filled = false
+
         if (!filled) try { form.getTextField(actualName).setText(strVal);  filled = true } catch { /* not text */ }
+
         if (!filled) try {
           const cb = form.getCheckBox(actualName)
+
           ;['Yes','true','On','X'].includes(strVal) ? cb.check() : cb.uncheck()
           filled = true
         } catch { /* not checkbox */ }
+
         if (!filled) try { form.getRadioGroup(actualName).select(strVal); filled = true } catch { /* not radio */ }
         if (!filled) try { form.getDropdown(actualName).select(strVal);   filled = true } catch { /* not dropdown */ }
         if (filled) actualFilled++
@@ -428,10 +460,13 @@ export async function POST(req: NextRequest) {
         if (!(field instanceof PDFTextField)) continue
         const widgets = field.acroField.getWidgets()
         let isBold = false
+
         for (const w of widgets) {
           const da = w.getDefaultAppearance() ?? field.acroField.getDefaultAppearance() ?? ''
+
           if (/,Bold|Bold,|BoldMT|\bBd\b/i.test(da)) { isBold = true; break }
         }
+
         field.setFontSize(11)
         field.updateAppearances(isBold ? carlitoB : carlito)
       }

@@ -30,11 +30,14 @@ const PDF_Preparer_API = {
     normalizeReduction: function(raw) {
         const s = String(raw || '').replace(/[^0-9]/g, ' ').trim();
         const nums = s.split(/\s+/).map(Number).filter(n => !isNaN(n) && n >= 0);
+
         // Last numeric token is the percentage (e.g. "1 - 75%" -> [1, 75] -> 75)
         const pct = nums.length > 0 ? nums[nums.length - 1] : 75;
+
         if (pct === 50) return '50';
         if (pct === 0)  return '0';
-        return '75'; // default / 75%
+        
+return '75'; // default / 75%
     },
 
     // --- 1. DATA UTILITIES ---
@@ -45,21 +48,26 @@ const PDF_Preparer_API = {
             if (!row || typeof row !== "object" || Array.isArray(row)) return {};
 
             const normalized = {};
+
             Object.entries(row).forEach(([key, value]) => {
                 const normalizedKey = String(key || "").trim().toLowerCase();
+
                 if (!normalizedKey) return;
 
                 if (typeof value === "number") {
                     normalized[normalizedKey] = value;
-                    return;
+                    
+return;
                 }
 
                 if (typeof value === "string") {
                     const trimmedValue = value.trim();
+
                     normalized[normalizedKey] = trimmedValue === "" || Number.isNaN(Number(trimmedValue))
                         ? trimmedValue
                         : parseFloat(trimmedValue);
-                    return;
+                    
+return;
                 }
 
                 normalized[normalizedKey] = value;
@@ -79,26 +87,34 @@ const PDF_Preparer_API = {
         if (typeof input === "object") {
             if (Array.isArray(input.rows)) return this.normalizeRateRows(input.rows);
             if (Array.isArray(input.data)) return this.normalizeRateRows(input.data);
-            return this.normalizeRateRows([input]);
+            
+return this.normalizeRateRows([input]);
         }
 
         if (typeof input !== "string") return [];
 
         const trimmedInput = input.trim();
+
         if (trimmedInput === "") return [];
 
         if (trimmedInput.startsWith("{") || trimmedInput.startsWith("[")) {
             const parsedJson = JSON.parse(trimmedInput);
+
             if (Array.isArray(parsedJson)) return this.normalizeRateRows(parsedJson);
+
             if (parsedJson && typeof parsedJson === "object") {
                 if (Array.isArray(parsedJson.rows)) return this.normalizeRateRows(parsedJson.rows);
                 if (Array.isArray(parsedJson.data)) return this.normalizeRateRows(parsedJson.data);
-                return this.normalizeRateRows([parsedJson]);
+                
+return this.normalizeRateRows([parsedJson]);
             }
-            return [];
+
+            
+return [];
         }
 
         const lines = trimmedInput.split(/\r?\n/).filter(Boolean);
+
         if (lines.length === 0) return [];
 
         const headers = lines[0]
@@ -112,6 +128,7 @@ const PDF_Preparer_API = {
 
             headers.forEach((header, index) => {
                 const rawValue = values[index] ? values[index].trim() : "";
+
                 row[header] = rawValue === "" || Number.isNaN(Number(rawValue))
                     ? rawValue
                     : parseFloat(rawValue);
@@ -136,20 +153,25 @@ const PDF_Preparer_API = {
         if (!dateInput) return "";
 
         const rawValue = String(dateInput).trim();
+
         if (rawValue === "") return "";
 
         const shortMatch = rawValue.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+
         if (shortMatch) {
             return `${shortMatch[1].padStart(2, "0")}/${shortMatch[2].padStart(2, "0")}/${shortMatch[3]}`;
         }
 
         const dateObj = new Date(rawValue);
+
         if (Number.isNaN(dateObj.getTime())) return rawValue;
 
         const month = String(dateObj.getUTCMonth() + 1).padStart(2, "0");
         const day = String(dateObj.getUTCDate()).padStart(2, "0");
         const year = String(dateObj.getUTCFullYear());
-        return `${month}/${day}/${year}`;
+
+        
+return `${month}/${day}/${year}`;
     },
 
     getAppointmentDateInput: function(actJson, fallbackDate) {
@@ -180,7 +202,9 @@ const PDF_Preparer_API = {
         if (value === null || value === undefined || value === "") return fallback;
         const cleaned = String(value).replace(/[\$,\s]/g, "");
         const parsed = parseFloat(cleaned);
-        return Number.isFinite(parsed) ? parsed : fallback;
+
+        
+return Number.isFinite(parsed) ? parsed : fallback;
     },
 
     roundMoney: function(value) {
@@ -251,12 +275,15 @@ const PDF_Preparer_API = {
         const firstBlock = this.joinSpaceSeparated([first, middle]);
 
         if (last && firstBlock) return `${last}, ${firstBlock}`;
-        return last || firstBlock;
+        
+return last || firstBlock;
     },
 
     buildClientNameLastFirst: function(actJson) {
         const customFields = actJson.customFields || {};
-        return this.formatNameLastFirst(
+
+        
+return this.formatNameLastFirst(
             customFields.lastname,
             customFields.firstname,
             customFields.middlename
@@ -265,7 +292,9 @@ const PDF_Preparer_API = {
 
     buildSpouseNameLastFirst: function(actJson) {
         const customFields = actJson.customFields || {};
-        return this.formatNameLastFirst(
+
+        
+return this.formatNameLastFirst(
             customFields.spouse,
             customFields.spouse_first,
             customFields.spouse_middle
@@ -302,12 +331,15 @@ const PDF_Preparer_API = {
 
         if (cityState && postalCode) return `${cityState} ${postalCode}`;
         if (address.line3 && !cityState && !postalCode) return String(address.line3).trim();
-        return cityState || postalCode;
+        
+return cityState || postalCode;
     },
 
     buildPreferredPhone: function(actJson) {
         const customFields = actJson.customFields || {};
-        return this.formatPhoneDigits(
+
+        
+return this.formatPhoneDigits(
             customFields.mobilephone ||
             customFields.homephone ||
             customFields.businessphone ||
@@ -317,7 +349,9 @@ const PDF_Preparer_API = {
 
     buildPreferredEmail: function(actJson) {
         const customFields = actJson.customFields || {};
-        return String(
+
+        
+return String(
             customFields.personalemailaddress ||
             customFields.emailaddress ||
             customFields.altemailaddress ||
@@ -327,7 +361,9 @@ const PDF_Preparer_API = {
 
     buildAgencyName: function(actJson) {
         const customFields = actJson.customFields || {};
-        return String(
+
+        
+return String(
             customFields.department ||
             customFields.federalagency ||
             customFields.company ||
@@ -341,6 +377,7 @@ const PDF_Preparer_API = {
         const businessLocation = this.buildCityStateZip(businessAddress);
 
         if (businessLocation) return businessLocation;
+
         if (customFields.businessaddress && typeof customFields.businessaddress === "object") {
             return this.buildCityStateZip(customFields.businessaddress);
         }
@@ -361,7 +398,8 @@ const PDF_Preparer_API = {
 
         if (childName && childLast) return this.formatNameLastFirst(childLast, childName, "");
         if (childLast && childFirst) return this.formatNameLastFirst(childLast, childFirst, "");
-        return childName || childFirst || childLast;
+        
+return childName || childFirst || childLast;
     },
 
     getBeneficiaryRows: function(actJson) {
@@ -384,6 +422,7 @@ const PDF_Preparer_API = {
 
         for (let index = 1; index <= 6; index += 1) {
             const childName = this.buildChildName(customFields, index);
+
             if (!childName) continue;
 
             rows.push({
@@ -413,6 +452,7 @@ const PDF_Preparer_API = {
                 } else {
                     inQuotes = !inQuotes;
                 }
+
                 continue;
             }
 
@@ -426,7 +466,8 @@ const PDF_Preparer_API = {
         }
 
         values.push(current);
-        return values.map((value) => value.trim());
+        
+return values.map((value) => value.trim());
     },
 
     loadDocumentFieldMap: function(mapFileName) {
@@ -437,7 +478,9 @@ const PDF_Preparer_API = {
 
         return lines.slice(1).map((line) => {
             const [pdfField, crmField] = this.parseCsvLine(line);
-            return {
+
+            
+return {
                 pdfField,
                 crmField: crmField || ""
             };
@@ -453,6 +496,7 @@ const PDF_Preparer_API = {
             .filter(Boolean);
 
         let current = source;
+
         for (const segment of segments) {
             if (current === null || current === undefined) return undefined;
             current = this.getObjectPropertyInsensitive(current, segment);
@@ -486,19 +530,24 @@ const PDF_Preparer_API = {
 
     getPathTail: function(pathValue) {
         const normalizedPath = String(pathValue || "").trim();
+
         if (normalizedPath === "") return "";
 
         const segments = normalizedPath.split(".");
-        return String(segments[segments.length - 1] || "").trim().toLowerCase();
+
+        
+return String(segments[segments.length - 1] || "").trim().toLowerCase();
     },
 
     getDirectMappedValue: function(actJson, mappingKey) {
         const directValue = this.getNestedValue(actJson, mappingKey);
+
         if (directValue !== undefined && directValue !== null) {
             return typeof directValue === "object" ? "" : String(directValue);
         }
 
         const customFieldValue = this.getNestedValue(actJson.customFields || {}, mappingKey);
+
         if (customFieldValue !== undefined && customFieldValue !== null) {
             return typeof customFieldValue === "object" ? "" : String(customFieldValue);
         }
@@ -554,6 +603,7 @@ const PDF_Preparer_API = {
             "telephone",
             "telephonenumber"
         ]);
+
         const fieldName = String(pdfField || "").toLowerCase();
 
         return fieldName.includes("phone") || parts.some((part) => phoneTails.has(this.getPathTail(part)));
@@ -567,6 +617,7 @@ const PDF_Preparer_API = {
             "spousephonenumber_phone",
             "spousecellnumber"
         ];
+
         const availableValues = {};
 
         parts.forEach((part) => {
@@ -580,7 +631,9 @@ const PDF_Preparer_API = {
         }
 
         const firstValue = Object.values(availableValues).find((value) => String(value || "").trim() !== "");
-        return this.formatPhoneDigits(firstValue || "");
+
+        
+return this.formatPhoneDigits(firstValue || "");
     },
 
     isDateExpression: function(pdfField, parts) {
@@ -593,6 +646,7 @@ const PDF_Preparer_API = {
     resolveDateExpression: function(actJson, parts) {
         for (const part of parts) {
             const resolvedValue = this.getDirectMappedValue(actJson, part);
+
             if (String(resolvedValue || "").trim() !== "") {
                 return this.formatDateMmDdYyyy(resolvedValue);
             }
@@ -603,7 +657,9 @@ const PDF_Preparer_API = {
 
     isAddressExpression: function(parts) {
         const addressTails = new Set(["line1", "line2", "line3", "city", "state", "postalcode", "postalCode".toLowerCase()]);
-        return parts.length > 1 && parts.every((part) => addressTails.has(this.getPathTail(part)));
+
+        
+return parts.length > 1 && parts.every((part) => addressTails.has(this.getPathTail(part)));
     },
 
     resolveAddressExpression: function(actJson, parts, formKey) {
@@ -635,11 +691,13 @@ const PDF_Preparer_API = {
         const beneficiaryRows = this.getBeneficiaryRows(actJson);
         const normalizedToken = String(token || "").trim().toLowerCase();
         const hasFegli = String(customFields.feglicodeactive || "").trim().toUpperCase() !== "B0";
+
         const hasFehb = this.getMonthlyValueFromCustomFields(
             customFields,
             ["cust_fehbpermonth_023844547"],
             ["fehbperpayperiod", "healthinsuranceperpayperiod"]
         ) > 0;
+
         const hasMilitaryService = this.toNumber(customFields.yrsofmilitaryservice) > 0 || String(customFields.branch || "").trim() !== "";
         const hasMilitaryRetiredPay = this.toNumber(customFields.militarypension) > 0;
         const isMarried = String(customFields.maritalstatus || "").toLowerCase() === "married";
@@ -648,17 +706,21 @@ const PDF_Preparer_API = {
         const hasOptionA = this.parseBoolean(customFields.optiona_retire !== undefined ? customFields.optiona_retire : customFields.optiona);
         const optionB = Math.max(0, parseInt(customFields.optionb_retire !== undefined ? customFields.optionb_retire : customFields.optionb, 10) || 0);
         const optionC = Math.max(0, parseInt(customFields.optionc_retire !== undefined ? customFields.optionc_retire : customFields.optionc, 10) || 0);
+
         const hasLtc = this.getMonthlyValueFromCustomFields(
             customFields,
             ["cust_ltcpermonth_062304353"],
             ["ltcperpayperiod"]
         ) > 0;
+
         const hasPreviousClaim = String(customFields.claimnumber || customFields.claimnumbers || "").trim() !== "";
 
         if (/^@beneficiary_[1-6]_(name|relationship|share|address)$/.test(normalizedToken)) {
             const tokenMatch = normalizedToken.match(/^@beneficiary_([1-6])_(name|relationship|share|address)$/);
             const row = beneficiaryRows[parseInt(tokenMatch[1], 10) - 1] || {};
-            return String(row[tokenMatch[2]] || "");
+
+            
+return String(row[tokenMatch[2]] || "");
         }
 
         if (/^@child_[1-8]_(name|dob|phone|email)$/.test(normalizedToken)) {
@@ -712,7 +774,9 @@ const PDF_Preparer_API = {
                     this.buildCityStateZip(homeAddress)
                 ].filter(Boolean).join("\n");
             }
-            return [this.buildSingleLineAddress(homeAddress), this.buildCityStateZip(homeAddress)].filter(Boolean).join(", ");
+
+            
+return [this.buildSingleLineAddress(homeAddress), this.buildCityStateZip(homeAddress)].filter(Boolean).join(", ");
         case "@job_title":
             return String(customFields.jobtitle || "");
         case "@child_relationship":
@@ -828,9 +892,12 @@ const PDF_Preparer_API = {
         if (expressionParts.length > 1) {
             for (const part of expressionParts) {
                 const resolvedValue = this.getDirectMappedValue(actJson, part);
+
                 if (String(resolvedValue || "").trim() !== "") return resolvedValue;
             }
-            return "";
+
+            
+return "";
         }
 
         return this.getDirectMappedValue(actJson, mappingKey);
@@ -848,10 +915,12 @@ const PDF_Preparer_API = {
 
             if (!row.crmField) {
                 unmappedFields.push(row.pdfField);
-                return;
+                
+return;
             }
 
             const resolvedValue = this.resolveMappedValue(normalizedActJson, row.crmField, row.pdfField, formKey);
+
             mappedFieldRows.push({
                 pdfField: row.pdfField,
                 crmField: row.crmField,
@@ -886,6 +955,7 @@ const PDF_Preparer_API = {
             sf3107: "sf3107_pdf-map.csv",
             sf3108: "sf3108_pdf-map.csv"
         };
+
         const mapFileName = formMapFiles[formKey];
 
         if (!mapFileName) {
@@ -956,7 +1026,9 @@ const PDF_Preparer_API = {
             style: "currency",
             currency: "USD"
         });
-        return `(${amount})`;
+
+        
+return `(${amount})`;
     },
 
     formatCount: function(value, decimals = 0) {
@@ -982,14 +1054,17 @@ const PDF_Preparer_API = {
         const safeMonths = Math.max(0, parseInt(months, 10) || 0);
 
         if (safeYears === 0 && safeMonths === 0) return "N/A";
-        return `${safeYears}yr ${safeMonths}mo`;
+        
+return `${safeYears}yr ${safeMonths}mo`;
     },
 
     formatTemplate2ServiceDisplay: function(years, months) {
         const safeYears = Math.max(0, parseInt(years, 10) || 0);
         const safeMonths = Math.max(0, parseInt(months, 10) || 0);
+
         if (safeYears === 0 && safeMonths === 0) return "";
-        return `${safeYears}yrs ${safeMonths}mos`;
+        
+return `${safeYears}yrs ${safeMonths}mos`;
     },
 
     formatTemplate2HoursDisplay: function(hours) {
@@ -1000,12 +1075,16 @@ const PDF_Preparer_API = {
         const totalMonths = this.convertYearsToWholeMonths(decimalYears);
         const years = Math.floor(totalMonths / 12);
         const months = totalMonths % 12;
-        return this.formatTemplate2ServiceDisplay(years, months);
+
+        
+return this.formatTemplate2ServiceDisplay(years, months);
     },
 
     convertYearsToWholeMonths: function(decimalYears) {
         const yearsValue = Math.max(0, this.toNumber(decimalYears));
-        return Math.floor((yearsValue * 12) + 0.000001);
+
+        
+return Math.floor((yearsValue * 12) + 0.000001);
     },
 
     getMonthlyValueFromCustomFields: function(customFields, monthlyKeys, perPayPeriodKeys = []) {
@@ -1030,6 +1109,7 @@ const PDF_Preparer_API = {
         const roundedToHundredth = Math.round(percentage * 100) / 100;
         const useTwoDecimals = Math.abs(roundedToTenth - roundedToHundredth) > 0.0001;
         const fractionDigits = useTwoDecimals ? 2 : 1;
+
         const formatted = this.toNumber(percentage).toLocaleString("en-US", {
             minimumFractionDigits: fractionDigits,
             maximumFractionDigits: fractionDigits
@@ -1051,6 +1131,7 @@ const PDF_Preparer_API = {
 
     buildAdvisorField: function(rep) {
         const safeRep = rep && typeof rep === "object" ? rep : {};
+
         const contactLine = [safeRep.email, safeRep.phone]
             .map((value) => String(value === null || value === undefined ? "" : value).trim())
             .filter((value) => value !== "")
@@ -1077,6 +1158,7 @@ const PDF_Preparer_API = {
             "stocksbondsnote",
             "otherassetsnote"
         ];
+
         const explicitSet = new Set(explicitKeys);
 
         // Also pick up any CRM field whose name contains "note" or "notes" not already in the explicit list
@@ -1084,6 +1166,7 @@ const PDF_Preparer_API = {
             .filter((k) => !explicitSet.has(k) && /notes?/i.test(k));
 
         const noteLines = [];
+
         for (const key of [...explicitKeys, ...dynamicKeys]) {
             if (!this.hasExplicitValue(customFields, key)) continue;
             noteLines.push(customFields[key]);
@@ -1094,6 +1177,7 @@ const PDF_Preparer_API = {
 
     isComplexStateTaxText: function(text) {
         const normalized = String(text || "").trim().toLowerCase();
+
         if (normalized === "") return false;
 
         return normalized.includes("partial") ||
@@ -1116,7 +1200,9 @@ const PDF_Preparer_API = {
         const hasComplexRule = this.isComplexStateTaxText(stateRule ? stateRule.tax_on_pensions_text : "") ||
             this.isComplexStateTaxText(stateRule ? stateRule.tax_on_social_security_text : "") ||
             this.isComplexStateTaxText(stateRule ? stateRule.tax_on_ira_distributions_text : "");
+
         const hasRateThreshold = safeState === "Mississippi" || safeState === "Ohio";
+
         const isExactConfidence = !!safeState &&
             stateTaxProfile &&
             stateTaxProfile.method === "flat" &&
@@ -1244,6 +1330,7 @@ const PDF_Preparer_API = {
         const socialSecurityNetIncome = this.formatCrmWholeNumber(roundedNetSocialSecurity);
         const fegliMonthlyCost = this.formatCrmWholeNumber(roundedMonthlyFegli);
         const survivorBenefitCost = this.formatCrmWholeNumber(roundedSurvivorBenefitCost);
+
         const addTotal = this.formatCrmWholeNumber(
             roundedNetFERS +
             (bridgeActive ? roundedNetBridge : roundedNetSocialSecurity) +
@@ -1252,6 +1339,7 @@ const PDF_Preparer_API = {
             roundedSpouseSocialSecurityNet +
             roundedSpousePensionNet
         );
+
         const minusTotal = this.formatCrmWholeNumber(
             roundedHealthInsuranceMonthly +
             roundedDentalInsuranceMonthly +
@@ -1423,6 +1511,7 @@ const PDF_Preparer_API = {
         };
 
         const finalCalculationCustomFields = {};
+
         for (const fieldName of FINAL_CALCULATION_CRM_FIELDS) {
             finalCalculationCustomFields[fieldName] = crmPayload.customFields[fieldName] || "";
         }
@@ -1440,7 +1529,9 @@ const PDF_Preparer_API = {
     parseInjectedNumber: function(value) {
         if (value === null || value === undefined) return 0;
         const normalized = String(value).replace(/[^0-9.\-]/g, "");
-        return this.toNumber(normalized, 0);
+
+        
+return this.toNumber(normalized, 0);
     },
 
     yearsBetween: function(startDate, endDate) {
@@ -1450,7 +1541,9 @@ const PDF_Preparer_API = {
         if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 0;
 
         const millisecondsPerYear = 365.2425 * 24 * 60 * 60 * 1000;
-        return Math.max(0, (end.getTime() - start.getTime()) / millisecondsPerYear);
+
+        
+return Math.max(0, (end.getTime() - start.getTime()) / millisecondsPerYear);
     },
 
     ageOnDate: function(dateOfBirth, onDate) {
@@ -1460,25 +1553,30 @@ const PDF_Preparer_API = {
         if (Number.isNaN(dob.getTime()) || Number.isNaN(target.getTime())) return 0;
 
         let age = target.getUTCFullYear() - dob.getUTCFullYear();
+
         const birthdayHasOccurred = (
             target.getUTCMonth() > dob.getUTCMonth() ||
             (target.getUTCMonth() === dob.getUTCMonth() && target.getUTCDate() >= dob.getUTCDate())
         );
 
         if (!birthdayHasOccurred) age -= 1;
-        return Math.max(0, age);
+        
+return Math.max(0, age);
     },
 
     parseBoolean: function(value) {
         if (value === true || value === false) return value;
         const normalized = String(value || "").trim().toLowerCase();
-        return normalized === "true" || normalized === "yes" || normalized === "y" || normalized === "1" || normalized === "on";
+
+        
+return normalized === "true" || normalized === "yes" || normalized === "y" || normalized === "1" || normalized === "on";
     },
 
     hasExplicitValue: function(source, key) {
         if (!source || typeof source !== "object") return false;
         if (!Object.prototype.hasOwnProperty.call(source, key)) return false;
-        return source[key] !== null && source[key] !== undefined && source[key] !== "";
+        
+return source[key] !== null && source[key] !== undefined && source[key] !== "";
     },
 
     getSickLeaveHours: function(customFields) {
@@ -1568,6 +1666,7 @@ const PDF_Preparer_API = {
         ).trim().toLowerCase();
 
         const numericValue = parseInt(rawValue.replace(/[^0-9]/g, ""), 10);
+
         if (numericValue === 25) return { percent: 25, reductionRate: 0.05 };
         if (numericValue === 50) return { percent: 50, reductionRate: 0.10 };
         if (numericValue === 0) return { percent: 0, reductionRate: 0 };
@@ -1575,17 +1674,21 @@ const PDF_Preparer_API = {
         if (customFields.survivor50 === true || String(customFields.survivor50).toLowerCase() === "true") {
             return { percent: 50, reductionRate: 0.10 };
         }
+
         if (customFields.survivor25 === true || String(customFields.survivor25).toLowerCase() === "true") {
             return { percent: 25, reductionRate: 0.05 };
         }
+
         if (customFields.survivor0 === true || String(customFields.survivor0).toLowerCase() === "true") {
             return { percent: 0, reductionRate: 0 };
         }
 
         if (rawValue.includes("25")) return { percent: 25, reductionRate: 0.05 };
+
         if (rawValue.includes("0") || rawValue.includes("waive") || rawValue.includes("none")) {
             return { percent: 0, reductionRate: 0 };
         }
+
         if (rawValue.includes("50")) return { percent: 50, reductionRate: 0.10 };
 
         return isMarried
@@ -1604,6 +1707,7 @@ const PDF_Preparer_API = {
         const upperThreshold = isMarried ? 44000 : 34000;
 
         let taxablePercent = 0;
+
         if (provisionalIncomeAnnual > upperThreshold) taxablePercent = 85;
         else if (provisionalIncomeAnnual > lowerThreshold) taxablePercent = 50;
 
@@ -1615,6 +1719,7 @@ const PDF_Preparer_API = {
 
     calculateTaxFromBrackets: function(taxableIncome, bracketRows) {
         const income = Math.max(0, this.roundMoney(taxableIncome));
+
         if (income <= 0 || !Array.isArray(bracketRows) || bracketRows.length === 0) return 0;
 
         let tax = 0;
@@ -1627,6 +1732,7 @@ const PDF_Preparer_API = {
             if (income <= floor) continue;
 
             const taxableSlice = Math.min(income, ceiling) - floor;
+
             if (taxableSlice > 0) {
                 tax += taxableSlice * rate;
             }
@@ -1639,12 +1745,15 @@ const PDF_Preparer_API = {
 
     getMarginalTaxRate: function(taxableIncome, bracketRows) {
         const income = Math.max(0, this.roundMoney(taxableIncome));
+
         if (income <= 0 || !Array.isArray(bracketRows) || bracketRows.length === 0) return 0;
 
         const match = bracketRows.find((row) => {
             const floor = this.toNumber(row.floor);
             const ceiling = this.toNumber(row.ceiling, Number.MAX_SAFE_INTEGER);
-            return income >= floor && income <= ceiling;
+
+            
+return income >= floor && income <= ceiling;
         });
 
         if (!match) {
@@ -1673,7 +1782,9 @@ const PDF_Preparer_API = {
 
         if (provisionalIncome <= adjustedBaseAmount) {
             const taxableAmount = Math.min((provisionalIncome - baseAmount) * 0.5, benefits * 0.5);
-            return {
+
+            
+return {
                 provisionalIncome: this.roundMoney(provisionalIncome),
                 taxableAmount: this.roundMoney(taxableAmount),
                 taxablePercent: 50
@@ -1681,6 +1792,7 @@ const PDF_Preparer_API = {
         }
 
         const baseTaxableAmount = Math.min(secondTierCap, benefits * 0.5);
+
         const taxableAmount = Math.min(
             ((provisionalIncome - adjustedBaseAmount) * 0.85) + baseTaxableAmount,
             benefits * 0.85
@@ -1702,7 +1814,8 @@ const PDF_Preparer_API = {
             Object.keys(components).forEach((key) => {
                 allocation[key] = 0;
             });
-            return allocation;
+            
+return allocation;
         }
 
         const keys = Object.keys(components);
@@ -1710,6 +1823,7 @@ const PDF_Preparer_API = {
 
         keys.forEach((key, index) => {
             const base = Math.max(0, this.roundMoney(components[key]));
+
             const share = index === keys.length - 1
                 ? this.roundMoney(totalTax - allocatedTotal)
                 : this.roundMoney(totalTax * (base / totalBase));
@@ -1723,6 +1837,7 @@ const PDF_Preparer_API = {
 
     getStateRetirementTaxRule: function(state, stateRetirementTaxRules) {
         const normalizedState = String(state || "").trim().toLowerCase();
+
         if (!normalizedState || !Array.isArray(stateRetirementTaxRules)) return null;
 
         return stateRetirementTaxRules.find((row) => String(row.state || "").trim().toLowerCase() === normalizedState) || null;
@@ -1730,28 +1845,36 @@ const PDF_Preparer_API = {
 
     getTargetTaxYear: function(dateInput) {
         const date = new Date(dateInput);
+
         if (!Number.isNaN(date.getTime())) return date.getUTCFullYear();
-        return new Date().getUTCFullYear();
+        
+return new Date().getUTCFullYear();
     },
 
     getStateTaxRowsForYear: function(state, explicitStateRates, taxYear) {
         const normalizedState = String(state || "").trim().toLowerCase();
+
         if (!normalizedState || !Array.isArray(explicitStateRates)) return [];
 
         const stateRows = explicitStateRates.filter(
             (row) => String(row.state || "").trim().toLowerCase() === normalizedState
         );
+
         if (stateRows.length === 0) return [];
 
         const exactRows = stateRows.filter((row) => parseInt(row.taxyear, 10) === taxYear);
+
         if (exactRows.length > 0) return exactRows;
 
         const rowsWithYear = stateRows.filter((row) => Number.isFinite(parseInt(row.taxyear, 10)));
+
         if (rowsWithYear.length === 0) return stateRows;
 
         const availableYears = [...new Set(rowsWithYear.map((row) => parseInt(row.taxyear, 10)))].sort((a, b) => a - b);
         const fallbackYear = availableYears.filter((year) => year <= taxYear).pop() || availableYears[availableYears.length - 1];
-        return rowsWithYear.filter((row) => parseInt(row.taxyear, 10) === fallbackYear);
+
+        
+return rowsWithYear.filter((row) => parseInt(row.taxyear, 10) === fallbackYear);
     },
 
     getStateBracketRows: function(stateRows, filingStatus) {
@@ -1774,7 +1897,9 @@ const PDF_Preparer_API = {
             .concat(nestedBracketRows)
             .filter((row) => {
                 const rowFilingStatus = String(row.filingstatus || "").trim().toLowerCase();
-                return rowFilingStatus === "" || rowFilingStatus === filingStatus;
+
+                
+return rowFilingStatus === "" || rowFilingStatus === filingStatus;
             })
             .sort((a, b) => this.toNumber(a.floor) - this.toNumber(b.floor));
     },
@@ -1783,6 +1908,7 @@ const PDF_Preparer_API = {
         const selectedRows = this.getStateTaxRowsForYear(state, explicitStateRates, taxYear);
         const bracketRows = this.getStateBracketRows(selectedRows, filingStatus);
         const flatRow = selectedRows.find((row) => row.rate !== undefined && row.rate !== null);
+
         const flatRate = bracketRows.length > 0
             ? 0
             : (flatRow && flatRow.rate !== undefined && flatRow.rate !== null
@@ -1801,6 +1927,7 @@ const PDF_Preparer_API = {
         const annualComponents = Object.fromEntries(
             Object.entries(stateTaxableComponentsAnnual).map(([key, value]) => [key, Math.max(0, this.roundMoney(value))])
         );
+
         const totalTaxableAnnual = Object.values(annualComponents).reduce((sum, value) => sum + value, 0);
 
         if (stateTaxProfile && stateTaxProfile.bracketRows && stateTaxProfile.bracketRows.length > 0) {
@@ -1845,6 +1972,7 @@ const PDF_Preparer_API = {
 
     getStateTaxRate: function(state, explicitStateRates, stateRule) {
         const normalizedState = String(state || "").trim().toLowerCase();
+
         if (stateRule && stateRule.flat_income_tax_rate !== undefined && stateRule.flat_income_tax_rate !== null) {
             return this.toNumber(stateRule.flat_income_tax_rate);
         }
@@ -1862,6 +1990,7 @@ const PDF_Preparer_API = {
 
     getTaxableAmountForStateRule: function(amount, ruleValue) {
         const normalizedRule = String(ruleValue || "").trim().toLowerCase();
+
         if (normalizedRule === "no") return 0;
         if (normalizedRule === "yes") return this.roundMoney(amount);
 
@@ -1880,12 +2009,15 @@ const PDF_Preparer_API = {
     // --- 2. OPM LOGIC SUB-ENGINES ---
     calculateBIA: function(salary) {
         const salaryNumber = this.toNumber(salary);
+
         if (salaryNumber <= 0) {
             return { base: 0, total: 0 };
         }
 
         const base = Math.ceil(salaryNumber / 1000) * 1000;
-        return { base, total: base + 2000 };
+
+        
+return { base, total: base + 2000 };
     },
 
     getOPMLetter: function(hasA, bMult, hasC) {
@@ -1897,13 +2029,17 @@ const PDF_Preparer_API = {
             4: ["S", "T", "U", "V"],
             5: ["W", "X", "Y", "Z"]
         };
+
         const safeBMult = Math.min(5, Math.max(0, parseInt(bMult, 10) || 0));
         const col = !hasA && !hasC ? 0 : (hasA && !hasC ? 1 : (!hasA && hasC ? 2 : 3));
-        return map[safeBMult][col];
+
+        
+return map[safeBMult][col];
     },
 
     getComponentsFromLetter: function(letter) {
         const normalizedLetter = String(letter || "").trim().toUpperCase();
+
         const components = {
             hasA: "DFHJLNPRTVXZ".includes(normalizedLetter),
             hasC: "EFIJMNQRUVYZ".includes(normalizedLetter),
@@ -1942,9 +2078,11 @@ const PDF_Preparer_API = {
 
     decipherActiveCode: function(salary, age, biWeeklyCost, employeeRates) {
         const rate = this.lookupRate(employeeRates, age);
+
         if (!rate) return "C0";
 
         const targetCost = this.toNumber(biWeeklyCost);
+
         if (targetCost <= 0) return "C0";
 
         const bia = this.calculateBIA(salary);
@@ -1957,6 +2095,7 @@ const PDF_Preparer_API = {
                 for (let hasAIndex = 0; hasAIndex <= 1; hasAIndex += 1) {
                     const hasA = hasAIndex === 1;
                     const hasC = cMult > 0;
+
                     const testedPremium = basicPremium +
                         (hasA ? this.toNumber(rate.opt_a) : 0) +
                         (bMult * (bia.base / 1000) * this.toNumber(rate.opt_b)) +
@@ -1965,6 +2104,7 @@ const PDF_Preparer_API = {
                     if (testedPremium > targetCost + 0.05) continue;
 
                     const diff = targetCost - testedPremium;
+
                     if (diff < smallestDiff) {
                         smallestDiff = diff;
                         bestMatch = `${this.getOPMLetter(hasA, bMult, hasC)}${cMult}`;
@@ -1980,10 +2120,13 @@ const PDF_Preparer_API = {
         const hasRetireFieldInputs = this.hasExplicitValue(customFields, "optiona_retire") ||
             this.hasExplicitValue(customFields, "optionb_retire") ||
             this.hasExplicitValue(customFields, "optionc_retire");
+
+
         // Fall back to active election fields if _retire variants are missing
         const hasActiveFieldInputs = this.hasExplicitValue(customFields, "optiona") ||
             this.hasExplicitValue(customFields, "optionb") ||
             this.hasExplicitValue(customFields, "optionc");
+
         const requestedRetireChange = this.parseBoolean(customFields.change2fegli);
 
         if (!hasRetireFieldInputs && !hasActiveFieldInputs) {
@@ -2002,10 +2145,12 @@ const PDF_Preparer_API = {
         const hasA = hasRetireOverrides
             ? this.parseBoolean(customFields.optiona_retire !== undefined ? customFields.optiona_retire : customFields.optiona)
             : false;
+
         const bMult = hasRetireOverrides
             ? Math.min(5, Math.max(0, parseInt(
                 customFields.optionb_retire !== undefined ? customFields.optionb_retire : customFields.optionb, 10) || 0))
             : 0;
+
         const cMult = hasRetireOverrides
             ? Math.min(5, Math.max(0, parseInt(
                 customFields.optionc_retire !== undefined ? customFields.optionc_retire : customFields.optionc, 10) || 0))
@@ -2023,6 +2168,7 @@ const PDF_Preparer_API = {
     calculateActiveFEGLI: function({ salary, age, code }, employeeRates) {
         const bia = this.calculateBIA(salary);
         const rate = this.lookupRate(employeeRates, age);
+
         if (!rate) {
             return {
                 basicCoverage: 0,
@@ -2055,6 +2201,7 @@ const PDF_Preparer_API = {
     calculateRetireeFEGLI: function({ salary, age, reduction, hasA, bMult, cMult }, annuitantRates) {
         const bia = this.calculateBIA(salary);
         const rate = this.lookupRate(annuitantRates, age);
+
         if (!rate) {
             return {
                 basicCoverage: 0,
@@ -2111,11 +2258,13 @@ const PDF_Preparer_API = {
         const retireIsWaived = retireeElection.code === "B0" || activeIsWaived;
         const activeElection = this.getComponentsFromLetter(activeCode.charAt(0));
         const activeOptionCMultiple = Math.min(5, Math.max(0, parseInt(String(activeCode).slice(1), 10) || 0));
+
         const activeFegli = this.calculateActiveFEGLI({
             salary,
             age: clientAge,
             code: activeCode
         }, employeeRates);
+
         const retireeFegli = this.calculateRetireeFEGLI({
             salary,
             age: retireAge,
@@ -2124,6 +2273,7 @@ const PDF_Preparer_API = {
             bMult: retireeElection.bMult,
             cMult: retireeElection.cMult
         }, annuitantRates);
+
         const monthlyFegli = (retireIsIneligible || retireIsWaived)
             ? 0
             : this.roundMoney(
@@ -2218,7 +2368,9 @@ const PDF_Preparer_API = {
 
     executeFegli: function(actJson, empRateInput, annuitantRateInput) {
         const fegliResult = this.buildFegliResult(actJson, empRateInput, annuitantRateInput);
-        return this.buildFegliOnlyResponse(actJson, fegliResult);
+
+        
+return this.buildFegliOnlyResponse(actJson, fegliResult);
     },
 
     // --- 3. MAIN EXECUTION ENGINE ---
@@ -2237,9 +2389,11 @@ const PDF_Preparer_API = {
         const stateRetirementTaxRules = this.parseRates(stateRetirementTaxRulesInput);
 
         const clientAge = parseInt(c.ageyy || c.cust_age_033220843, 10) || this.ageOnDate(actJson.birthday, today);
+
         const spouseAge = c.cust_spouseage_074349200
             ? parseInt(c.cust_spouseage_074349200, 10) || 0
             : this.ageOnDate(c.spousedob, today);
+
         const retireAge = this.ageOnDate(actJson.birthday, retirementDate);
 
         const salary = this.toNumber(c.salaryamount);
@@ -2270,21 +2424,25 @@ const PDF_Preparer_API = {
             ["cust_fehbpermonth_023844547", "fehbpermonth"],
             ["fehbperpayperiod", "healthinsuranceperpayperiod"]
         );
+
         const dentalInsuranceMonthly = this.getMonthlyValueFromCustomFields(
             c,
             ["cust_dentalinsurancepermonth_030554373", "dentalinsurancepermonth"],
             ["dentalinsuranceperpayperiod"]
         );
+
         const visionInsuranceMonthly = this.getMonthlyValueFromCustomFields(
             c,
             ["cust_visioninsurancepermonth_032424647", "visioninsurancepermonth"],
             ["visioninsuranceperpayperiod"]
         );
+
         const ltcInsuranceMonthly = this.getMonthlyValueFromCustomFields(
             c,
             ["cust_ltcpermonth_062304353", "ltcpermonth"],
             ["ltcperpayperiod"]
         );
+
         const annualLeaveHours = this.toNumber(c.annualleave);
         const annualLeavePayout = this.roundMoney((salary / 2080) * annualLeaveHours);
 
@@ -2302,10 +2460,12 @@ const PDF_Preparer_API = {
 
         const bridgeActive = retireAge < 62;
         const socialSecurityActive = retireAge >= 62;
+
         // GrossSocialSecurity (LES Info Tab) is the single source for both the
         // bridge supplement (<62) and the Social Security income (>=62).
         const grossSocialSecurityInput = this.roundMoney(c.grosssocialsecurity);
         const socialSecurityGross = grossSocialSecurityInput;
+
         const requestedDistributionRate = this.toNumber(
             c.tspdistributionrate ||
             c.tspwithdrawalrate ||
@@ -2313,46 +2473,58 @@ const PDF_Preparer_API = {
             c.fourpctruleyrmo,
             0
         );
+
         const defaultDistributionRate = retireAge >= 72 ? 5 : 4;
         const distributionRate = requestedDistributionRate > 0 ? requestedDistributionRate : defaultDistributionRate;
         const tspTraditional = this.roundMoney(c.tsptraditionalbalance);
         const tspRoth = this.roundMoney(c.tsprothbalance);
         const tspTotal = this.roundMoney(tspTraditional + tspRoth);
         const requestedTspBalanceUsed = this.toNumber(c.tspbalanceused, tspTotal);
+
         const tspBalanceUsed = this.roundMoney(
             requestedTspBalanceUsed > 0
                 ? requestedTspBalanceUsed
                 : tspTotal
         );
+
         const tspGrossYearly = this.roundMoney(tspBalanceUsed * (distributionRate / 100));
         const tspGrossMonthly = this.roundMoney(tspGrossYearly / 12);
         const taxableTspBase = Math.min(tspTraditional, tspBalanceUsed);
         const taxableTspYearly = this.roundMoney(taxableTspBase * (distributionRate / 100));
         const taxableTspMonthly = this.roundMoney(taxableTspYearly / 12);
+
+
         // Bridge: (Bridge Yrs of Service / 40) × GrossSocialSecurity. Only when < 62.
         const grossBridge = bridgeActive
             ? this.roundMoney((bridgeYears / 40) * grossSocialSecurityInput)
             : 0;
+
         const grossBridgeYearly = this.roundMoney(grossBridge * 12);
         const filingStatus = isMarried ? "married" : "single";
+
         const clientState = actJson.homeAddress && actJson.homeAddress.state
             ? actJson.homeAddress.state
             : (actJson.businessAddress && actJson.businessAddress.state
                 ? actJson.businessAddress.state
                 : "");
+
         const taxYear = this.getTargetTaxYear(retirementDate);
         const stateRetirementTaxRule = this.getStateRetirementTaxRule(clientState, stateRetirementTaxRules);
         const federalBracketRows = federalTaxRates.filter((row) => String(row.filing_status || "").toLowerCase() === filingStatus);
         const defaultStandardDeduction = filingStatus === "married" ? 30500 : 15250;
+
         const standardDeduction = federalBracketRows.length > 0 && federalBracketRows[0].standard_deduction !== undefined
             ? this.toNumber(federalBracketRows[0].standard_deduction)
             : defaultStandardDeduction;
+
         const federalOtherIncomeAnnual = this.roundMoney((grossFERS * 12) + grossBridgeYearly + taxableTspYearly);
+
         const socialSecurityTaxability = this.calculateTaxableSocialSecurityAnnual(
             socialSecurityGross * 12,
             federalOtherIncomeAnnual,
             filingStatus
         );
+
         const taxableSocialSecurityYearly = socialSecurityTaxability.taxableAmount;
         const taxableSocialSecurityMonthly = this.roundMoney(taxableSocialSecurityYearly / 12);
         const federalAdjustedGrossIncome = this.roundMoney(federalOtherIncomeAnnual + taxableSocialSecurityYearly);
@@ -2363,20 +2535,24 @@ const PDF_Preparer_API = {
             grossFERS * 12,
             stateRetirementTaxRule ? stateRetirementTaxRule.tax_on_pensions : "yes"
         );
+
         const tspTaxableBaseAnnual = this.getTaxableAmountForStateRule(
             taxableTspYearly,
             stateRetirementTaxRule ? stateRetirementTaxRule.tax_on_ira_distributions : "yes"
         );
+
         const socialSecurityTaxableBaseAnnual = this.getTaxableAmountForStateRule(
             socialSecurityGross * 12,
             stateRetirementTaxRule ? stateRetirementTaxRule.tax_on_social_security : "no"
         );
+
         const stateTaxableComponentsAnnual = {
             fers: Math.max(0, this.roundMoney(pensionTaxableBaseAnnual)),
             bridge: Math.max(0, grossBridgeYearly),
             tsp: Math.max(0, tspTaxableBaseAnnual),
             socialSecurity: Math.max(0, socialSecurityTaxableBaseAnnual)
         };
+
         const stateTaxProfile = this.getStateTaxProfile(clientState, stateTaxRates, stateRetirementTaxRule, taxYear, filingStatus);
         const stateTaxCalculation = this.calculateStateTax(stateTaxableComponentsAnnual, stateTaxProfile);
         const stateTaxAllocationAnnual = stateTaxCalculation.allocationAnnual;
@@ -2410,6 +2586,7 @@ const PDF_Preparer_API = {
 
         const netTsp = this.roundMoney(tspGrossMonthly - tspTaxMonthly);
         const netBridge = this.roundMoney(grossBridge - bridgeTaxMonthly);
+
         // < 62: bridge applies (Net Bridge), even if $0. >= 62: Net Social Security.
         const projectedSsComponent = bridgeActive ? netBridge : netSocialSecurity;
         const projectedNetMonthly = this.roundMoney(netFERS + projectedSsComponent);
@@ -2427,17 +2604,21 @@ const PDF_Preparer_API = {
         const formattedCurrentBiWeeklyNet = this.formatCurrency(currentBiWeeklyNet);
         const formattedCurrentYearlyNet = this.formatCurrency(currentYearlyNet);
         const formattedCurrentMonthlyNet = this.formatCurrency(currentMonthlyNet);
+
         const formattedYearsOfService = this.formatServiceDisplay(
             Math.floor(serviceMonthsWithSickLeave / 12),
             serviceMonthsWithSickLeave % 12
         );
+
         const formattedBridgeYears = bridgeActive
             ? this.formatServiceDisplay(
                 Math.floor(bridgeServiceMonths / 12),
                 bridgeServiceMonths % 12
             )
             : "";
+
         const formattedMultiplier = hasEnhancedMultiplier ? "1" : "0";
+
         const formattedMilitaryTime = this.formatServiceDisplay(
             Math.floor(militaryMonths / 12),
             militaryMonths % 12
@@ -2651,6 +2832,7 @@ const PDF_Preparer_API = {
     executeTemplate2: function(actJson, empCsv, annuitantCsv, federalTaxCsv, stateTaxCsv, stateRetirementTaxRulesInput) {
         actJson = this.normalizeActInput(actJson);
         const c = actJson.customFields || {};
+
         const output = this.execute(
             actJson,
             empCsv,
@@ -2659,6 +2841,7 @@ const PDF_Preparer_API = {
             stateTaxCsv,
             stateRetirementTaxRulesInput
         );
+
         const payload = JSON.parse(output["fegli_rate_payload"] || "{}");
         const appliedRates = payload.tax && payload.tax.applied_rates ? payload.tax.applied_rates : {};
 

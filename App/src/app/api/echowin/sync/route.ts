@@ -9,7 +9,9 @@
  * GET /api/echowin/sync  — returns last sync timestamp and row count
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { listCalls, findContactByNumber } from '@/lib/echowin/client'
 import { parseCallTranscript } from '@/lib/echowin/parser'
@@ -44,9 +46,11 @@ export async function POST(req: NextRequest) {
   // button). Blocks anonymous callers from triggering paid OpenAI/echowin work.
   const cronSecret = process.env.CRON_SECRET
   const isCron = !!cronSecret && req.headers.get('authorization') === `Bearer ${cronSecret}`
+
   if (!isCron) {
     const auth = await createClient()
     const { data: { user } } = await auth.auth.getUser()
+
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -55,14 +59,17 @@ export async function POST(req: NextRequest) {
   // ── 1. Last sync timestamp ───────────────────────────────────────────────
   const { data: syncState } = await supabase
     .from('app_settings').select('value').eq('key', SYNC_STATE_KEY).maybeSingle()
+
   const lastSync: string | null = syncState?.value ?? null
   const syncStart = new Date().toISOString()
 
   // ── 2. Fetch all new calls since last sync ───────────────────────────────
   const allCalls = []
   let page = 1, hasMore = true
+
   while (hasMore) {
     const resp = await listCalls({ page, limit: 100, after: lastSync ?? undefined })
+
     allCalls.push(...resp.data)
     hasMore = page < resp.pagination.totalPages
     page++
@@ -70,13 +77,15 @@ export async function POST(req: NextRequest) {
 
   if (allCalls.length === 0) {
     await saveSyncState(supabase, syncStart)
-    return NextResponse.json({ synced: 0, message: 'No new calls', lastSync })
+    
+return NextResponse.json({ synced: 0, message: 'No new calls', lastSync })
   }
 
   // ── 3. Load blocklist (call_ids the user has manually deleted) ───────────
   const { data: blocked } = await supabase
     .from('echo_leads_blocked')
     .select('call_id')
+
   const blockedIds = new Set((blocked ?? []).map((r: { call_id: string }) => r.call_id))
 
   // ── 3b. Load call_ids we already have ────────────────────────────────────
@@ -85,11 +94,13 @@ export async function POST(req: NextRequest) {
   // call each run — which times the function out. Skip what we already stored.
   const callIds = allCalls.map(c => c.id)
   const existingIds = new Set<string>()
+
   for (let i = 0; i < callIds.length; i += 200) {
     const { data: rows } = await supabase
       .from('echo_leads')
       .select('call_id')
       .in('call_id', callIds.slice(i, i + 200))
+
     for (const r of rows ?? []) existingIds.add(r.call_id)
   }
 
@@ -126,8 +137,10 @@ export async function POST(req: NextRequest) {
       // NOT pull contact names — for unparsed calls they're caller-ID junk.)
       const firstName = parsed.firstName, lastName = parsed.lastName
       let email = parsed.email
+
       if (!email) {
         const contact = await findContactByNumber(call.from)
+
         if (contact?.email) email = contact.email
       }
 

@@ -3,7 +3,9 @@
  *
  * Uses the admin Supabase client (service-role key) to bypass RLS.
  */
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createAdminClient } from '@/utils/supabase/server'
 
 export async function GET() {

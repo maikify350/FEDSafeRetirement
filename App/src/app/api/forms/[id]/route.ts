@@ -4,7 +4,9 @@
  * DELETE /api/forms/[id]  — Delete (admin only)
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 
 const DATA_COLS = 'id, form_id, aka, title, description, tags, source_url, instruct_pages, fill_pages, form_url, summary, explainer_url, mapping'
@@ -12,33 +14,42 @@ const AUDIT_COLS = 'cre_by, cre_dt, mod_by, mod_dt, version_no'
 
 async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user } } = await supabase.auth.getUser()
+
   if (!user) return { error: 'Unauthorized', status: 401, user: null }
   const admin = createAdminClient()
   const { data: userRow } = await admin.from('users').select('role').eq('id', user.id).single()
+
   if (userRow?.role !== 'admin') return { error: 'Forbidden — admin only', status: 403, user: null }
-  return { error: null, status: 200, user }
+  
+return { error: null, status: 200, user }
 }
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
+
   const { data, error } = await supabase
     .from('forms').select(`${DATA_COLS}, ${AUDIT_COLS}`).eq('id', id).single()
+
   if (error) return NextResponse.json({ error: error.message }, { status: 404 })
-  return NextResponse.json(data)
+  
+return NextResponse.json(data)
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
   const { error: authErr, status, user } = await requireAdmin(supabase)
+
   if (authErr) return NextResponse.json({ error: authErr }, { status })
 
   const body = await request.json()
+
   if (!body.form_id?.trim()) return NextResponse.json({ error: 'form_id is required' }, { status: 400 })
   if (!body.title?.trim()) return NextResponse.json({ error: 'title is required' }, { status: 400 })
 
   const admin = createAdminClient()
+
   const { data, error } = await admin
     .from('forms')
     .update({
@@ -63,17 +74,21 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  
+return NextResponse.json(data)
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
   const { error: authErr, status } = await requireAdmin(supabase)
+
   if (authErr) return NextResponse.json({ error: authErr }, { status })
 
   const admin = createAdminClient()
   const { error } = await admin.from('forms').delete().eq('id', id)
+
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return new NextResponse(null, { status: 204 })
+  
+return new NextResponse(null, { status: 204 })
 }

@@ -20,6 +20,7 @@
  */
 
 import { useRef } from 'react'
+
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
@@ -35,12 +36,15 @@ import Tooltip from '@mui/material/Tooltip'
 import CircularProgress from '@mui/material/CircularProgress'
 import Alert from '@mui/material/Alert'
 import Snackbar from '@mui/material/Snackbar'
+
 import AuditFooter from '@/components/AuditFooter'
 
 // ── Draggable Paper ─────────────────────────────────────────────────────────
 function DraggablePaper(props: PaperProps) {
   const nodeRef = useRef<HTMLDivElement>(null)
-  return (
+
+  
+return (
     <Draggable nodeRef={nodeRef as any} handle="#entity-edit-dialog-title" cancel='[class*="MuiDialogContent-root"]'>
       <Paper {...props} ref={nodeRef} style={{ pointerEvents: 'auto' }} />
     </Draggable>
@@ -48,6 +52,7 @@ function DraggablePaper(props: PaperProps) {
 }
 
 export interface EntityEditDialogProps {
+
   // ── Dialog state
   open: boolean
   onClose: () => void

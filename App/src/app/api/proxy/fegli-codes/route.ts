@@ -15,7 +15,8 @@
  * content script can call this endpoint directly from Act! CRM pages.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
 
 // OPM letter matrix — mirrors FEGLI_API.getOPMLetter() in fegli_api.js
 // Columns: [noA_noC, hasA_noC, noA_hasC, hasA_hasC]
@@ -30,7 +31,9 @@ const OPM_LETTER_MAP: Record<number, string[]> = {
 
 function getOPMLetter(hasA: boolean, bMult: number, hasC: boolean): string {
   const col = !hasA && !hasC ? 0 : hasA && !hasC ? 1 : !hasA && hasC ? 2 : 3
-  return OPM_LETTER_MAP[bMult][col]
+
+  
+return OPM_LETTER_MAP[bMult][col]
 }
 
 const CORS_HEADERS = {
@@ -50,6 +53,7 @@ export async function GET(request: NextRequest) {
   const cMax = extended ? 5 : 3   // OPM 98-210 baseline caps C at ×3
 
   const standardCodes: string[] = []
+
   const codeMap: Record<string, {
     letter: string; cMult: number; bMult: number
     hasA: boolean; hasC: boolean; label: string
@@ -60,6 +64,7 @@ export async function GET(request: NextRequest) {
       // No Option C entry
       const letterNoC = getOPMLetter(hasA, bMult, false)
       const codeNoC   = `${letterNoC}0`
+
       if (!codeMap[codeNoC]) {
         codeMap[codeNoC] = {
           letter: letterNoC, cMult: 0, bMult, hasA, hasC: false,
@@ -72,6 +77,7 @@ export async function GET(request: NextRequest) {
       for (let cMult = 1; cMult <= cMax; cMult++) {
         const letterC = getOPMLetter(hasA, bMult, true)
         const codeC   = `${letterC}${cMult}`
+
         if (!codeMap[codeC]) {
           codeMap[codeC] = {
             letter: letterC, cMult, bMult, hasA, hasC: true,
@@ -89,6 +95,7 @@ export async function GET(request: NextRequest) {
     { code: 'B0', label: 'FEGLI Waived',          special: true },
     { code: '99', label: 'FEGLI Coverage Unspecified', special: true },
   ]
+
   for (const s of specialCodes) {
     codeMap[s.code] = {
       letter: s.code[0], cMult: parseInt(s.code[1]) || 0,

@@ -10,7 +10,9 @@
  */
 
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react'
+
 import type { ColumnFiltersState, SortingState } from '@tanstack/react-table'
+
 import { isConditionActive, type ColFilterValue } from '@/lib/columnFilter'
 
 // How long before cached data is considered stale and silently refreshed
@@ -52,6 +54,7 @@ interface Lead {
 export type { Lead }
 
 interface LeadsDataState {
+
   // Data
   leads: Lead[]
   totalRows: number
@@ -102,8 +105,10 @@ const LeadsDataContext = createContext<LeadsDataState | null>(null)
 
 export function useLeadsData() {
   const ctx = useContext(LeadsDataContext)
+
   if (!ctx) throw new Error('useLeadsData must be used within LeadsDataProvider')
-  return ctx
+  
+return ctx
 }
 
 export function LeadsDataProvider({ children }: { children: React.ReactNode }) {
@@ -134,11 +139,14 @@ export function LeadsDataProvider({ children }: { children: React.ReactNode }) {
   // ── Fetch leads ──────────────────────────────────────────────────────────
   const fetchLeads = useCallback(async () => {
     setLoading(true)
+
     try {
       const activeFilters = columnFilters
         .filter(cf => {
           const val = cf.value as ColFilterValue
-          return val?.conditions?.some(isConditionActive)
+
+          
+return val?.conditions?.some(isConditionActive)
         })
         .map(cf => ({ id: cf.id, value: cf.value }))
 
@@ -183,7 +191,8 @@ export function LeadsDataProvider({ children }: { children: React.ReactNode }) {
   const markStaleCheckOnResume = useCallback((): boolean => {
     if (!hasInitialized) return true
     if (lastFetchTimeRef.current === null) return true
-    return Date.now() - lastFetchTimeRef.current > STALE_THRESHOLD_MS
+    
+return Date.now() - lastFetchTimeRef.current > STALE_THRESHOLD_MS
   }, [hasInitialized])
 
   return (

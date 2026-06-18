@@ -6,7 +6,9 @@
  */
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
+
 import { useRouter } from 'next/navigation'
+
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import Checkbox from '@mui/material/Checkbox'
@@ -17,6 +19,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import { createColumnHelper } from '@tanstack/react-table'
 
 import EntityListView from '@/components/EntityListView'
+import { downloadBlob, downloadJson } from '@/utils/exportDownload'
 import CollectionEditDialog from './CollectionEditDialog'
 
 interface Collection {
@@ -44,22 +47,26 @@ const statusColors: Record<string, 'success' | 'warning' | 'default'> = {
 
 const formatDate = (v: string | null) => {
   if (!v) return '—'
-  return new Date(v).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  
+return new Date(v).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
 /** Turn a saved filter_criteria into human-readable chips */
 function filterSummary(fc: any): string[] {
   if (!fc || typeof fc !== 'object') return []
   const chips: string[] = []
+
   if (fc.state && fc.state !== 'all') chips.push(`State: ${fc.state}`)
   if (fc.gender && fc.gender !== 'all') chips.push(`Gender: ${fc.gender === 'M' ? 'Male' : 'Female'}`)
   if (fc.favorite === true) chips.push('Favorites only')
   if (fc.search?.trim()) chips.push(`Search: "${fc.search.trim()}"`)
+
   if (Array.isArray(fc.columnFilters)) {
     for (const cf of fc.columnFilters) {
       const conds = cf?.value?.conditions?.filter((c: any) =>
         c.op === 'isEmpty' || c.op === 'isNotEmpty' || c.value?.trim()
       ) ?? []
+
       for (const cond of conds) {
         const opLabel: Record<string, string> = {
           contains: 'contains', notContains: 'not contains',
@@ -67,15 +74,20 @@ function filterSummary(fc: any): string[] {
           equals: 'equals', notEquals: 'not equals',
           isEmpty: 'is empty', isNotEmpty: 'is not empty',
         }
+
         const col = cf.id?.replace(/_/g, ' ')
+
         const label = cond.op === 'isEmpty' || cond.op === 'isNotEmpty'
           ? `${col} ${opLabel[cond.op] ?? cond.op}`
           : `${col} ${opLabel[cond.op] ?? cond.op} "${cond.value}"`
+
         chips.push(label)
       }
     }
   }
-  return chips
+
+  
+return chips
 }
 
 export default function CollectionsView() {
@@ -88,9 +100,11 @@ export default function CollectionsView() {
 
   const fetchCollections = useCallback(async () => {
     setLoading(true)
+
     try {
       const res = await fetch('/api/collections')
       const data = await res.json()
+
       if (Array.isArray(data)) setCollections(data)
     } catch { /* ignore */ } finally { setLoading(false) }
   }, [])
@@ -133,8 +147,10 @@ export default function CollectionsView() {
       header: 'Filters', size: 320, enableSorting: false,
       cell: ({ row }) => {
         const chips = filterSummary(row.original.filter_criteria)
+
         if (chips.length === 0) return <Typography className='text-sm' color='text.secondary'>— no filters saved —</Typography>
-        return (
+        
+return (
           <Box className='flex flex-wrap gap-1'>
             {chips.map((c, i) => (
               <Chip key={i} label={c} size='small' color='primary' variant='tonal'
@@ -152,7 +168,9 @@ export default function CollectionsView() {
       header: 'Created By', size: 160,
       cell: ({ row }) => {
         const u = row.original.users
-        return <Typography className='text-sm'>{u ? `${u.first_name} ${u.last_name}` : row.original.cre_by || '—'}</Typography>
+
+        
+return <Typography className='text-sm'>{u ? `${u.first_name} ${u.last_name}` : row.original.cre_by || '—'}</Typography>
       },
     }),
     {
@@ -164,8 +182,10 @@ export default function CollectionsView() {
       enableHiding: false,
       cell: ({ row }: any) => {
         const hasFilters = filterSummary(row.original.filter_criteria).length > 0
+
         if (!hasFilters) return null
-        return (
+        
+return (
           <Tooltip title='Open Leads with these filters applied'>
             <Button
               size='small'
@@ -189,12 +209,6 @@ export default function CollectionsView() {
     fetchCollections()
   }, [fetchCollections])
 
-  const downloadBlob = (content: string, filename: string, mime: string) => {
-    const blob = new Blob([content], { type: mime })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url; a.download = filename
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
-  }
 
   if (loading && collections.length === 0) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}><CircularProgress /></Box>
@@ -216,9 +230,10 @@ export default function CollectionsView() {
           const csv = ['Name,Description,Status,Tags,Created'].concat(
             rows.map(r => `"${r.name}","${r.description || ''}","${r.status}","${(r.tags || []).join(';')}","${r.cre_dt}"`)
           ).join('\n')
+
           downloadBlob(csv, 'collections.csv', 'text/csv')
         }}
-        onExportJson={(rows) => downloadBlob(JSON.stringify(rows, null, 2), 'collections.json', 'application/json')}
+        onExportJson={(rows) => downloadJson(rows, 'collections.json')}
         emptyMessage='No collections yet. Create your first collection!'
         onRowDoubleClick={(c) => setEditCollection(c)}
         onRowEdit={(c) => setEditCollection(c)}

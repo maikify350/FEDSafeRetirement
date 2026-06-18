@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import LeadFunnelView from '@/views/funnel/LeadFunnelView'
 
 export const metadata: Metadata = {

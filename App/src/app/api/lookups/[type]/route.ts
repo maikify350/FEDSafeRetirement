@@ -3,7 +3,9 @@
  * POST /api/lookups/[type] — Create a new lookup item
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient } from '@/utils/supabase/server'
 
 export async function GET(
@@ -27,7 +29,8 @@ export async function GET(
   const { data, error } = await query
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data ?? [])
+  
+return NextResponse.json(data ?? [])
 }
 
 export async function POST(
@@ -56,5 +59,6 @@ export async function POST(
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  
+return NextResponse.json(data)
 }

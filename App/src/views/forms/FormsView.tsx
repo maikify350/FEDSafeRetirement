@@ -6,6 +6,7 @@
  */
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
+
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import Box from '@mui/material/Box'
@@ -16,6 +17,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import { createColumnHelper } from '@tanstack/react-table'
 
 import EntityListView from '@/components/EntityListView'
+import { downloadBlob, downloadJson } from '@/utils/exportDownload'
 import FormEditDialog, { type FedForm } from './FormEditDialog'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 
@@ -23,7 +25,8 @@ const columnHelper = createColumnHelper<FedForm>()
 
 const formatDate = (v: string | null) => {
   if (!v) return '—'
-  return new Date(v).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  
+return new Date(v).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
 export default function FormsView() {
@@ -37,9 +40,11 @@ export default function FormsView() {
 
   const fetchForms = useCallback(async () => {
     setLoading(true)
+
     try {
       const res = await fetch('/api/forms?includeAudit=true')
       const data = await res.json()
+
       if (Array.isArray(data)) setForms(data)
     } catch { /* ignore */ } finally { setLoading(false) }
   }, [])
@@ -125,12 +130,6 @@ export default function FormsView() {
     fetchForms()
   }, [fetchForms])
 
-  const downloadBlob = (content: string, filename: string, mime: string) => {
-    const blob = new Blob([content], { type: mime })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url; a.download = filename
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
-  }
 
   if (loading && forms.length === 0) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}><CircularProgress /></Box>
@@ -153,9 +152,10 @@ export default function FormsView() {
           const csv = ['FormID,AKA,Title,Tags,InstructPages,FillPages,SourceURL'].concat(
             rows.map(r => `"${r.form_id}","${r.aka ?? ''}","${r.title}","${r.tags ?? ''}","${r.instruct_pages ?? ''}","${r.fill_pages ?? ''}","${r.source_url ?? ''}"`)
           ).join('\n')
+
           downloadBlob(csv, 'federal_forms.csv', 'text/csv')
         }}
-        onExportJson={(rows) => downloadBlob(JSON.stringify(rows, null, 2), 'federal_forms.json', 'application/json')}
+        onExportJson={(rows) => downloadJson(rows, 'federal_forms.json')}
         emptyMessage='No forms found.'
         onRowDoubleClick={isAdmin ? (r) => setEditForm(r) : undefined}
         onRowEdit={isAdmin ? (r) => setEditForm(r) : undefined}

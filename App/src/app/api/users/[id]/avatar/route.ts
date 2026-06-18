@@ -5,7 +5,9 @@
  * Max size: 5MB. Allowed types: image/jpeg, image/png, image/webp, image/gif.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 
 const BUCKET = 'avatars'
@@ -21,6 +23,7 @@ export async function POST(
   // Auth check
   const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
+
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdminClient()
@@ -29,10 +32,12 @@ export async function POST(
   const { data: callerRow } = await admin.from('users').select('role').eq('id', authUser.id).single()
   const isAdmin = callerRow?.role === 'admin'
   const isSelf  = authUser.id === id
+
   if (!isAdmin && !isSelf) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   // Parse the multipart form
   let formData: FormData
+
   try {
     formData = await request.formData()
   } catch {
@@ -40,12 +45,14 @@ export async function POST(
   }
 
   const file = formData.get('file') as File | null
+
   if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
 
   // Validate type and size
   if (!ALLOWED_TYPES.includes(file.type)) {
     return NextResponse.json({ error: `Unsupported file type: ${file.type}` }, { status: 415 })
   }
+
   if (file.size > MAX_BYTES) {
     return NextResponse.json({ error: 'File exceeds 5 MB limit' }, { status: 413 })
   }
@@ -57,14 +64,17 @@ export async function POST(
     'image/webp': 'webp',
     'image/gif':  'gif',
   }
+
   const ext      = extMap[file.type] ?? 'jpg'
   const path     = `${id}/profile.${ext}`
   const buffer   = Buffer.from(await file.arrayBuffer())
 
   // Remove any existing avatar files for this user (clean up old extension variants)
   const { data: existing } = await admin.storage.from(BUCKET).list(id)
+
   if (existing && existing.length > 0) {
     const oldPaths = existing.map((f) => `${id}/${f.name}`)
+
     await admin.storage.from(BUCKET).remove(oldPaths)
   }
 
@@ -75,6 +85,7 @@ export async function POST(
       contentType: file.type,
       upsert: true,
     })
+
   if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 })
 
   // Get public URL

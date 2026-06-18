@@ -16,10 +16,15 @@
  * CORS: open to all origins so the Chrome extension on Act.com can reach it.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/utils/supabase/server'
 import path from 'path'
+
 import fs from 'fs'
+
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
+import { createAdminClient } from '@/utils/supabase/server'
+
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const PDF_Preparer_API = require('@/lib/pdfgen/cowboy_pdf_preparer_api.js')
@@ -41,11 +46,13 @@ function loadBundledJson(filename: string): unknown[] {
     path.resolve(process.cwd(), 'src/lib/pdfgen', filename),
     path.resolve(__dirname, '..', '..', '..', '..', 'lib/pdfgen', filename),
   ]
+
   for (const p of candidates) {
     if (fs.existsSync(p)) {
       return JSON.parse(fs.readFileSync(p, 'utf-8'))
     }
   }
+
   throw new Error(`Bundled rate file not found: ${filename}`)
 }
 
@@ -87,9 +94,12 @@ export async function POST(request: NextRequest) {
     if (empResult.error || !empResult.data) {
       throw new Error(`Employee rates: ${empResult.error?.message ?? 'no data'}`)
     }
+
     if (annResult.error || !annResult.data) {
       throw new Error(`Annuitant rates: ${annResult.error?.message ?? 'no data'}`)
     }
+
+
     // Fetch federal tax brackets from Supabase
     const fedResult = await admin.from('irs_brackets')
       .select('filing_status, floor, ceiling, base_tax, marginal_rate')
@@ -98,6 +108,7 @@ export async function POST(request: NextRequest) {
     if (fedResult.error || !fedResult.data) {
       throw new Error(`Federal tax brackets: ${fedResult.error?.message ?? 'no data'}`)
     }
+
     const federalTaxBrackets = fedResult.data
 
     // Load bundled state tax rate files
@@ -134,8 +145,10 @@ export async function POST(request: NextRequest) {
     )
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e)
+
     console.error('[/api/proxy/calculatefinal] Error:', msg)
-    return NextResponse.json(
+    
+return NextResponse.json(
       { success: false, error: msg },
       { status: 500, headers: CORS }
     )

@@ -5,6 +5,8 @@
  * pinned to a facility address. Uses the free embed URL (no API key required).
  */
 
+import { useState } from 'react'
+
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
@@ -15,7 +17,6 @@ import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
 import Skeleton from '@mui/material/Skeleton'
-import { useState } from 'react'
 
 interface FacilityMapDialogProps {
   open: boolean

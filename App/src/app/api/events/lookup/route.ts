@@ -44,13 +44,17 @@
  * When multiple events match (overlapping), the earliest-starting one wins.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient } from '@/utils/supabase/server'
 
 // Convert "HH:MM" or "HH:MM:SS" to total minutes since midnight
 function toMinutes(t: string): number {
   const parts = t.split(':').map(Number)
-  return parts[0] * 60 + (parts[1] ?? 0)
+
+  
+return parts[0] * 60 + (parts[1] ?? 0)
 }
 
 export async function GET(req: NextRequest) {
@@ -63,6 +67,7 @@ export async function GET(req: NextRequest) {
 
   // ── Validate params ──────────────────────────────────────────────────────
   const missing: string[] = []
+
   if (!date)  missing.push('date')
   if (!time)  missing.push('time')
   if (!state) missing.push('state')
@@ -111,7 +116,9 @@ export async function GET(req: NextRequest) {
     if (error.message.includes('act_uuid')) {
       return retryWithoutActUuid(supabase, date!, state!, city!, time!)
     }
-    return NextResponse.json({ error: error.message }, { status: 500 })
+
+    
+return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
   if (!events || events.length === 0) {
@@ -128,10 +135,13 @@ export async function GET(req: NextRequest) {
     if (!ev.event_time) return false
     const startMin = toMinutes(ev.event_time as string)
     const durMin   = (ev.duration as number | null) ?? 0
+
     if (durMin > 0) {
       // Within window: start ≤ requested < start + duration
       return requestedMin >= startMin && requestedMin < startMin + durMin
     }
+
+
     // No duration: exact minute match
     return requestedMin === startMin
   })
@@ -196,16 +206,20 @@ async function retryWithoutActUuid(
     .order('event_time', { ascending: true })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
   if (!events || events.length === 0) {
     return NextResponse.json({ error: 'No event found for the supplied criteria.' }, { status: 404 })
   }
 
   const requestedMin = toMinutes(time)
+
   const match = events.find(ev => {
     if (!ev.event_time) return false
     const startMin = toMinutes(ev.event_time as string)
     const durMin   = (ev.duration as number | null) ?? 0
-    return durMin > 0
+
+    
+return durMin > 0
       ? requestedMin >= startMin && requestedMin < startMin + durMin
       : requestedMin === startMin
   })

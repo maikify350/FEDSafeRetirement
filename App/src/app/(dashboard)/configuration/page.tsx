@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import ConfigurationView from '@/views/configuration/ConfigurationView'
 
 export const metadata: Metadata = {

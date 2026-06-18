@@ -9,7 +9,9 @@
  * Admin-only endpoint.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 
 export const maxDuration = 30
@@ -24,8 +26,10 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user: authUser } } = await supabase.auth.getUser()
+
     if (authUser) {
       const { data: userRow } = await admin.from('users').select('role').eq('id', authUser.id).single()
+
       isAuthorized = userRow?.role === 'admin'
     }
   } catch {
@@ -38,6 +42,7 @@ export async function POST(request: NextRequest) {
     const referer = request.headers.get('referer') || ''
     const host = request.headers.get('host') || ''
     const isSameOrigin = origin.includes(host) || referer.includes(host)
+
     if (!isSameOrigin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -49,6 +54,7 @@ export async function POST(request: NextRequest) {
   const formId = (formData.get('form_id') as string | null)?.trim() || 'unknown'
 
   if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+
   if (!file.name.toLowerCase().endsWith('.pdf')) {
     return NextResponse.json({ error: 'Only PDF files are accepted' }, { status: 400 })
   }
@@ -66,6 +72,7 @@ export async function POST(request: NextRequest) {
     const oldPaths = existingFiles
       .filter(f => f.name && f.name !== '.emptyFolderPlaceholder')
       .map(f => `${formId}/${f.name}`)
+
     if (oldPaths.length > 0) {
       await admin.storage.from('Forms').remove(oldPaths)
     }

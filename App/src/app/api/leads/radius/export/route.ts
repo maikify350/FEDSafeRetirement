@@ -19,7 +19,9 @@
  *                 used by the leads grid's CSV export.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient } from '@/utils/supabase/server'
 
 const HARD_MAX = 50_000
@@ -29,8 +31,10 @@ type Lead = Record<string, any>
 function escapeCsvCell(v: unknown): string {
   if (v === null || v === undefined) return ''
   const s = String(v)
+
   if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`
-  return s
+  
+return s
 }
 
 function leadsToCsv(leads: Lead[]): string {
@@ -38,13 +42,16 @@ function leadsToCsv(leads: Lead[]): string {
     'First Name', 'Last Name', 'Occupation', 'Grade', 'Annual Salary', 'Hourly Rate',
     'Facility', 'City', 'State', 'Zip', 'Duty Date', 'Years of Service', 'Distance (mi)',
   ]
+
   const rows = leads.map(r => [
     r.first_name, r.last_name, r.occupation_title ?? '', r.grade_level ?? '',
     r.annual_salary ?? '', r.hourly_rate ?? '',
     r.facility_name ?? '', r.facility_city ?? '', r.facility_state ?? '', r.facility_zip_code ?? '',
     r.entered_on_duty_date ?? '', r.years_of_service ?? '', r.distance_miles ?? '',
   ])
-  return [headers, ...rows].map(row => row.map(escapeCsvCell).join(',')).join('\n')
+
+  
+return [headers, ...rows].map(row => row.map(escapeCsvCell).join(',')).join('\n')
 }
 
 export async function GET(request: NextRequest) {
@@ -62,21 +69,27 @@ export async function GET(request: NextRequest) {
     if (!address.trim()) {
       return NextResponse.json({ error: 'Either address or lat/lon is required' }, { status: 400 })
     }
+
     const mapboxKey = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
+
     if (!mapboxKey) {
       return NextResponse.json({ error: 'Mapbox API key not configured' }, { status: 500 })
     }
+
     try {
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${mapboxKey}&limit=1`
       const geoRes = await fetch(url)
       const geoData = await geoRes.json()
+
       if (!geoData.features || geoData.features.length === 0) {
         return NextResponse.json({ error: 'Could not geocode the provided address' }, { status: 404 })
       }
+
       ;[lon, lat] = geoData.features[0].center
     } catch (err) {
       console.error('[API /leads/radius/export] Geocoding error:', err)
-      return NextResponse.json({ error: 'Geocoding failed' }, { status: 500 })
+      
+return NextResponse.json({ error: 'Geocoding failed' }, { status: 500 })
     }
   }
 
@@ -92,6 +105,7 @@ export async function GET(request: NextRequest) {
   const filtersRaw    = searchParams.get('filters') ?? '[]'
 
   let parsedFilters = []
+
   try {
     parsedFilters = JSON.parse(filtersRaw)
   } catch (e) {
@@ -104,6 +118,7 @@ export async function GET(request: NextRequest) {
 
   while (offset < max) {
     const limit = Math.min(PAGE, max - offset)
+
     const { data, error } = await supabase.rpc('search_leads_by_radius', {
       p_lat: lat,
       p_lon: lon,
@@ -116,18 +131,25 @@ export async function GET(request: NextRequest) {
       p_favorite: favoriteParam === 'true' ? true : null,
       p_filters: parsedFilters,
     })
+
     if (error) {
       console.error('[API /leads/radius/export] RPC error:', error.message)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      
+return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
     const batch = (data ?? []).filter((r: any) => r.lead_data !== null)
+
     if (batch.length === 0) break
+
     for (const r of batch) {
       leads.push({
         ...r.lead_data,
         distance_miles: parseFloat(r.distance_miles?.toFixed(1) ?? '0'),
       })
     }
+
+
     // RPC returned fewer than asked for → no more rows
     if (batch.length < limit) break
     offset += limit
@@ -136,7 +158,9 @@ export async function GET(request: NextRequest) {
   if (format === 'csv') {
     const csv = leadsToCsv(leads)
     const stamp = new Date().toISOString().slice(0, 10)
-    return new NextResponse(csv, {
+
+    
+return new NextResponse(csv, {
       status: 200,
       headers: {
         'Content-Type':        'text/csv; charset=utf-8',

@@ -5,7 +5,9 @@
  * DELETE /api/irs-brackets/[id]                    — Delete a bracket row (admin only)
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 
 const DATA_COLS = 'id, filing_status, floor, ceiling, base_tax, marginal_rate, notes'
@@ -14,10 +16,12 @@ const AUDIT_COLS = 'cre_by, cre_dt, mod_by, mod_dt'
 async function requireAdmin() {
   const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
+
   if (!authUser) return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
 
   const admin = createAdminClient()
   const { data: userRow } = await admin.from('users').select('role').eq('id', authUser.id).single()
+
   if (userRow?.role !== 'admin') {
     return { error: NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 }) }
   }
@@ -47,6 +51,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const result = await requireAdmin()
+
   if ('error' in result && result.error) return result.error
   const { authUser, admin } = result as any
 
@@ -54,11 +59,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   // Validate
   const errors: string[] = []
+
   if (body.floor !== undefined && body.ceiling !== undefined && body.floor > body.ceiling) {
     errors.push('floor must be ≤ ceiling')
   }
+
   if (body.base_tax < 0 || body.base_tax > 1) errors.push('base_tax must be between 0 and 1')
   if (body.marginal_rate < 0 || body.marginal_rate > 1) errors.push('marginal_rate must be between 0 and 1')
+
   if (errors.length) {
     return NextResponse.json({ error: errors.join('; ') }, { status: 400 })
   }
@@ -89,6 +97,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const result = await requireAdmin()
+
   if ('error' in result && result.error) return result.error
   const { admin } = result as any
 

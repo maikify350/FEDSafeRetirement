@@ -78,14 +78,18 @@ export const multiConditionFilterFn: FilterFn<any> = (row, columnId, filterValue
   const cellValue = String(row.getValue(columnId) ?? '')
 
   const active = conditions.filter(isConditionActive)
+
   if (active.length === 0) return true
 
   const results = active.map(c => matchCondition(cellValue, c))
-  return combinator === 'or' ? results.some(Boolean) : results.every(Boolean)
+
+  
+return combinator === 'or' ? results.some(Boolean) : results.every(Boolean)
 }
 
 // Required by TanStack to auto-remove empty filters
 multiConditionFilterFn.autoRemove = (val: ColFilterValue) => {
   if (!val) return true
-  return !val.conditions.some(isConditionActive)
+  
+return !val.conditions.some(isConditionActive)
 }

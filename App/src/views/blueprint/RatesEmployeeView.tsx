@@ -6,12 +6,14 @@
  */
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
+
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import CircularProgress from '@mui/material/CircularProgress'
 import { createColumnHelper } from '@tanstack/react-table'
 
 import EntityListView from '@/components/EntityListView'
+import { downloadBlob, downloadJson } from '@/utils/exportDownload'
 import RatesEmployeeEditDialog from './RatesEmployeeEditDialog'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 
@@ -34,12 +36,14 @@ const columnHelper = createColumnHelper<FegliRateEmployee>()
 
 const formatDate = (v: string | null) => {
   if (!v) return '—'
-  return new Date(v).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  
+return new Date(v).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
 const formatRate = (v: number) => {
   if (v === 0) return '—'
-  return `$${v.toFixed(3)}`
+  
+return `$${v.toFixed(3)}`
 }
 
 /** Open a print-friendly PDF-style window with a formatted table */
@@ -73,7 +77,9 @@ function printRatesTable(rows: FegliRateEmployee[]) {
     </tbody>
   </table>
 </body></html>`
+
   const iframe = document.createElement('iframe')
+
   iframe.style.position = 'fixed'
   iframe.style.width = '0'
   iframe.style.height = '0'
@@ -81,6 +87,7 @@ function printRatesTable(rows: FegliRateEmployee[]) {
   iframe.style.left = '-9999px'
   document.body.appendChild(iframe)
   const doc = iframe.contentDocument || iframe.contentWindow?.document
+
   if (doc) {
     doc.open()
     doc.write(html)
@@ -88,6 +95,7 @@ function printRatesTable(rows: FegliRateEmployee[]) {
     iframe.contentWindow?.focus()
     iframe.contentWindow?.print()
   }
+
   setTimeout(() => document.body.removeChild(iframe), 1000)
 }
 
@@ -101,9 +109,11 @@ export default function RatesEmployeeView() {
 
   const fetchRates = useCallback(async () => {
     setLoading(true)
+
     try {
       const res = await fetch('/api/fegli-rates-employee?includeAudit=true')
       const data = await res.json()
+
       if (Array.isArray(data)) setRates(data)
     } catch { /* ignore */ } finally { setLoading(false) }
   }, [])
@@ -165,12 +175,6 @@ export default function RatesEmployeeView() {
     fetchRates()
   }, [fetchRates])
 
-  const downloadBlob = (content: string, filename: string, mime: string) => {
-    const blob = new Blob([content], { type: mime })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url; a.download = filename
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
-  }
 
   if (loading && rates.length === 0) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}><CircularProgress /></Box>
@@ -193,9 +197,10 @@ export default function RatesEmployeeView() {
           const csv = ['AgeMin,AgeMax,Basic,OptA,OptB,OptC'].concat(
             rows.map(r => `${r.age_min},${r.age_max},${r.basic},${r.opt_a},${r.opt_b},${r.opt_c}`)
           ).join('\n')
+
           downloadBlob(csv, 'fegli_rates_employee.csv', 'text/csv')
         }}
-        onExportJson={(rows) => downloadBlob(JSON.stringify(rows, null, 2), 'fegli_rates_employee.json', 'application/json')}
+        onExportJson={(rows) => downloadJson(rows, 'fegli_rates_employee.json')}
         emptyMessage='No FEGLI employee rates found.'
         onRowDoubleClick={isAdmin ? (r) => setEditRate(r) : undefined}
         onRowEdit={isAdmin ? (r) => setEditRate(r) : undefined}

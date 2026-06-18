@@ -98,9 +98,11 @@ export default function FedSafeAIPanel({ open, onClose }: FedSafeAIPanelProps) {
   const speakText = useCallback((text: string) => {
     if (!window.speechSynthesis) return
     window.speechSynthesis.cancel()
+
     // Strip markdown symbols before speaking
     const clean = text.replace(/[#*`_~>\[\]]/g, '').replace(/\n+/g, ' ').trim()
     const utt = new SpeechSynthesisUtterance(clean)
+
     utt.lang = 'en-US'
     utt.rate = 1.0
     utt.onstart = () => setIsSpeaking(true)
@@ -116,17 +118,20 @@ export default function FedSafeAIPanel({ open, onClose }: FedSafeAIPanelProps) {
 
   const sendMessage = useCallback(async (text?: string, fromVoice = false) => {
     const content = (text ?? input).trim()
+
     if (!content || isLoading) return
 
     stopSpeaking()
     voiceModeRef.current = fromVoice
 
     const userMsg: Message = { role: 'user', content, timestamp: new Date() }
+
     setMessages(prev => [...prev, userMsg])
     setInput('')
     setIsLoading(true)
 
     const assistantMsg: Message = { role: 'assistant', content: '', timestamp: new Date() }
+
     setMessages(prev => [...prev, assistantMsg])
 
     abortRef.current = new AbortController()
@@ -151,26 +156,33 @@ export default function FedSafeAIPanel({ open, onClose }: FedSafeAIPanelProps) {
 
       while (true) {
         const { done, value } = await reader.read()
+
         if (done) break
 
         buffer += decoder.decode(value, { stream: true })
         const lines = buffer.split('\n\n')
+
         buffer = lines.pop() ?? ''
 
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue
           const data = line.slice(6)
+
           if (data === '[DONE]') break
+
           try {
             const { content: delta } = JSON.parse(data)
+
             fullResponse += delta
             setMessages(prev => {
               const updated = [...prev]
+
               updated[updated.length - 1] = {
                 ...updated[updated.length - 1],
                 content: updated[updated.length - 1].content + delta,
               }
-              return updated
+              
+return updated
             })
           } catch { /* skip malformed chunks */ }
         }
@@ -184,11 +196,13 @@ export default function FedSafeAIPanel({ open, onClose }: FedSafeAIPanelProps) {
       if ((err as Error).name === 'AbortError') return
       setMessages(prev => {
         const updated = [...prev]
+
         updated[updated.length - 1] = {
           ...updated[updated.length - 1],
           content: '⚠️ Something went wrong. Please try again.',
         }
-        return updated
+        
+return updated
       })
     } finally {
       setIsLoading(false)
@@ -221,32 +235,40 @@ export default function FedSafeAIPanel({ open, onClose }: FedSafeAIPanelProps) {
 
   const toggleDictation = useCallback(() => {
     const SR = window.SpeechRecognition ?? window.webkitSpeechRecognition
+
     if (!SR) {
       alert('Speech recognition is not supported in this browser. Please use Chrome or Safari.')
-      return
+      
+return
     }
 
     if (isListening) {
       recognitionRef.current?.stop()
       setIsListening(false)
-      return
+      
+return
     }
 
     const recognition = new SR()
+
     recognition.lang = 'en-US'
     recognition.interimResults = true
     recognition.continuous = false
     recognitionRef.current = recognition
 
     let interimText = ''
+
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       interimText = ''
       let finalText = ''
+
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const t = event.results[i][0].transcript
+
         if (event.results[i].isFinal) finalText += t
         else interimText += t
       }
+
       if (finalText) {
         setInput(prev => (prev + ' ' + finalText).trimStart())
         interimText = ''
@@ -256,9 +278,11 @@ export default function FedSafeAIPanel({ open, onClose }: FedSafeAIPanelProps) {
     recognition.onend = () => {
       setIsListening(false)
       recognitionRef.current = null
+
       // Auto-send if input has content from voice
       setTimeout(() => {
         const val = inputRef.current?.value.trim()
+
         if (val) {
           // trigger send with voice flag
           setInput(prev => { 

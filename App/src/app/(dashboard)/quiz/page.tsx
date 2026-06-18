@@ -38,7 +38,9 @@ function getTopicIcon(topic: string) {
   for (const [key, icon] of Object.entries(TOPIC_ICONS)) {
     if (topic.toLowerCase().includes(key.toLowerCase())) return icon
   }
-  return 'tabler-school'
+
+  
+return 'tabler-school'
 }
 
 export default function QuizPage() {
@@ -58,6 +60,7 @@ export default function QuizPage() {
     if (topics.length > 0) return
     const res = await fetch('/api/quiz')
     const data = await res.json()
+
     setTopics(data.topics ?? [])
   }, [topics])
 
@@ -75,7 +78,9 @@ export default function QuizPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic: topic ?? null }),
       })
+
       const data = await res.json()
+
       if (!res.ok || !data.questions?.length) throw new Error(data.error ?? 'No questions returned')
       setQuestions(data.questions)
       setQuizTopic(data.topic)
@@ -94,6 +99,7 @@ export default function QuizPage() {
   const handleCheck = () => {
     if (chosen === null) return
     const q = questions[currentQ]
+
     setResults(prev => [...prev, {
       questionId: q.id,
       selectedIndex: chosen,
@@ -214,13 +220,16 @@ export default function QuizPage() {
           <div className='quiz-choices'>
             {q.choices.map((choice, idx) => {
               let state = ''
+
               if (revealed) {
                 if (idx === q.correctIndex) state = 'correct'
                 else if (idx === chosen && idx !== q.correctIndex) state = 'wrong'
               } else if (idx === chosen) {
                 state = 'selected'
               }
-              return (
+
+              
+return (
                 <button
                   key={idx}
                   id={`quiz-choice-${idx}`}
@@ -278,7 +287,9 @@ export default function QuizPage() {
         <div className='quiz-mini-tracker'>
           {questions.slice(0, currentQ).map((_, i) => {
             const r = results[i]
-            return (
+
+            
+return (
               <div
                 key={i}
                 className={`quiz-tracker-dot quiz-tracker-dot--${r?.correct ? 'pass' : 'fail'}`}
@@ -336,7 +347,9 @@ export default function QuizPage() {
           <h3 className='quiz-review-title'>Question Review</h3>
           {questions.map((q, i) => {
             const r = results[i]
-            return (
+
+            
+return (
               <div key={i} className={`quiz-review-item quiz-review-item--${r?.correct ? 'pass' : 'fail'}`}>
                 <div className='quiz-review-header'>
                   <span className={`quiz-review-badge quiz-review-badge--${r?.correct ? 'pass' : 'fail'}`}>

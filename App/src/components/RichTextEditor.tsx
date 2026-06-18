@@ -7,6 +7,7 @@
  */
 
 import { useEffect, useCallback } from 'react'
+
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -24,6 +25,7 @@ interface Props {
   placeholder?: string
   label?: string
   minHeight?: number
+
   /** Trimmed toolbar: only basic text styling (Bold / Italic / Underline). */
   minimal?: boolean
 }
@@ -76,6 +78,7 @@ export default function RichTextEditor({
   useEffect(() => {
     if (!editor) return
     const current = editor.getHTML()
+
     if (current !== value) {
       editor.commands.setContent(value || '')
     }
@@ -92,8 +95,13 @@ export default function RichTextEditor({
     if (!editor) return
     const prev = editor.getAttributes('link').href as string | undefined
     const url  = window.prompt('URL', prev ?? 'https://')
+
     if (url === null) return
-    if (url === '') { editor.chain().focus().extendMarkRange('link').unsetLink().run(); return }
+
+    if (url === '') { editor.chain().focus().extendMarkRange('link').unsetLink().run(); 
+
+return }
+
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
   }, [editor])
 

@@ -6,6 +6,7 @@
  */
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
+
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import Checkbox from '@mui/material/Checkbox'
@@ -23,6 +24,7 @@ import Alert from '@mui/material/Alert'
 import { createColumnHelper } from '@tanstack/react-table'
 
 import EntityListView from '@/components/EntityListView'
+import { downloadBlob, downloadJson } from '@/utils/exportDownload'
 import UserEditDialog from './UserEditDialog'
 import AddUserDialog from './AddUserDialog'
 
@@ -58,7 +60,8 @@ const roleColors: Record<string, 'error' | 'primary' | 'secondary' | 'success' |
 
 const formatDate = (v: string | null) => {
   if (!v) return '—'
-  return new Date(v).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  
+return new Date(v).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 export default function UsersView() {
@@ -75,9 +78,11 @@ export default function UsersView() {
 
   const fetchUsers = useCallback(async () => {
     setLoading(true)
+
     try {
       const res = await fetch('/api/users')
       const data = await res.json()
+
       if (Array.isArray(data)) setUsers(data)
     } catch { /* ignore */ } finally { setLoading(false) }
   }, [])
@@ -130,6 +135,7 @@ export default function UsersView() {
       header: 'Created', size: 150,
       cell: ({ row }) => <Typography className='text-sm'>{formatDate(row.original.cre_dt)}</Typography>,
     }),
+
     // Delete action column
     {
       id: 'delete',
@@ -171,13 +177,17 @@ export default function UsersView() {
     if (!confirmDelete) return
     setDeleting(true)
     setDeleteError('')
+
     try {
       const res = await fetch(`/api/users/${confirmDelete.id}`, { method: 'DELETE' })
       const result = await res.json()
+
       if (!res.ok) {
         setDeleteError(result.error || 'Failed to delete user')
-        return
+        
+return
       }
+
       setUsers(prev => prev.filter(u => u.id !== confirmDelete.id))
       setConfirmDelete(null)
     } catch {
@@ -207,13 +217,10 @@ export default function UsersView() {
           const csv = ['Email,First,Last,Role,Personal Phone#,Alternate Phone#,Created'].concat(
             rows.map(r => `"${r.email}","${r.first_name}","${r.last_name}","${r.role}","${r.phone || ''}","${r.alternate_phone || ''}","${r.cre_dt}"`)
           ).join('\n')
-          const blob = new Blob([csv], { type: 'text/csv' })
-          const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'users.csv'; a.click(); URL.revokeObjectURL(url)
+
+          downloadBlob(csv, 'users.csv', 'text/csv')
         }}
-        onExportJson={(rows) => {
-          const blob = new Blob([JSON.stringify(rows, null, 2)], { type: 'application/json' })
-          const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'users.json'; a.click(); URL.revokeObjectURL(url)
-        }}
+        onExportJson={(rows) => downloadJson(rows, 'users.json')}
         emptyMessage='No users found'
         onRowDoubleClick={(u) => setEditUser(u)}
         onRowEdit={(u) => setEditUser(u)}

@@ -9,6 +9,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react'
+
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import Tooltip from '@mui/material/Tooltip'
@@ -19,6 +20,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import Alert from '@mui/material/Alert'
 import Button from '@mui/material/Button'
 import InputAdornment from '@mui/material/InputAdornment'
+
 import CustomTextField from '@core/components/mui/TextField'
 import EntityEditDialog from '@/components/EntityEditDialog'
 import RichTextEditor from '@/components/RichTextEditor'
@@ -83,23 +85,35 @@ function AvatarUploader({
   useEffect(() => { setPreview(currentUrl); setError('') }, [currentUrl])
 
   const handleFile = async (file: File) => {
-    if (!file.type.startsWith('image/')) { setError('Must be an image file'); return }
-    if (file.size > 5 * 1024 * 1024)   { setError('Max file size is 5 MB'); return }
+    if (!file.type.startsWith('image/')) { setError('Must be an image file'); 
+
+return }
+
+    if (file.size > 5 * 1024 * 1024)   { setError('Max file size is 5 MB'); 
+
+return }
+
     setError('')
     setLoading(true)
 
     // Local preview
     const reader = new FileReader()
+
     reader.onload = (e) => setPreview(e.target?.result as string)
     reader.readAsDataURL(file)
 
     const fd = new FormData()
+
     fd.append('file', file)
 
     try {
       const res  = await fetch(`/api/users/${userId}/avatar`, { method: 'POST', body: fd })
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Upload failed'); return }
+
+      if (!res.ok) { setError(data.error || 'Upload failed'); 
+
+return }
+
       onUploaded(data.avatar_url)
     } catch {
       setError('Network error during upload')
@@ -110,6 +124,7 @@ function AvatarUploader({
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]
+
     if (f) handleFile(f)
     e.target.value = ''
   }
@@ -117,6 +132,7 @@ function AvatarUploader({
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault()
     const f = e.dataTransfer.files?.[0]
+
     if (f) handleFile(f)
   }
 
@@ -205,6 +221,7 @@ export default function UserEditDialog({ open, onClose, user, onSaved, usedColor
     first_name: '', last_name: '', phone: '', alternate_phone: '',
     role: 'viewer', color: '', bio_short: '', bio_long: '',
   })
+
   const [tab,     setTab]     = useState(0)
   const [saving,  setSaving]  = useState(false)
   const [error,   setError]   = useState('')
@@ -233,11 +250,21 @@ export default function UserEditDialog({ open, onClose, user, onSaved, usedColor
 
   const handleChangePassword = async () => {
     if (!user) return
-    if (pwForm.next.length < 8)            { setPwError('Password must be at least 8 characters'); return }
-    if (pwForm.next !== pwForm.confirm)    { setPwError('Passwords do not match'); return }
-    if (requireCurrent && !pwForm.current) { setPwError('Current password is required'); return }
+
+    if (pwForm.next.length < 8)            { setPwError('Password must be at least 8 characters'); 
+
+return }
+
+    if (pwForm.next !== pwForm.confirm)    { setPwError('Passwords do not match'); 
+
+return }
+
+    if (requireCurrent && !pwForm.current) { setPwError('Current password is required'); 
+
+return }
 
     setPwSaving(true); setPwError('')
+
     try {
       const res = await fetch(`/api/users/${user.id}/password`, {
         method: 'PUT',
@@ -247,8 +274,13 @@ export default function UserEditDialog({ open, onClose, user, onSaved, usedColor
           ...(requireCurrent ? { currentPassword: pwForm.current } : {}),
         }),
       })
+
       const data = await res.json()
-      if (!res.ok) { setPwError(data.error || 'Failed to change password'); return }
+
+      if (!res.ok) { setPwError(data.error || 'Failed to change password'); 
+
+return }
+
       setPwSuccess(true); setPwForm(emptyPw)
     } catch { setPwError('Network error') } finally { setPwSaving(false) }
   }
@@ -263,11 +295,13 @@ export default function UserEditDialog({ open, onClose, user, onSaved, usedColor
         role:            user.role       ?? 'viewer',
         color:           user.color      ?? '',
         bio_short:       user.bio_short  ?? '',
+
         // fall back to the legacy single `bio` if long bio not set yet
         bio_long:        user.bio_long   ?? user.bio ?? '',
       })
       setAvatarUrl(user.avatar_url ?? null)
     }
+
     setTab(0); setDirty(false); setError('')
     setPwForm(emptyPw); setPwError(''); setPwSuccess(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -295,6 +329,7 @@ export default function UserEditDialog({ open, onClose, user, onSaved, usedColor
 
   const handleAvatarUploaded = (url: string) => {
     setAvatarUrl(url)
+
     // avatar_url is saved immediately by the avatar API — no need to include in form PUT
     onSaved?.()   // refresh the grid so the new photo shows in the row
   }
@@ -302,14 +337,20 @@ export default function UserEditDialog({ open, onClose, user, onSaved, usedColor
   const handleSave = async () => {
     if (!user) return
     setSaving(true); setError('')
+
     try {
       const res = await fetch(`/api/users/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
+
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Failed to save'); return }
+
+      if (!res.ok) { setError(data.error || 'Failed to save'); 
+
+return }
+
       setSuccess(true); setDirty(false); onSaved?.()
     } catch { setError('Network error') } finally { setSaving(false) }
   }
@@ -409,7 +450,9 @@ export default function UserEditDialog({ open, onClose, user, onSaved, usedColor
             {COLOR_PRESETS.map(hex => {
               const isCurrent = form.color === hex
               const isTaken   = !isCurrent && usedColors.map(c => c.toLowerCase()).includes(hex.toLowerCase())
-              return (
+
+              
+return (
                 <Tooltip key={hex} title={isTaken ? 'Already assigned to another agent' : hex}>
                   <Box
                     onClick={() => !isTaken && handleColorPick(hex)}

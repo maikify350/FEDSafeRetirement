@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import RatesEmployeeView from '@/views/blueprint/RatesEmployeeView'
 
 export const metadata: Metadata = {

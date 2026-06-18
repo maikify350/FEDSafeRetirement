@@ -14,6 +14,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { createAdminClient } from '@/utils/supabase/server'
+import { verifyTurnstile } from '../_turnstile'
 
 /* ── CORS ────────────────────────────────────────────────────────────────── */
 
@@ -89,6 +90,12 @@ export async function POST(request: NextRequest) {
     return json({ ok: true, skipped: true })
   }
 
+  const turnstile = await verifyTurnstile(body, request)
+
+  if (!turnstile.ok) {
+    return json({ error: turnstile.error }, { status: 400 })
+  }
+
   // ── Extract & validate fields ────────────────────────────────────────
   const firstName     = asString(body.firstName || body.first_name, 120)
   const lastName      = asString(body.lastName || body.last_name, 120)
@@ -126,6 +133,7 @@ export async function POST(request: NextRequest) {
       sourcePage,
       referrer,
       submittedAt: new Date().toISOString(),
+      turnstile: turnstile.details,
     },
   }
 

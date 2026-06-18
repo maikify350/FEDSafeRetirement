@@ -38,6 +38,7 @@ export async function getActToken(): Promise<string> {
 
   // Token is raw JWT string
   const raw = await resp.text();
+
   cachedToken = raw.replace(/^"|"$/g, '').trim();
   tokenExpiry = Date.now() + 55000; // Act! tokens usually last 60s
 
@@ -50,6 +51,7 @@ export async function actRequest(path: string, options: RequestInit = {}) {
   const url = path.startsWith('http') ? path : `${ACT_API_BASE}/api${path.startsWith('/') ? '' : '/'}${path}`;
 
   const headers = new Headers(options.headers);
+
   headers.set('Authorization', `Bearer ${token}`);
   headers.set('Act-Database-Name', ACT_DATABASE!);
   headers.set('Accept', 'application/json');
@@ -61,6 +63,7 @@ export async function actRequest(path: string, options: RequestInit = {}) {
 
   if (!resp.ok) {
     const errorBody = await resp.text().catch(() => 'No body');
+
     throw new Error(`Act! API error [${resp.status}]: ${errorBody}`);
   }
 

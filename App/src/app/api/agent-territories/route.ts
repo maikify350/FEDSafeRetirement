@@ -4,7 +4,9 @@
  * DELETE /api/agent-territories?id=.. — Remove assignment
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient } from '@/utils/supabase/server'
 
 export async function GET() {
@@ -26,7 +28,8 @@ export async function GET() {
     .order('city', { ascending: true })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data ?? [])
+  
+return NextResponse.json(data ?? [])
 }
 
 export async function POST(req: NextRequest) {
@@ -34,6 +37,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
 
   const { agent_id, state, city, notes } = body
+
   if (!agent_id || !state) {
     return NextResponse.json({ error: 'agent_id and state are required' }, { status: 400 })
   }
@@ -45,7 +49,8 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data, { status: 201 })
+  
+return NextResponse.json(data, { status: 201 })
 }
 
 export async function DELETE(req: NextRequest) {
@@ -56,6 +61,8 @@ export async function DELETE(req: NextRequest) {
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
   const { error } = await supabase.from('agent_territories').delete().eq('id', id)
+
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ ok: true })
+  
+return NextResponse.json({ ok: true })
 }

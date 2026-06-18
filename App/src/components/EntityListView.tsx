@@ -34,6 +34,7 @@
  */
 
 import { useState, useMemo, useRef, useEffect, type ReactNode } from 'react'
+
 import Card from '@mui/material/Card'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
@@ -64,9 +65,7 @@ import {
   type ColumnDef,
   type ColumnFiltersState,
   type SortingState,
-  type FilterFn,
 } from '@tanstack/react-table'
-import { rankItem } from '@tanstack/match-sorter-utils'
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 
@@ -74,21 +73,15 @@ import DebouncedInput from '@/components/DebouncedInput'
 import { DraggableColumnHeader } from '@/components/DraggableColumnHeader'
 import { useGridPreferences } from '@/hooks/useGridPreferences'
 import { multiConditionFilterFn, MULTI_FILTER_KEY } from '@/lib/columnFilter'
+import { createColumnValueFuzzyFilter } from '@/lib/fuzzyFilter'
+import { buildCsv, downloadBlob, downloadJson } from '@/utils/exportDownload'
 import ExportFieldPickerDialog, { type ExportField } from '@/components/ExportFieldPickerDialog'
 import tableStyles from '@core/styles/table.module.css'
 
-// ── Module augmentation ─────────────────────────────────────────────────────
-declare module '@tanstack/table-core' {
-  interface FilterFns { fuzzy: FilterFn<unknown>; multiCondition: FilterFn<unknown> }
-}
-
-const fuzzyFilter: FilterFn<unknown> = (row, columnId, value, addMeta) => {
-  const itemRank = rankItem(row.getValue(columnId), value)
-  addMeta({ itemRank })
-  return itemRank.passed
-}
+const fuzzyFilter = createColumnValueFuzzyFilter<unknown>()
 
 export interface EntityListViewProps<TData extends { id: string }> {
+
   // ── Data
   columns: ColumnDef<TData, any>[]
   data: TData[]
@@ -193,6 +186,7 @@ export default function EntityListView<TData extends { id: string }>({
 
     // Prepend select / checkbox column if not already present
     const hasSelect = cols.some((c: any) => c.id === 'select')
+
     if (!hasSelect) {
       cols = [
         {
@@ -208,6 +202,7 @@ export default function EntityListView<TData extends { id: string }>({
     // Append action column (pencil edit and/or red trash delete)
     if (onRowEdit || onRowDelete) {
       const hasAction = cols.some((c: any) => c.id === 'action')
+
       if (!hasAction) {
         cols.push({
           id: 'action',
@@ -277,31 +272,41 @@ export default function EntityListView<TData extends { id: string }>({
 
   const setColumnVisibility = (updater: Record<string,boolean> | ((p: Record<string,boolean>) => Record<string,boolean>)) =>
     setGridPrefs(prev => ({ ...prev, columnVisibility: typeof updater === 'function' ? updater(prev.columnVisibility ?? {}) : updater }))
+
   const setColumnOrder = (updater: string[] | ((p: string[]) => string[])) =>
     setGridPrefs(prev => ({ ...prev, columnOrder: typeof updater === 'function' ? updater(prev.columnOrder ?? []) : updater }))
+
   const setDensity = (v: 'compact' | 'normal' | 'comfortable') =>
     setGridPrefs(prev => ({ ...prev, density: v }))
+
   const setPageSize = (v: number) =>
     setGridPrefs(prev => ({ ...prev, pageSize: v }))
+
   const setShowFilters = (v: boolean) =>
     setGridPrefs(prev => ({ ...prev, showFilters: v }))
+
   const setColumnSizing = (updater: Record<string,number> | ((p: Record<string,number>) => Record<string,number>)) =>
     setGridPrefs(prev => ({ ...prev, columnSizing: typeof updater === 'function' ? updater(prev.columnSizing ?? {}) : updater }))
+
   const persistSorting = (s: SortingState) =>
     setGridPrefs(prev => ({ ...prev, sorting: s }))
 
   // Merge new default columns
   const prevDefaultRef = useRef<Record<string,boolean>>({})
+
   useEffect(() => {
     if (!defaultColVisibility || Object.keys(defaultColVisibility).length === 0) return
     const prev = prevDefaultRef.current
     const newKeys = Object.entries(defaultColVisibility).filter(([k]) => !(k in prev))
+
     if (newKeys.length === 0) return
     prevDefaultRef.current = { ...prev, ...Object.fromEntries(newKeys) }
     setColumnVisibility(existing => {
       const merged = { ...existing }
+
       for (const [k, v] of newKeys) { if (!(k in merged)) merged[k] = v }
-      return merged
+      
+return merged
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultColVisibility])
@@ -332,6 +337,7 @@ export default function EntityListView<TData extends { id: string }>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [columnOrder.join(',')]
   )
+
   const [resolvedColumnOrder, setResolvedColumnOrder] = useState<string[]>(cleanedColumnOrder)
 
   // ── TanStack table ────────────────────────────────────────────────────────
@@ -365,11 +371,13 @@ export default function EntityListView<TData extends { id: string }>({
     onGlobalFilterChange: isServerSide ? undefined : onSearchChange,
     onColumnFiltersChange: (updater) => {
       const next = typeof updater === 'function' ? updater(columnFilters) : updater
+
       setColumnFilters(next)
       if (isServerSide && onColumnFilterChange) onColumnFilterChange(next)
     },
     onSortingChange: (updater) => {
       const next = typeof updater === 'function' ? updater(sorting) : updater
+
       setSorting(next)
       persistSorting(next)
       if (isServerSide && onSortChange) onSortChange(next)
@@ -378,6 +386,7 @@ export default function EntityListView<TData extends { id: string }>({
       setColumnVisibility(typeof updater === 'function' ? updater(columnVisibility) : updater),
     onColumnOrderChange: (updater) => {
       const next = typeof updater === 'function' ? updater(resolvedColumnOrder) : updater
+
       setColumnOrder(next.filter((id: string) => !['select', 'action'].includes(id)))
     },
     getCoreRowModel: getCoreRowModel(),
@@ -393,12 +402,15 @@ export default function EntityListView<TData extends { id: string }>({
 
   // Phase-2 effect: resolve column order
   const leafIds = table.getAllLeafColumns().map(c => c.id).join(',')
+
   useEffect(() => {
     const allIds = leafIds ? leafIds.split(',') : []
+
     if (!allIds.length) return
     const dataIds = allIds.filter(id => !['select', 'favorite', 'action'].includes(id))
     const storedData = cleanedColumnOrder.filter(id => allIds.includes(id))
     const missing    = dataIds.filter(id => !storedData.includes(id))
+
     const full = [
       ...(allIds.includes('select') ? ['select'] : []),
       ...(allIds.includes('favorite') ? ['favorite'] : []),
@@ -406,6 +418,7 @@ export default function EntityListView<TData extends { id: string }>({
       ...missing,
       ...(allIds.includes('action') ? ['action'] : []),
     ]
+
     if (full.join(',') !== resolvedColumnOrder.join(',')) setResolvedColumnOrder(full)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leafIds, cleanedColumnOrder.join(',')])
@@ -416,7 +429,9 @@ export default function EntityListView<TData extends { id: string }>({
     if (colId === 'favorite') return -1
     if (colId === 'action') return 1_000_000
     const idx = resolvedColumnOrder.indexOf(colId)
-    return idx === -1 ? 999_999 : idx
+
+    
+return idx === -1 ? 999_999 : idx
   }
 
   const draggableColIds = table
@@ -427,10 +442,12 @@ export default function EntityListView<TData extends { id: string }>({
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
+
     if (active && over && active.id !== over.id) {
       const cur = draggableColIds
       const oldIndex = cur.indexOf(active.id as string)
       const newIndex = cur.indexOf(over.id as string)
+
       if (oldIndex !== -1 && newIndex !== -1) setColumnOrder(arrayMove(cur, oldIndex, newIndex))
     }
   }
@@ -472,6 +489,7 @@ export default function EntityListView<TData extends { id: string }>({
               }}
               onRowsPerPageChange={e => {
                 const n = Number(e.target.value)
+
                 if (isServerSide && onPageChange) {
                   setPageSize(n)
                   onPageChange(0, n)
@@ -563,10 +581,13 @@ export default function EntityListView<TData extends { id: string }>({
                 const pickerCols = table.getAllLeafColumns()
                   .filter(col => !['select', 'favorite', 'action'].includes(col.id))
                   .sort((a, b) => colSortKey(a.id) - colSortKey(b.id))
+
                 const visibleCount = pickerCols.filter(c => c.getIsVisible()).length
                 const allVisible    = visibleCount === pickerCols.length
                 const noneVisible   = visibleCount === 0
-                return (
+
+                
+return (
                   <>
                     {/* Sticky header */}
                     <Box sx={{ p: 2, pb: 1.25, borderBottom: '1px solid', borderColor: 'divider' }}>
@@ -586,6 +607,7 @@ export default function EntityListView<TData extends { id: string }>({
                           disabled={allVisible}
                           onClick={() => {
                             const all: Record<string, boolean> = {}
+
                             pickerCols.forEach(c => { all[c.id] = true })
                             setColumnVisibility(prev => ({ ...prev, ...all }))
                           }}
@@ -598,6 +620,7 @@ export default function EntityListView<TData extends { id: string }>({
                           disabled={noneVisible}
                           onClick={() => {
                             const none: Record<string, boolean> = {}
+
                             pickerCols.forEach(c => { none[c.id] = false })
                             setColumnVisibility(prev => ({ ...prev, ...none }))
                           }}
@@ -620,8 +643,10 @@ export default function EntityListView<TData extends { id: string }>({
                             const currentOrder = columnOrder.length ? columnOrder : allCols
                             const fromIdx = currentOrder.indexOf(dragColId.current)
                             const toIdx = currentOrder.indexOf(col.id)
+
                             if (fromIdx === -1 || toIdx === -1) return
                             const next = [...currentOrder]
+
                             next.splice(fromIdx, 1)
                             next.splice(toIdx, 0, dragColId.current)
                             setColumnOrder(next)
@@ -697,8 +722,10 @@ export default function EntityListView<TData extends { id: string }>({
                     } else if (onExportAll) {
                       // Fetch ALL matching rows from the server
                       setExportingAll(true)
+
                       try {
                         const all = await onExportAll()
+
                         if (all && all.length > 0) {
                           setExportDialogRows(all)
                           setExportDialogOpen(true)
@@ -832,6 +859,7 @@ export default function EntityListView<TData extends { id: string }>({
           }}
           onRowsPerPageChange={e => {
             const n = Number(e.target.value)
+
             if (isServerSide && onPageChange) {
               setPageSize(n)
               onPageChange(0, n)
@@ -925,51 +953,51 @@ export default function EntityListView<TData extends { id: string }>({
               // exports to Excel. Works identically on Vercel and locally.
               const XLSX = await import('xlsx')
               const aoa: any[][] = [headers]
+
               for (const r of rows) {
                 aoa.push(keys.map(k => {
                   const v = (r as any)[k]
-                  return v === null || v === undefined ? '' : v
+
+                  
+return v === null || v === undefined ? '' : v
                 }))
               }
+
               const sheet = XLSX.utils.aoa_to_sheet(aoa)
+
+
               // Auto-size columns so Excel doesn't truncate visually
               sheet['!cols'] = headers.map((h, idx) => {
                 let maxLen = String(h).length
+
                 for (const row of aoa.slice(1)) {
                   const len = String(row[idx] ?? '').length
+
                   if (len > maxLen) maxLen = len
                 }
-                return { wch: Math.min(60, Math.max(8, maxLen + 2)) }
+
+                
+return { wch: Math.min(60, Math.max(8, maxLen + 2)) }
               })
               const wb = XLSX.utils.book_new()
+
               XLSX.utils.book_append_sheet(wb, sheet, 'Export')
               XLSX.writeFile(wb, `${baseName}.xlsx`)
             } else if (fmt === 'csv') {
-              // Build CSV with selected fields in order
-              const csvRows = rows.map(r => keys.map(k => {
-                const val = (r as any)[k]
-                return `"${String(val ?? '').replace(/"/g, '""')}"`
-              }).join(','))
-              const csv = [headers.join(','), ...csvRows].join('\n')
-              const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-              const url = URL.createObjectURL(blob)
-              const a = document.createElement('a'); a.href = url
-              a.download = `${baseName}.csv`
-              document.body.appendChild(a); a.click(); document.body.removeChild(a)
-              URL.revokeObjectURL(url)
+              const csvRows = rows.map(r => keys.map(k => (r as any)[k]))
+              const csv = buildCsv(headers, csvRows)
+
+              downloadBlob(csv, `${baseName}.csv`, 'text/csv;charset=utf-8;')
             } else {
-              // Build JSON with only selected fields
               const filtered = rows.map(r => {
                 const obj: any = {}
+
                 keys.forEach(k => { obj[k] = (r as any)[k] })
-                return obj
+                
+return obj
               })
-              const blob = new Blob([JSON.stringify(filtered, null, 2)], { type: 'application/json' })
-              const url = URL.createObjectURL(blob)
-              const a = document.createElement('a'); a.href = url
-              a.download = `${baseName}.json`
-              document.body.appendChild(a); a.click(); document.body.removeChild(a)
-              URL.revokeObjectURL(url)
+
+              downloadJson(filtered, `${baseName}.json`)
             }
           }}
         />

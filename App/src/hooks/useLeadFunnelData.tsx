@@ -65,8 +65,10 @@ const LeadFunnelDataContext = createContext<LeadFunnelDataState | null>(null)
 
 export function useLeadFunnelData() {
   const ctx = useContext(LeadFunnelDataContext)
+
   if (!ctx) throw new Error('useLeadFunnelData must be used within LeadFunnelDataProvider')
-  return ctx
+  
+return ctx
 }
 
 export function LeadFunnelDataProvider({ children }: { children: React.ReactNode }) {
@@ -78,9 +80,11 @@ export function LeadFunnelDataProvider({ children }: { children: React.ReactNode
 
   const fetchLeads = useCallback(async () => {
     setLoading(true)
+
     try {
       const res = await fetch('/api/lead-funnel')
       const data = await res.json()
+
       if (Array.isArray(data)) setLeads(data)
       lastFetchTimeRef.current = Date.now()
       if (!hasInitialized) setHasInitialized(true)
@@ -90,7 +94,8 @@ export function LeadFunnelDataProvider({ children }: { children: React.ReactNode
   const markStaleCheckOnResume = useCallback((): boolean => {
     if (!hasInitialized) return true
     if (lastFetchTimeRef.current === null) return true
-    return Date.now() - lastFetchTimeRef.current > STALE_THRESHOLD_MS
+    
+return Date.now() - lastFetchTimeRef.current > STALE_THRESHOLD_MS
   }, [hasInitialized])
 
   return (

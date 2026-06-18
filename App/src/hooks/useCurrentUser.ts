@@ -9,6 +9,7 @@
  */
 
 import { useState, useEffect } from 'react'
+
 import { createClient } from '@/utils/supabase/client'
 
 interface CurrentUser {
@@ -31,6 +32,7 @@ let fetchPromise: Promise<CurrentUser | null> | null = null
 async function fetchUser(): Promise<CurrentUser | null> {
   const supabase = createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
+
   if (!authUser) return null
 
   const { data } = await supabase
@@ -50,7 +52,8 @@ export function useCurrentUser(): UseCurrentUserResult {
     if (cachedUser) {
       setUser(cachedUser)
       setLoading(false)
-      return
+      
+return
     }
 
     if (!fetchPromise) {

@@ -13,6 +13,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
@@ -37,6 +38,7 @@ import Avatar from '@mui/material/Avatar'
 import { createColumnHelper } from '@tanstack/react-table'
 
 import EntityListView from '@/components/EntityListView'
+import { buildCsv, downloadBlob, downloadJson } from '@/utils/exportDownload'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { createClient } from '@/utils/supabase/client'
 
@@ -126,7 +128,8 @@ const locationColor = (loc: string | null) =>
 
 const fmtDuration = (s: number | null) => {
   if (!s) return '—'
-  return `${Math.floor(s / 60)}m ${s % 60}s`
+  
+return `${Math.floor(s / 60)}m ${s % 60}s`
 }
 
 const fmtDate = (v: string | null) =>
@@ -148,20 +151,26 @@ function AudioPlayerDialog({ lead, onClose }: { lead: EchoLead; onClose: () => v
 
   useEffect(() => {
     const audio = audioRef.current
+
     if (!audio) return
+
     const onLoaded  = () => {
       setDuration(audio.duration)
       setLoading(false)
       audio.play().then(() => setPlaying(true)).catch(() => {})
     }
+
     const onTime    = () => setCurrentTime(audio.currentTime)
     const onEnded   = () => setPlaying(false)
     const onError   = () => { setError(true); setLoading(false) }
+
     audio.addEventListener('loadedmetadata', onLoaded)
     audio.addEventListener('timeupdate', onTime)
     audio.addEventListener('ended', onEnded)
     audio.addEventListener('error', onError)
-    return () => {
+
+    
+return () => {
       audio.removeEventListener('loadedmetadata', onLoaded)
       audio.removeEventListener('timeupdate', onTime)
       audio.removeEventListener('ended', onEnded)
@@ -171,13 +180,16 @@ function AudioPlayerDialog({ lead, onClose }: { lead: EchoLead; onClose: () => v
 
   const togglePlay = () => {
     const audio = audioRef.current
+
     if (!audio) return
+
     if (playing) { audio.pause(); setPlaying(false) }
     else         { audio.play();  setPlaying(true)  }
   }
 
   const handleSeek = (_: Event, val: number | number[]) => {
     const t = val as number
+
     if (audioRef.current) audioRef.current.currentTime = t
     setCurrentTime(t)
   }
@@ -186,7 +198,9 @@ function AudioPlayerDialog({ lead, onClose }: { lead: EchoLead; onClose: () => v
     if (!isFinite(s)) return '0:00'
     const m = Math.floor(s / 60)
     const sec = Math.floor(s % 60)
-    return `${m}:${sec.toString().padStart(2, '0')}`
+
+    
+return `${m}:${sec.toString().padStart(2, '0')}`
   }
 
   return (
@@ -305,6 +319,7 @@ function EditLeadDialog({
   const handleSave = async () => {
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
+
     const { error } = await supabase
       .from('echo_leads')
       .update({
@@ -324,6 +339,7 @@ function EditLeadDialog({
         notes:                     form.notes,
         call_summary:              form.call_summary,
         mod_by:                    user?.email ?? 'portal',
+
         // mod_dt + version_no are bumped automatically by trg_echo_leads_mod_dt
       })
       .eq('id', lead.id)
@@ -486,11 +502,13 @@ export default function EchoLeadsView() {
 
   const fetchLeads = useCallback(async () => {
     setLoading(true)
+
     const { data } = await supabase
       .from('echo_leads')
       .select('*')
       .order('call_date', { ascending: false })
       .limit(500)
+
     setLeads((data ?? []) as EchoLead[])
     setLoading(false)
   }, [supabase])
@@ -499,6 +517,7 @@ export default function EchoLeadsView() {
     try {
       const res = await fetch('/api/events')
       const data = await res.json()
+
       if (Array.isArray(data)) setEvents(data.map(normEvent))
     } catch { /* ignore */ }
   }, [])
@@ -508,9 +527,11 @@ export default function EchoLeadsView() {
   const runSync = async () => {
     setSyncing(true)
     setSyncResult(null)
+
     try {
       const res  = await fetch('/api/echowin/sync', { method: 'POST' })
       const data = await res.json()
+
       setSyncResult(`Synced ${data.synced} · Skipped ${data.skipped} · Errors ${data.errors}`)
       await fetchLeads()
     } catch {
@@ -547,8 +568,10 @@ export default function EchoLeadsView() {
   // Participant (linked-lead) count per event
   const leadCountByEvent = useMemo(() => {
     const m = new Map<string, number>()
+
     leads.forEach(l => { if (l.event_id) m.set(l.event_id, (m.get(l.event_id) ?? 0) + 1) })
-    return m
+    
+return m
   }, [leads])
 
   // Venue combo lists every event (with its participant count); the agent combo
@@ -558,8 +581,10 @@ export default function EchoLeadsView() {
 
   const userOptions = useMemo(() => {
     const m = new Map<string, AssignedUser>()
+
     events.forEach(e => { if (e.assignedto) m.set(e.assignedto.id, e.assignedto) })
-    return [...m.values()].sort((a, b) => userFullName(a).localeCompare(userFullName(b)))
+    
+return [...m.values()].sort((a, b) => userFullName(a).localeCompare(userFullName(b)))
   }, [events])
 
   // Event + Assigned-user filters are ANDed; the grid's search box / column
@@ -578,20 +603,25 @@ export default function EchoLeadsView() {
       id: 'call_date', header: 'Date', size: 160,
       cell: ({ getValue }) => {
         const v = getValue()
-        return (
+
+        
+return (
           <Typography className='text-sm' color='text.secondary'>
             {v ? new Date(v).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—'}
           </Typography>
         )
       },
     }),
+
     // When the record was ingested into our system (audit trail — shows calls
     // are being captured daily, nothing missed).
     columnHelper.accessor('cre_dt', {
       id: 'cre_dt', header: 'Received', size: 170,
       cell: ({ getValue }) => {
         const v = getValue()
-        return (
+
+        
+return (
           <Typography className='text-sm' color='text.secondary'>
             {v ? new Date(v).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—'}
           </Typography>
@@ -602,6 +632,8 @@ export default function EchoLeadsView() {
       id: 'name', header: 'Name', size: 150,
       cell: ({ getValue }) => {
         const n = getValue()
+
+
         // No parsed name → show a muted placeholder, not the phone (the Phone
         // column already shows it). Unparsed rows are incomplete/failed calls.
         return n
@@ -625,7 +657,9 @@ export default function EchoLeadsView() {
       id: 'conference_location', header: 'Conference', size: 140,
       cell: ({ getValue }) => {
         const loc = getValue()
-        return loc ? (
+
+        
+return loc ? (
           <Chip
             label={loc.split(',')[0]}
             size='small'
@@ -643,7 +677,9 @@ export default function EchoLeadsView() {
       id: 'event', header: 'Event', size: 200,
       cell: ({ row }) => {
         const ev = row.original._event
-        return ev
+
+        
+return ev
           ? <Typography className='text-sm' noWrap>{`#${ev.event_seq} · ${ev.description}`}</Typography>
           : <Typography className='text-sm' color='text.disabled'>—</Typography>
       },
@@ -652,8 +688,10 @@ export default function EchoLeadsView() {
       id: 'assigned_user', header: 'Assigned To', size: 170,
       cell: ({ row }) => {
         const u = row.original._event?.assignedto
+
         if (!u) return <Typography className='text-sm' color='text.disabled'>—</Typography>
-        return (
+        
+return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
             <Avatar sx={{ width: 24, height: 24, fontSize: 11, bgcolor: u.color || '#94a3b8' }}>
               {userInitials(u)}
@@ -671,7 +709,9 @@ export default function EchoLeadsView() {
       id: 'guest_name', header: 'Guest', size: 150,
       cell: ({ row }) => {
         const g = row.original.guest_name
-        return g
+
+        
+return g
           ? <Tooltip title={row.original.guest_is_fed_employee ? 'Federal employee' : 'Non-federal'}><span>{g}</span></Tooltip>
           : <Typography className='text-sm' color='text.disabled'>—</Typography>
       },
@@ -725,27 +765,19 @@ export default function EchoLeadsView() {
     duration_seconds: r.call_duration_seconds ?? '', confidence: r.parse_confidence || '',
   }))
 
-  const downloadBlob = (content: string, filename: string, mime: string) => {
-    const blob = new Blob([content], { type: mime })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url; a.download = filename
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
-  }
-
   const exportToCsv = (rows: EnrichedEchoLead[]) => {
     const recs = exportRows(rows)
+
     if (recs.length === 0) return
     const headers = Object.keys(recs[0])
-    const csv = [
-      headers.join(','),
-      ...recs.map(r => headers.map(h => `"${String((r as any)[h] ?? '').replace(/"/g, '""')}"`).join(',')),
-    ].join('\n')
+    const csvRows = recs.map(r => headers.map(h => (r as any)[h]))
+    const csv = buildCsv(headers, csvRows)
+
     downloadBlob(csv, `echo_leads_${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv;charset=utf-8;')
   }
 
   const exportToJson = (rows: EnrichedEchoLead[]) =>
-    downloadBlob(JSON.stringify(exportRows(rows), null, 2), `echo_leads_${new Date().toISOString().slice(0, 10)}.json`, 'application/json')
+    downloadJson(exportRows(rows), `echo_leads_${new Date().toISOString().slice(0, 10)}.json`)
 
   // ── Filter combo chips (Event + Assigned user) ────────────────────────────
   const filterChips = (
@@ -757,7 +789,9 @@ export default function EchoLeadsView() {
         onChange={(e) => setEventFilter(e.target.value)}
         renderValue={(val) => {
           const ev = eventOptions.find(o => o.id === val)
-          return ev
+
+          
+return ev
             ? <span>{`#${ev.event_seq} · ${ev.description}`}</span>
             : <span style={{ color: 'var(--mui-palette-text-secondary)' }}>All Events</span>
         }}
@@ -787,7 +821,9 @@ export default function EchoLeadsView() {
         onChange={(e) => setUserFilter(e.target.value)}
         renderValue={(val) => {
           const u = userOptions.find(o => o.id === val)
-          return u
+
+          
+return u
             ? <span>{userFullName(u)}</span>
             : <span style={{ color: 'var(--mui-palette-text-secondary)' }}>All Agents</span>
         }}
@@ -849,6 +885,7 @@ export default function EchoLeadsView() {
         storageKey='fs-echo-leads'
         isLoading={loading}
         defaultSorting={[{ id: 'call_date', desc: true }]}
+
         // Date (call_date) now shows time and covers the "calls arriving" view;
         // Received (cre_dt) is the ingestion audit field — hidden by default,
         // toggleable in the column picker.

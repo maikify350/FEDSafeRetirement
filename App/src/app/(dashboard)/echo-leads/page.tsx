@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import EchoLeadsView from '@/views/echo-leads/EchoLeadsView'
 
 export const metadata: Metadata = {

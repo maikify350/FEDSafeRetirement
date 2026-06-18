@@ -75,6 +75,7 @@ const LoginV2 = ({ mode }: { mode: SystemMode }) => {
   // Restore saved email on mount
   useEffect(() => {
     const saved = localStorage.getItem('fedsafe-remembered-email')
+
     if (saved) {
       setEmail(saved)
       setRememberMe(true)
@@ -121,7 +122,8 @@ const LoginV2 = ({ mode }: { mode: SystemMode }) => {
 
       if (signInError) {
         setError(signInError.message)
-        return
+        
+return
       }
 
       // Save or clear remembered email

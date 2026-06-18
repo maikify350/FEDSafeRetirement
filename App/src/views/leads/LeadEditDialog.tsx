@@ -8,11 +8,13 @@
  */
 
 import { useState, useEffect } from 'react'
+
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
+
 import CustomTextField from '@core/components/mui/TextField'
 import EntityEditDialog from '@/components/EntityEditDialog'
 import AddressAutocomplete from '@/components/AddressAutocomplete'
@@ -79,6 +81,7 @@ interface StateLookup { value: string; label: string }
 export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) {
   // ── US States from lookups ────────────────────────────────────────────────
   const [usStates, setUsStates] = useState<StateLookup[]>([])
+
   useEffect(() => {
     fetch('/api/lookups/usState?activeOnly=true')
       .then(r => r.json())
@@ -132,6 +135,7 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
 
   // ── Fetch full lead record (includes cre_dt, mod_dt, cre_by, mod_by) ────
   const [fullLead, setFullLead] = useState<Lead | null>(null)
+
   useEffect(() => {
     if (open && lead?.id) {
       fetch(`/api/leads/${lead.id}`)
@@ -184,13 +188,17 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
   // ── Save ──────────────────────────────────────────────────────────────────
   const handleSave = async () => {
     if (!lead) return
+
     if (!form.first_name.trim() || !form.last_name.trim()) {
       setError('First Name and Last Name are required')
-      return
+      
+return
     }
+
     if (!form.facility_state.trim()) {
       setError('Facility State is required')
-      return
+      
+return
     }
 
     setSaving(true)
@@ -232,7 +240,8 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
 
       if (!res.ok) {
         setError(data.error || 'Failed to save')
-        return
+        
+return
       }
 
       setSuccess(true)
@@ -269,7 +278,9 @@ export default function LeadEditDialog({ open, onClose, lead, onSaved }: Props) 
       isFavorite={localFavorite}
       onToggleFavorite={lead?.id ? async () => {
         const newVal = !localFavorite
+
         setLocalFavorite(newVal)
+
         try {
           await fetch(`/api/leads/${lead.id}/favorite`, {
             method: 'PATCH',

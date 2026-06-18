@@ -14,7 +14,8 @@
  * CORS: open to all origins so the Chrome extension on Act.com can reach it.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 const CORS = {
@@ -36,6 +37,7 @@ async function getActToken(
   database: string,
 ): Promise<string> {
   const creds = Buffer.from(`${username}:${password}`).toString('base64')
+
   const resp = await fetch(`${base}/authorize`, {
     headers: {
       Authorization: `Basic ${creds}`,
@@ -43,15 +45,19 @@ async function getActToken(
     },
     signal: AbortSignal.timeout(10_000),
   })
+
   if (!resp.ok) throw new Error(`ACT auth failed: HTTP ${resp.status}`)
   const raw = await resp.text()
-  return raw.replace(/^"|"$/g, '').replace(/[\r\n]/g, '').trim()
+
+  
+return raw.replace(/^"|"$/g, '').replace(/[\r\n]/g, '').trim()
 }
 
 // ── ROUTE HANDLER ─────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>
+
   try {
     body = await req.json()
   } catch {
@@ -73,6 +79,7 @@ export async function POST(req: NextRequest) {
   }
 
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
   if (!UUID_RE.test(contactId)) {
     return NextResponse.json(
       { success: false, error: `Invalid contactId: "${contactId}"` },
@@ -94,6 +101,7 @@ export async function POST(req: NextRequest) {
   }
 
   let token: string
+
   try {
     token = await getActToken(base, username, password, database)
   } catch (e: unknown) {
@@ -116,6 +124,7 @@ export async function POST(req: NextRequest) {
     // Full URL:  .../filled-forms/2840103a-...-BLUEPRINT-2026-04-26_21-14-05.pdf
     // Short URL: https://fedsafe-retirement.vercel.app/api/pdf/2840103a-...-BLUEPRINT-2026-04-26_21-14-05
     const storageFileName = pdfUrl.split('/').pop()?.replace(/\.pdf$/i, '') || ''
+
     const shortUrl = storageFileName
       ? `https://fedsafe-retirement.vercel.app/api/pdf/${storageFileName}`
       : pdfUrl  // fallback to full URL if extraction fails
@@ -144,7 +153,9 @@ export async function POST(req: NextRequest) {
 
     if (!uploadRes.ok) {
       const errText = await uploadRes.text().catch(() => '')
-      return NextResponse.json(
+
+      
+return NextResponse.json(
         {
           success: false,
           error:   `Act! document save failed: HTTP ${uploadRes.status}`,

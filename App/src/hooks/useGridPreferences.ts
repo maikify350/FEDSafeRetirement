@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+
 import { createClient } from '@/utils/supabase/client'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -49,10 +50,12 @@ async function fetchAllPrefs(userId: string): Promise<AllPrefs> {
     ).then(({ data }) => {
       prefsCache[userId] = (data?.settings as AllPrefs) ?? {}
       delete pendingFetch[userId]
-      return prefsCache[userId]
+      
+return prefsCache[userId]
     }).catch(() => {
       delete pendingFetch[userId]
-      return {} as AllPrefs
+      
+return {} as AllPrefs
     })
   }
 
@@ -100,12 +103,14 @@ export function useGridPreferences(
 
   const [isLoaded, setIsLoaded] = useState(false)
   const prefsRef = useRef(prefs)
+
   prefsRef.current = prefs
 
   // Hydrate from localStorage post-mount
   useEffect(() => {
     try {
       const stored = globalThis.window.localStorage.getItem(lsKey)
+
       if (stored) {
         setPrefsState(prev => ({ ...prev, ...(JSON.parse(stored) as GridPrefs) }))
       }
@@ -125,10 +130,13 @@ export function useGridPreferences(
 
   // Fetch from DB on mount
   useEffect(() => {
-    if (!userId) { setIsLoaded(true); return }
+    if (!userId) { setIsLoaded(true); 
+
+return }
 
     fetchAllPrefs(userId).then(all => {
       const db = all.grids?.[storageKey]
+
       if (db) setPrefsState(prev => ({ ...prev, ...db }))
       setIsLoaded(true)
     })
@@ -138,6 +146,7 @@ export function useGridPreferences(
   const setPrefs = useCallback((update: GridPrefs | ((prev: GridPrefs) => GridPrefs)) => {
     setPrefsState(prev => {
       const next = typeof update === 'function' ? update(prev) : { ...prev, ...update }
+
       prefsRef.current = next
 
       // Mirror to localStorage as instant offline fallback

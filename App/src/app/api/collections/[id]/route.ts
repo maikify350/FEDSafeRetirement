@@ -2,7 +2,9 @@
  * GET/PUT/DELETE /api/collections/[id]
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient } from '@/utils/supabase/server'
 
 export async function GET(
@@ -19,7 +21,8 @@ export async function GET(
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 404 })
-  return NextResponse.json(data)
+  
+return NextResponse.json(data)
 }
 
 export async function PUT(
@@ -34,9 +37,11 @@ export async function PUT(
 
   const updates: Record<string, any> = {}
   const allowed = ['name', 'description', 'status', 'tags', 'filter_criteria']
+
   for (const key of allowed) {
     if (key in body) updates[key] = body[key]
   }
+
   updates.mod_by = user?.email ?? 'system'
 
   const { data, error } = await supabase
@@ -47,7 +52,8 @@ export async function PUT(
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  
+return NextResponse.json(data)
 }
 
 export async function DELETE(
@@ -63,5 +69,6 @@ export async function DELETE(
     .eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ success: true })
+  
+return NextResponse.json({ success: true })
 }

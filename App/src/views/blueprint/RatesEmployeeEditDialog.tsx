@@ -6,9 +6,11 @@
  */
 
 import { useState, useEffect } from 'react'
+
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
+
 import CustomTextField from '@core/components/mui/TextField'
 import EntityEditDialog from '@/components/EntityEditDialog'
 import ConfirmDialog from '@/components/ConfirmDialog'
@@ -46,6 +48,7 @@ export default function RatesEmployeeEditDialog({ open, onClose, rate, onSaved, 
     opt_c: 0,
     notes: '',
   })
+
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -67,24 +70,31 @@ export default function RatesEmployeeEditDialog({ open, onClose, rate, onSaved, 
     } else {
       setForm({ age_min: 0, age_max: 0, basic: 0, opt_a: 0, opt_b: 0, opt_c: 0, notes: '' })
     }
+
     setDirty(false)
     setError('')
   }, [rate, open])
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = field === 'notes' ? e.target.value : (parseFloat(e.target.value) || 0)
+
     setForm(prev => ({ ...prev, [field]: val }))
     setDirty(true)
   }
 
   const handleSave = async () => {
     setSaving(true); setError('')
+
     try {
       const url = rate ? `/api/fegli-rates-employee/${rate.id}` : '/api/fegli-rates-employee'
       const method = rate ? 'PUT' : 'POST'
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Failed to save'); return }
+
+      if (!res.ok) { setError(data.error || 'Failed to save'); 
+
+return }
+
       setSuccess(true); setDirty(false); onSaved?.()
     } catch { setError('Network error') } finally { setSaving(false) }
   }
@@ -92,12 +102,18 @@ export default function RatesEmployeeEditDialog({ open, onClose, rate, onSaved, 
   const handleDelete = async () => {
     if (!rate) return
     setDeleting(true); setError('')
+
     try {
       const res = await fetch(`/api/fegli-rates-employee/${rate.id}`, { method: 'DELETE' })
+
       if (!res.ok) {
         const data = await res.json()
-        setError(data.error || 'Failed to delete'); return
+
+        setError(data.error || 'Failed to delete'); 
+
+return
       }
+
       setConfirmDelete(false)
       onSaved?.()
       onClose()

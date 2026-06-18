@@ -5,7 +5,9 @@
  * PUT    /api/newsletter/:id  → update subscriber fields
  * DELETE /api/newsletter/:id  → delete subscriber
  */
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createAdminClient } from '@/utils/supabase/server'
 
 export async function GET(

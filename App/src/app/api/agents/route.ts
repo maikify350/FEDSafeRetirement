@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+
 import { createAdminClient } from '@/utils/supabase/server'
 
 export async function GET() {
@@ -11,5 +12,6 @@ export async function GET() {
     .order('last_name', { ascending: true })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data ?? [])
+  
+return NextResponse.json(data ?? [])
 }

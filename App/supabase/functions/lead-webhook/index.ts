@@ -33,9 +33,11 @@ serve(async (req: Request) => {
 
   // Validate webhook secret (optional — only enforced if WEBHOOK_SECRET is set)
   const expectedSecret = Deno.env.get('WEBHOOK_SECRET')
+
   if (expectedSecret) {
     const providedSecret = req.headers.get('x-overflow-webhook-secret')
       || req.headers.get('x-webhook-secret')
+
     if (providedSecret !== expectedSecret) {
       return new Response(JSON.stringify({ error: 'Invalid webhook secret' }), {
         status: 401,
@@ -46,6 +48,7 @@ serve(async (req: Request) => {
 
   // Parse payload
   let body: any
+
   try {
     body = await req.json()
   } catch {
@@ -63,9 +66,11 @@ serve(async (req: Request) => {
   // Extract TSP and Other account values from accounts[]
   let tspValue: number | null = null
   let otherAcctValue: number | null = null
+
   if (Array.isArray(lead.accounts)) {
     for (const acct of lead.accounts) {
       const name = (acct.name || acct.type?.name || '').toLowerCase()
+
       if (name === 'tsp') tspValue = parseFloat(acct.cashValue) || null
       else if (name === 'other') otherAcctValue = parseFloat(acct.cashValue) || null
     }
@@ -118,12 +123,14 @@ serve(async (req: Request) => {
 
   // Dedup: check if ext_appointment_id already exists
   let existingId: string | null = null
+
   if (row.ext_appointment_id) {
     const { data: existing } = await supabase
       .from('lead_funnel')
       .select('id')
       .eq('ext_appointment_id', row.ext_appointment_id)
       .maybeSingle()
+
     existingId = existing?.id ?? null
   }
 

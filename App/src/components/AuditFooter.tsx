@@ -25,8 +25,10 @@ export default function AuditFooter({ creAt, creBy, modAt, modBy, divider = true
     let h = d.getHours()
     const min = String(d.getMinutes()).padStart(2, '0')
     const ampm = h >= 12 ? 'pm' : 'am'
+
     h = h % 12 || 12
-    return `${mm}/${dd}/${yy} ${h}:${min} ${ampm}`
+    
+return `${mm}/${dd}/${yy} ${h}:${min} ${ampm}`
   }
 
   return (

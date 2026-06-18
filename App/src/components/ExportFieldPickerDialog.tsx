@@ -12,6 +12,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
@@ -59,26 +60,33 @@ export default function ExportFieldPickerDialog({
   useEffect(() => {
     if (!open) return
     const stored = localStorage.getItem(`${STORAGE_PREFIX}${storageKey}`)
+
     if (stored) {
       try {
         const parsed = JSON.parse(stored) as { keys?: string[]; order?: string[]; format?: ExportFormat }
+
         // Merge: keep stored order but add new fields at the end
         const storedOrder = Array.isArray(parsed.order) ? parsed.order : []
         const allKeys = availableFields.map(f => f.key)
         const ordered = storedOrder.filter((k: string) => allKeys.includes(k))
         const newKeys = allKeys.filter(k => !ordered.includes(k))
         const fullOrder = [...ordered, ...newKeys]
+
         setOrderedFields(fullOrder.map(k => availableFields.find(f => f.key === k)!).filter(Boolean))
+
+
         // Use Array.isArray so an empty selection (deselect-all) is preserved.
         // Newly-introduced fields are added as selected by default.
         if (Array.isArray(parsed.keys)) {
           const validStored = parsed.keys.filter((k: string) => allKeys.includes(k))
           const previouslySeen = new Set(storedOrder)
           const freshKeys = allKeys.filter(k => !previouslySeen.has(k))
+
           setSelectedKeys([...validStored, ...freshKeys])
         } else {
           setSelectedKeys(allKeys)
         }
+
         if (parsed.format === 'csv' || parsed.format === 'json' || parsed.format === 'xlsx') {
           setFormat(parsed.format)
         }
@@ -110,13 +118,16 @@ export default function ExportFieldPickerDialog({
   const toggleField = (key: string) => {
     setSelectedKeys(prev => {
       const next = prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+
       persist(next, orderedFields, format)
-      return next
+      
+return next
     })
   }
 
   const selectAll = () => {
     const all = orderedFields.map(f => f.key)
+
     setSelectedKeys(all)
     persist(all, orderedFields, format)
   }
@@ -133,15 +144,19 @@ export default function ExportFieldPickerDialog({
 
   const handleDragStart = (idx: number) => { dragIdx.current = idx }
   const handleDragOver = (e: React.DragEvent) => e.preventDefault()
+
   const handleDrop = (toIdx: number) => {
     const fromIdx = dragIdx.current
+
     if (fromIdx === null || fromIdx === toIdx) return
     setOrderedFields(prev => {
       const next = [...prev]
       const [moved] = next.splice(fromIdx, 1)
+
       next.splice(toIdx, 0, moved)
       persist(selectedKeys, next, format)
-      return next
+      
+return next
     })
     dragIdx.current = null
   }
@@ -149,6 +164,7 @@ export default function ExportFieldPickerDialog({
   const handleExport = () => {
     // Build ordered selected keys
     const exportKeys = orderedFields.filter(f => selectedKeys.includes(f.key)).map(f => f.key)
+
     if (exportKeys.length === 0) return
     onExport(rows, exportKeys, format)
     onClose()

@@ -5,20 +5,24 @@
  */
 
 import { useState, useEffect } from 'react'
+
 import Typography from '@mui/material/Typography'
 import Divider from '@mui/material/Divider'
 import Box from '@mui/material/Box'
 import Chip from '@mui/material/Chip'
+
 import CustomTextField from '@core/components/mui/TextField'
 import EntityEditDialog from '@/components/EntityEditDialog'
 
 function filterSummaryChips(fc: any): string[] {
   if (!fc || typeof fc !== 'object') return []
   const chips: string[] = []
+
   if (fc.state && fc.state !== 'all') chips.push(`State: ${fc.state}`)
   if (fc.gender && fc.gender !== 'all') chips.push(`Gender: ${fc.gender === 'M' ? 'Male' : 'Female'}`)
   if (fc.favorite === true) chips.push('Favorites only')
   if (fc.search?.trim()) chips.push(`Search: "${fc.search.trim()}"`)
+
   if (Array.isArray(fc.columnFilters)) {
     const opLabel: Record<string, string> = {
       contains: 'contains', notContains: 'not contains',
@@ -26,20 +30,26 @@ function filterSummaryChips(fc: any): string[] {
       equals: 'equals', notEquals: 'not equals',
       isEmpty: 'is empty', isNotEmpty: 'is not empty',
     }
+
     for (const cf of fc.columnFilters) {
       const conds = cf?.value?.conditions?.filter((c: any) =>
         c.op === 'isEmpty' || c.op === 'isNotEmpty' || c.value?.trim()
       ) ?? []
+
       for (const cond of conds) {
         const col = cf.id?.replace(/_/g, ' ')
+
         const label = cond.op === 'isEmpty' || cond.op === 'isNotEmpty'
           ? `${col} ${opLabel[cond.op] ?? cond.op}`
           : `${col} ${opLabel[cond.op] ?? cond.op} "${cond.value}"`
+
         chips.push(label)
       }
     }
   }
-  return chips
+
+  
+return chips
 }
 
 interface Collection {
@@ -87,6 +97,7 @@ export default function CollectionEditDialog({ open, onClose, collection, onSave
     } else {
       setForm({ name: '', description: '', status: 'active', tagsInput: '' })
     }
+
     setDirty(false)
     setError('')
   }, [collection, open])
@@ -97,8 +108,12 @@ export default function CollectionEditDialog({ open, onClose, collection, onSave
   }
 
   const handleSave = async () => {
-    if (!form.name.trim()) { setError('Name is required'); return }
+    if (!form.name.trim()) { setError('Name is required'); 
+
+return }
+
     setSaving(true); setError('')
+
     try {
       const tags = form.tagsInput.split(',').map(t => t.trim()).filter(Boolean)
       const payload = { name: form.name, description: form.description, status: form.status, tags }
@@ -106,7 +121,11 @@ export default function CollectionEditDialog({ open, onClose, collection, onSave
       const method = collection ? 'PUT' : 'POST'
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Failed to save'); return }
+
+      if (!res.ok) { setError(data.error || 'Failed to save'); 
+
+return }
+
       setSuccess(true); setDirty(false); onSaved?.()
     } catch { setError('Network error') } finally { setSaving(false) }
   }
@@ -145,7 +164,9 @@ export default function CollectionEditDialog({ open, onClose, collection, onSave
       {/* ── Saved filter criteria (read-only) ─────────────────────── */}
       {collection && (() => {
         const chips = filterSummaryChips(collection.filter_criteria)
-        return (
+
+        
+return (
           <>
             <Divider sx={{ my: 2 }} />
             <SectionHeader icon='tabler-filter'>Saved Filters</SectionHeader>

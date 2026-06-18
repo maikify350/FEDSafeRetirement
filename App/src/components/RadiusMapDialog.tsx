@@ -17,6 +17,7 @@
  */
 
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
+
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
@@ -39,7 +40,9 @@ const RadiusMaximizedContext = createContext(false)
 function DraggablePaper(props: PaperProps) {
   const isMax = useContext(RadiusMaximizedContext)
   const nodeRef = useRef<HTMLDivElement>(null)
-  return (
+
+  
+return (
     <Draggable
       nodeRef={nodeRef as any}
       handle={`#${RADIUS_MAP_TITLE_ID}`}
@@ -130,20 +133,25 @@ export default function RadiusMapDialog({
     if (!open) return
 
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY
+
     if (!apiKey) return
 
     if (window.google?.maps) {
       initMap()
-      return
+      
+return
     }
 
     const existingScript = document.querySelector('script[src*="maps.googleapis.com"]')
+
     if (existingScript) {
       existingScript.addEventListener('load', initMap)
-      return
+      
+return
     }
 
     const script = document.createElement('script')
+
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry`
     script.async = true
     script.defer = true
@@ -159,6 +167,7 @@ export default function RadiusMapDialog({
     if (!open || isExclusionMode) return
 
     let cancelled = false
+
     setFacilitiesLoading(true)
 
     const params = new URLSearchParams({
@@ -209,18 +218,24 @@ export default function RadiusMapDialog({
   // ── Trigger Google Maps resize when dialog dimensions change ───────────
   useEffect(() => {
     const map = mapInstanceRef.current
+
     if (!map || !window.google?.maps) return
+
     const t = window.setTimeout(() => {
       const center = map.getCenter()
+
       google.maps.event.trigger(map, 'resize')
       if (center) map.setCenter(center)
     }, 220)
-    return () => window.clearTimeout(t)
+
+    
+return () => window.clearTimeout(t)
   }, [maximized, mapLoaded])
 
   // ── Manage outer "look-beyond" circle and re-zoom when extended changes ─
   useEffect(() => {
     const map = mapInstanceRef.current
+
     if (!map || !window.google?.maps) return
 
     if (outerCircleRef.current) {
@@ -248,6 +263,7 @@ export default function RadiusMapDialog({
   // ── Render facility markers (split inner / outer) ──────────────────────
   useEffect(() => {
     const map = mapInstanceRef.current
+
     if (!map || !window.google?.maps) return
 
     facilityMarkersRef.current.forEach(m => m.setMap(null))
@@ -259,17 +275,21 @@ export default function RadiusMapDialog({
     if (!facilityInfoRef.current) {
       facilityInfoRef.current = new google.maps.InfoWindow()
     }
+
     const infoWindow = facilityInfoRef.current
 
     facilities.forEach((f) => {
       const isOuter = f.distance_miles > radiusMiles
       const scale = Math.min(8, Math.max(3, Math.log10(f.lead_count + 1) * 2.5 + 2))
+
       const addrLine = [f.facility_address, f.facility_city, f.facility_state]
         .filter(Boolean)
         .join(', ')
+
       const ringLabel = isOuter
         ? `<span style="color:#0e7490;font-weight:700;">+${(f.distance_miles - radiusMiles).toFixed(1)} mi beyond</span>`
         : ''
+
       const tooltipHtml = `
         <div style="font-family: sans-serif; padding: 4px 0; max-width: 240px;">
           <strong style="font-size: 13px;">${f.facility_name ?? 'Unknown facility'}</strong><br/>
@@ -350,6 +370,7 @@ export default function RadiusMapDialog({
           strokeOpacity: 0.7,
           strokeWeight: 2.5,
         })
+
         exclusionCirclesRef.current.push(circle)
 
         // Numbered marker at each exclusion zone center
@@ -373,14 +394,17 @@ export default function RadiusMapDialog({
           },
           zIndex: 100,
         })
+
         exclusionMarkersRef.current.push(marker)
       })
 
       // Fit bounds to show all exclusion zones
       const bounds = new google.maps.LatLngBounds()
+
       exclusionZones.forEach(z => {
         const latDeg = z.radius / 69.0
         const lonDeg = z.radius / (69.0 * Math.cos(z.lat * Math.PI / 180))
+
         bounds.extend({ lat: z.lat - latDeg, lng: z.lon - lonDeg })
         bounds.extend({ lat: z.lat + latDeg, lng: z.lon + lonDeg })
       })
@@ -425,6 +449,7 @@ export default function RadiusMapDialog({
 
   const commitExtended = () => {
     const n = Math.max(0, Math.min(200, parseInt(extendedInput) || 0))
+
     setExtendedInput(String(n))
     setExtendedRadius(n)
   }
@@ -616,7 +641,9 @@ export default function RadiusMapDialog({
               'rgba(139, 92, 246, 0.85)',
               'rgba(236, 72, 153, 0.85)',
             ]
-            return (
+
+            
+return (
               <Chip
                 key={sc.facility_state}
                 label={`${sc.facility_state}: ${Number(sc.lead_count).toLocaleString()}`}

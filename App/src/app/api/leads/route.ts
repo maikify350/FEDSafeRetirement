@@ -14,7 +14,9 @@
  *   state=       – quick state filter (shortcut, e.g. "CA")
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient } from '@/utils/supabase/server'
 import type { ColFilterValue } from '@/lib/columnFilter'
 
@@ -58,13 +60,15 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('[API /leads] RPC Error:', error.message)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      
+return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     // RPC returns rows as { leads_data: jsonb, total_count: bigint }
     const rows = (data ?? [])
       .filter((r: any) => r.leads_data !== null)
       .map((r: any) => r.leads_data)
+
     const total = data?.[0]?.total_count ?? 0
 
     return NextResponse.json({
@@ -86,6 +90,7 @@ export async function GET(request: NextRequest) {
     // Global search
     if (search.trim()) {
       const term = search.trim()
+
       if (term.length < 3) {
         q = q.or(
           `first_name.ilike.${term}%,last_name.ilike.${term}%,facility_state.ilike.${term}%`
@@ -100,19 +105,24 @@ export async function GET(request: NextRequest) {
     // Per-column filters
     for (const cf of columnFilters) {
       const { id: columnId, value: filterValue } = cf
+
       if (!filterValue?.conditions) continue
 
       const activeConditions = filterValue.conditions.filter(c =>
         c.op === 'isEmpty' || c.op === 'isNotEmpty' || c.value.trim() !== ''
       )
+
       if (activeConditions.length === 0) continue
 
       if (filterValue.combinator === 'or') {
         const orParts: string[] = []
+
         for (const cond of activeConditions) {
           const part = conditionToPostgrest(columnId, cond)
+
           if (part) orParts.push(part)
         }
+
         if (orParts.length > 0) {
           q = q.or(orParts.join(','))
         }
@@ -128,7 +138,7 @@ export async function GET(request: NextRequest) {
 
   // Run data query and count query in parallel to avoid timeout
   let dataQuery = applyFilters(supabase.from('leads').select('*'))
-  let countQuery = applyFilters(supabase.from('leads').select('*', { count: 'exact', head: true }))
+  const countQuery = applyFilters(supabase.from('leads').select('*', { count: 'exact', head: true }))
 
   // Sorting (data query only)
   if (sorting.length > 0) {
@@ -142,13 +152,15 @@ export async function GET(request: NextRequest) {
   // Pagination (data query only)
   const from = page * pageSize
   const to = from + pageSize - 1
+
   dataQuery = dataQuery.range(from, to)
 
   const [dataResult, countResult] = await Promise.all([dataQuery, countQuery])
 
   if (dataResult.error) {
     console.error('[API /leads] PostgREST Data Error:', dataResult.error.message)
-    return NextResponse.json({ error: dataResult.error.message }, { status: 500 })
+    
+return NextResponse.json({ error: dataResult.error.message }, { status: 500 })
   }
 
   // Use count if available, otherwise fall back to data length

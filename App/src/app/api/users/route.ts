@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server'
+
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 
 export async function GET() {
   const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
+
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdminClient()
@@ -35,15 +37,18 @@ export async function GET() {
 export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
+
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdminClient()
   const { data: callerRow } = await admin.from('users').select('role').eq('id', authUser.id).single()
+
   if (callerRow?.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 })
   }
 
   let body: Record<string, any>
+
   try {
     body = await request.json()
   } catch {
@@ -51,6 +56,7 @@ export async function POST(request: Request) {
   }
 
   const email = String(body.email ?? '').trim().toLowerCase()
+
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: 'A valid email is required' }, { status: 400 })
   }
@@ -60,6 +66,7 @@ export async function POST(request: Request) {
 
   // Reject duplicates up front for a friendlier message than the unique-constraint error.
   const { data: existing } = await admin.from('users').select('id').eq('email', email).maybeSingle()
+
   if (existing) {
     return NextResponse.json({ error: 'A user with that email already exists' }, { status: 409 })
   }
@@ -76,7 +83,9 @@ export async function POST(request: Request) {
   }
 
   const { data, error } = await admin.from('users').insert(row).select().single()
+
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data, { status: 201 })
+  
+return NextResponse.json(data, { status: 201 })
 }
 

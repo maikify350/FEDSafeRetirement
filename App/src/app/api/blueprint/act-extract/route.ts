@@ -17,7 +17,8 @@
  * CORS: open to all origins so the Chrome extension can reach it.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
 const CORS = {
@@ -122,6 +123,7 @@ const SELECT = [
 
 async function getActToken(base: string, username: string, password: string, database: string): Promise<string> {
   const creds = Buffer.from(`${username}:${password}`).toString('base64')
+
   const resp = await fetch(`${base}/authorize`, {
     headers: {
       'Authorization':    `Basic ${creds}`,
@@ -129,9 +131,12 @@ async function getActToken(base: string, username: string, password: string, dat
     },
     signal: AbortSignal.timeout(10_000),
   })
+
   if (!resp.ok) throw new Error(`ACT auth failed: HTTP ${resp.status}`)
   const raw = await resp.text()
-  return raw.replace(/^"|"$/g, '').replace(/[\r\n]/g, '').trim()
+
+  
+return raw.replace(/^"|"$/g, '').replace(/[\r\n]/g, '').trim()
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -151,8 +156,10 @@ async function fetchBp1Date(base: string, token: string, database: string, conta
         signal: AbortSignal.timeout(10_000),
       }
     )
+
     if (!resp.ok) return null
     const data = await resp.json()
+
     const activities: Record<string, unknown>[] = Array.isArray(data)
       ? data
       : (data.activities ?? data.value ?? [])
@@ -160,9 +167,12 @@ async function fetchBp1Date(base: string, token: string, database: string, conta
     const bp1 = activities.find((a) =>
       String(a.subject ?? a.name ?? a.title ?? '').toUpperCase().includes('BP1')
     )
+
     if (!bp1) return null
     const start = bp1.startTime ?? bp1.start ?? bp1.startDate ?? null
-    return start ? String(start) : null
+
+    
+return start ? String(start) : null
   } catch {
     return null   // non-critical — calendar errors never block the main response
   }
@@ -184,6 +194,7 @@ export async function GET(req: NextRequest) {
   }
 
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
   if (!UUID_RE.test(contactId)) {
     return NextResponse.json(
       { success: false, error: `Invalid contactId: "${contactId}" — expected a UUID` },
@@ -246,8 +257,11 @@ export async function GET(req: NextRequest) {
 
     // Custom fields — flatten blob into top level with cleaned names
     const blob = (contact.customFields ?? {}) as Record<string, unknown>
+
     for (const [rawKey, value] of Object.entries(blob)) {
       const cleaned = cleanKey(rawKey)
+
+
       // If two raw keys clean to the same name, prefer the non-null value
       if (!(cleaned in fields) || (fields[cleaned] === null && value !== null)) {
         fields[cleaned] = value
@@ -273,8 +287,10 @@ export async function GET(req: NextRequest) {
     )
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e)
+
     console.error('[/api/blueprint/act-extract] Error:', msg)
-    return NextResponse.json(
+    
+return NextResponse.json(
       { success: false, error: msg },
       { status: 500, headers: CORS }
     )

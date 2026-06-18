@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
@@ -57,6 +58,7 @@ const US_STATES: { abbr: string; name: string }[] = [
   { abbr: 'WI', name: 'Wisconsin' },      { abbr: 'WY', name: 'Wyoming' },
   { abbr: 'DC', name: 'District of Columbia' },
 ]
+
 const STATE_BY_ABBR = Object.fromEntries(US_STATES.map(s => [s.abbr, s.name]))
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -101,27 +103,37 @@ const agentColor   = (u: AssignedUser | null) => u?.color || '#94a3b8'
 
 function fmtDate(d: string | null) {
   if (!d) return null
-  return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  
+return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
+
 function fmtTime(t: string | null) {
   if (!t) return null
   const [h, m] = t.split(':').map(Number)
-  return `${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`
+
+  
+return `${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`
 }
+
 function fmtDuration(min: number | null) {
   if (!min) return null
   if (min < 60) return `${min}m`
   const h = Math.floor(min/60), m = min%60
-  return m ? `${h}h ${m}m` : `${h}h`
+
+  
+return m ? `${h}h ${m}m` : `${h}h`
 }
 
 const STATE_CHIP_COLORS: Record<string,string> = {}
 const PALETTE = ['#6366f1','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6']
 let _ci = 0
+
 function stateChipColor(abbr: string) {
   if (!STATE_CHIP_COLORS[abbr]) STATE_CHIP_COLORS[abbr] = PALETTE[_ci++ % PALETTE.length]
-  return STATE_CHIP_COLORS[abbr]
+  
+return STATE_CHIP_COLORS[abbr]
 }
+
 const nativeInputSx = { '& input[type="date"], & input[type="time"]': { colorScheme: 'light dark' } }
 
 // ── City Autocomplete ─────────────────────────────────────────────────────────
@@ -134,14 +146,21 @@ function CityAutocomplete({ value, onChange, stateName, error, helperText }: {
 
   const fetchCities = useCallback((input: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    if (!input || input.length < 2) { setOptions([]); return }
+
+    if (!input || input.length < 2) { setOptions([]); 
+
+return }
+
     debounceRef.current = setTimeout(async () => {
       setLoading(true)
+
       try {
         const p = new URLSearchParams({ input })
+
         if (stateName) p.set('state', stateName)
         const res = await fetch(`/api/places/cities?${p}`)
         const data = await res.json()
+
         setOptions(data.predictions ?? [])
       } catch { setOptions([]) } finally { setLoading(false) }
     }, 300)
@@ -193,9 +212,11 @@ function EventForm({ form, setForm, users, errors, setErrors, saving }: {
   saving: boolean
 }) {
   const clrErr = (k: string) => setErrors(prev => ({...prev, [k]:''}))
+
   const set = (k: keyof EventFormState) => (e: React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement>) => {
     setForm(prev => ({...prev, [k]: e.target.value})); clrErr(k)
   }
+
   const selectedStateName = form.stateAbbr ? (STATE_BY_ABBR[form.stateAbbr] ?? '') : ''
 
   return (
@@ -278,6 +299,7 @@ function EventForm({ form, setForm, users, errors, setErrors, saving }: {
 
 function validateEventForm(form: EventFormState) {
   const e: Record<string,string> = {}
+
   if (!form.description.trim()) e.description = 'Description is required'
   if (!form.eventDate)          e.eventDate   = 'Date is required'
   if (!form.eventTime)          e.eventTime   = 'Time is required'
@@ -285,7 +307,8 @@ function validateEventForm(form: EventFormState) {
     e.duration = 'Duration is required (positive number)'
   if (!form.stateAbbr)          e.stateAbbr   = 'State is required'
   if (!form.city.trim())        e.city        = 'City is required'
-  return e
+  
+return e
 }
 
 function formToPayload(form: EventFormState) {
@@ -314,14 +337,18 @@ function FlyerPanel({ event, isAdmin, onChanged }: {
 
   const fetchSignedUrls = async () => {
     const res = await fetch(`/api/events/${event.id}/flyer/url`)
+
     if (!res.ok) throw new Error((await res.json()).error || 'Failed to load flyer')
-    return res.json() as Promise<{ download_url: string; view_url: string; filename: string }>
+    
+return res.json() as Promise<{ download_url: string; view_url: string; filename: string }>
   }
 
   const handlePreview = async () => {
     setError(''); setBusy('preview')
+
     try {
       const { view_url } = await fetchSignedUrls()
+
       window.open(view_url, '_blank', 'noopener,noreferrer')
     } catch (e: any) {
       setError(e.message || 'Failed to open flyer')
@@ -330,10 +357,13 @@ function FlyerPanel({ event, isAdmin, onChanged }: {
 
   const handleDownload = async () => {
     setError(''); setBusy('download')
+
     try {
       const { download_url } = await fetchSignedUrls()
+
       // Trigger a download via signed URL with `?download=` already set server-side.
       const a = document.createElement('a')
+
       a.href = download_url
       a.rel  = 'noopener noreferrer'
       document.body.appendChild(a); a.click(); document.body.removeChild(a)
@@ -344,11 +374,14 @@ function FlyerPanel({ event, isAdmin, onChanged }: {
 
   const handleUpload = async (file: File) => {
     setError(''); setBusy('upload')
+
     try {
       const fd = new FormData()
+
       fd.append('file', file)
       const res = await fetch(`/api/events/${event.id}/flyer`, { method: 'POST', body: fd })
       const data = await res.json()
+
       if (!res.ok) throw new Error(data.error || 'Upload failed')
       onChanged({
         flyer_path:        data.flyer_path,
@@ -366,9 +399,11 @@ function FlyerPanel({ event, isAdmin, onChanged }: {
   const handleRemove = async () => {
     if (!confirm('Remove the attached flyer? This cannot be undone.')) return
     setError(''); setBusy('remove')
+
     try {
       const res = await fetch(`/api/events/${event.id}/flyer`, { method: 'DELETE' })
       const data = await res.json()
+
       if (!res.ok) throw new Error(data.error || 'Remove failed')
       onChanged({
         flyer_path:        null,
@@ -382,7 +417,8 @@ function FlyerPanel({ event, isAdmin, onChanged }: {
 
   const fmtFullDate = (iso: string | null) => {
     if (!iso) return null
-    return new Date(iso).toLocaleString('en-US', {
+    
+return new Date(iso).toLocaleString('en-US', {
       month: 'short', day: 'numeric', year: 'numeric',
       hour: 'numeric', minute: '2-digit',
     })
@@ -456,6 +492,7 @@ function FlyerPanel({ event, isAdmin, onChanged }: {
               hidden
               onChange={e => {
                 const f = e.target.files?.[0]
+
                 if (f) handleUpload(f)
               }}
             />
@@ -497,6 +534,8 @@ function ExplainerPanel({ event, isAdmin, onChanged }: {
     { id: 'echo',   label: 'Echo',   desc: 'Neutral, clear male' },
     { id: 'fable',  label: 'Fable',  desc: 'Warm, narrative male' },
   ]
+
+
   // ElevenLabs: 5 male + 5 female, mid-age, high quality
   const VOICES_ELEVEN = [
     { id: 'onwK4e9ZLuTAKqWW03F9', label: 'Daniel',  gender: 'm', desc: 'Deep, authoritative' },
@@ -513,15 +552,20 @@ function ExplainerPanel({ event, isAdmin, onChanged }: {
 
   // Lazy-load the signed URL the first time the user expands the panel.
   useEffect(() => {
-    if (!hasExplainer) { setAudioUrl(null); return }
+    if (!hasExplainer) { setAudioUrl(null); 
+
+return }
+
     let cancelled = false
+
     setBusy('load')
     fetch(`/api/events/${event.id}/explainer/url`)
       .then(r => r.json())
       .then(j => { if (!cancelled && j.url) setAudioUrl(j.url) })
       .catch(() => { if (!cancelled) setError('Failed to load audio') })
       .finally(() => { if (!cancelled) setBusy(null) })
-    return () => { cancelled = true }
+    
+return () => { cancelled = true }
   }, [hasExplainer, event.id, event.explainer_uploaded_at])
 
   // Lazy-load the script the first time the editor is opened.
@@ -529,6 +573,7 @@ function ExplainerPanel({ event, isAdmin, onChanged }: {
     try {
       const res = await fetch(`/api/events/${event.id}/explainer/script`)
       const data = await res.json()
+
       if (!res.ok) throw new Error(data.error || 'Failed to load script')
       setScriptText(data.script ?? '')
       setScriptIsDefault(!!data.is_default)
@@ -545,19 +590,23 @@ function ExplainerPanel({ event, isAdmin, onChanged }: {
 
   const handleToggleScript = async () => {
     const next = !scriptOpen
+
     setScriptOpen(next)
     if (next && !scriptLoaded) await loadScript()
   }
 
   const handleSaveScript = async () => {
     setError(''); setBusy('saveScript')
+
     try {
       const res = await fetch(`/api/events/${event.id}/explainer/script`, {
         method:  'PUT',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ script: scriptText, speed, voice, provider }),
       })
+
       const data = await res.json()
+
       if (!res.ok) throw new Error(data.error || 'Save failed')
       setScriptDirty(false)
       setScriptIsDefault(!!data.cleared)
@@ -569,16 +618,21 @@ function ExplainerPanel({ event, isAdmin, onChanged }: {
   const handleResetScript = async () => {
     if (!confirm('Reset the script to the default template? Your edits will be lost.')) return
     setError(''); setBusy('resetScript')
+
     try {
       const res = await fetch(`/api/events/${event.id}/explainer/script`, {
         method:  'PUT',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ script: '' }),
       })
+
       if (!res.ok) {
         const data = await res.json()
+
         throw new Error(data.error || 'Reset failed')
       }
+
+
       // Re-load to pull the freshly-rebuilt default template.
       await loadScript()
     } catch (e: any) {
@@ -589,17 +643,21 @@ function ExplainerPanel({ event, isAdmin, onChanged }: {
   const handleGenerate = async () => {
     if (hasExplainer && !confirm('Re-generate the explainer? This will overwrite the existing audio and consume TTS credits.')) return
     setError(''); setBusy('generate')
+
     try {
       // Send the in-memory script + speed if the editor is open so the
       // user gets audio matching exactly what they see (the API also
       // saves them). If unopened, the API uses the saved values.
       const init: RequestInit = { method: 'POST' }
+
       if (scriptOpen) {
         init.headers = { 'Content-Type': 'application/json' }
         init.body    = JSON.stringify({ script: scriptText, speed, voice, provider })
       }
+
       const res = await fetch(`/api/events/${event.id}/explainer`, init)
       const data = await res.json()
+
       if (!res.ok) throw new Error(data.error || 'Generation failed')
       onChanged({
         explainer_path:        data.explainer_path,
@@ -615,9 +673,11 @@ function ExplainerPanel({ event, isAdmin, onChanged }: {
   const handleRemove = async () => {
     if (!confirm('Remove the seminar explainer audio? This cannot be undone.')) return
     setError(''); setBusy('remove')
+
     try {
       const res = await fetch(`/api/events/${event.id}/explainer`, { method: 'DELETE' })
       const data = await res.json()
+
       if (!res.ok) throw new Error(data.error || 'Remove failed')
       onChanged({
         explainer_path:        null,
@@ -631,7 +691,8 @@ function ExplainerPanel({ event, isAdmin, onChanged }: {
 
   const fmtFullDate = (iso: string | null) => {
     if (!iso) return null
-    return new Date(iso).toLocaleString('en-US', {
+    
+return new Date(iso).toLocaleString('en-US', {
       month: 'short', day: 'numeric', year: 'numeric',
       hour: 'numeric', minute: '2-digit',
     })
@@ -745,13 +806,18 @@ function ExplainerPanel({ event, isAdmin, onChanged }: {
             )}
             {(() => {
               const words = scriptText.trim() ? scriptText.trim().split(/\s+/).length : 0
+
               // ~155 wpm at speed=1.0; speed multiplies words-per-second.
               const estSec = words / (2.58 * speed)
+
               const fmtDur = estSec < 60
                 ? `~${Math.round(estSec)} sec`
                 : `~${Math.floor(estSec / 60)}m ${String(Math.round(estSec % 60)).padStart(2, '0')}s`
+
               const cost = (scriptText.length * 0.030 / 1000).toFixed(3)
-              return (
+
+              
+return (
                 <Typography variant='caption' color='text.secondary' sx={{ ml: 'auto', textAlign: 'right' }}>
                   {fmtDur} @ {speed.toFixed(2)}× · {words.toLocaleString()} words · {scriptText.length.toLocaleString()} chars · ~${cost}
                 </Typography>
@@ -774,6 +840,7 @@ function ExplainerPanel({ event, isAdmin, onChanged }: {
                 color={provider === p ? 'info' : 'default'}
                 onClick={() => {
                   setProvider(p)
+
                   // Reset to sensible default voice for each engine
                   setVoice(p === 'openai' ? 'onyx' : 'onwK4e9ZLuTAKqWW03F9')
                   setScriptDirty(true)
@@ -868,8 +935,10 @@ function ExplainerPanel({ event, isAdmin, onChanged }: {
               value={speed.toFixed(2)}
               onChange={e => {
                 const n = parseFloat(e.target.value)
+
                 if (Number.isFinite(n)) {
                   const clamped = Math.min(2.0, Math.max(0.5, n))
+
                   setSpeed(clamped)
                   setScriptDirty(true)
                 }
@@ -957,16 +1026,26 @@ function AddEventDialog({ open, users, onClose, onSaved }: {
   const [form, setForm]     = useState<EventFormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState<Record<string,string>>({})
+
   useEffect(() => { if (!open) { setForm(EMPTY_FORM); setErrors({}) } }, [open])
 
   const handleSave = async () => {
     const errs = validateEventForm(form)
-    if (Object.keys(errs).length) { setErrors(errs); return }
+
+    if (Object.keys(errs).length) { setErrors(errs); 
+
+return }
+
     setSaving(true)
+
     try {
       const res = await fetch('/api/events', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(formToPayload(form)) })
       const data = await res.json()
-      if (!res.ok) { setErrors({_api: data.error||'Save failed'}); return }
+
+      if (!res.ok) { setErrors({_api: data.error||'Save failed'}); 
+
+return }
+
       onSaved(data)
     } catch { setErrors({_api:'Network error'}) } finally { setSaving(false) }
   }
@@ -1003,6 +1082,7 @@ function EditEventDialog({ event, users, isAdmin, onClose, onSaved, onFlyerChang
   const [form, setForm]     = useState<EventFormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState<Record<string,string>>({})
+
   // Local mirror of the flyer fields so the panel updates without closing
   // the dialog (the form fields use their own local state above).
   const [liveEvent, setLiveEvent] = useState<EventRecord | null>(null)
@@ -1031,12 +1111,21 @@ function EditEventDialog({ event, users, isAdmin, onClose, onSaved, onFlyerChang
   const handleSave = async () => {
     if (!event) return
     const errs = validateEventForm(form)
-    if (Object.keys(errs).length) { setErrors(errs); return }
+
+    if (Object.keys(errs).length) { setErrors(errs); 
+
+return }
+
     setSaving(true)
+
     try {
       const res = await fetch(`/api/events?id=${event.id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(formToPayload(form)) })
       const data = await res.json()
-      if (!res.ok) { setErrors({_api: data.error||'Save failed'}); return }
+
+      if (!res.ok) { setErrors({_api: data.error||'Save failed'}); 
+
+return }
+
       onSaved(data)
     } catch { setErrors({_api:'Network error'}) } finally { setSaving(false) }
   }
@@ -1094,6 +1183,7 @@ const MONTHS = ['January','February','March','April','May','June','July','August
 const DOW    = ['Su','Mo','Tu','We','Th','Fr','Sa']
 
 function getDaysInMonth(year: number, month: number) { return new Date(year, month+1, 0).getDate() }
+
 function getFirstDow(year: number, month: number)    { return new Date(year, month, 1).getDay() }
 
 function YearCalendarDialog({ open, events, onClose, onEventClick }: {
@@ -1104,12 +1194,14 @@ function YearCalendarDialog({ open, events, onClose, onEventClick }: {
   // Build a map: "YYYY-MM-DD" → EventRecord[]
   const eventsByDate = useMemo(() => {
     const map: Record<string, EventRecord[]> = {}
+
     events.forEach(ev => {
       if (!ev.event_date) return
       if (!map[ev.event_date]) map[ev.event_date] = []
       map[ev.event_date].push(ev)
     })
-    return map
+    
+return map
   }, [events])
 
   return (
@@ -1135,10 +1227,13 @@ function YearCalendarDialog({ open, events, onClose, onEventClick }: {
           {MONTHS.map((monthName, mIdx) => {
             const days = getDaysInMonth(year, mIdx)
             const firstDow = getFirstDow(year, mIdx)
+
             const cells: (number|null)[] = [
               ...Array(firstDow).fill(null),
               ...Array.from({length: days},(_,i)=>i+1),
             ]
+
+
             // Pad to complete last week
             while (cells.length % 7 !== 0) cells.push(null)
 
@@ -1274,6 +1369,7 @@ const COLS = [
 
   {label:'',            w:'88px'},   // edit + delete
 ]
+
 const GRID_COLS = COLS.map(c=>c.w).join(' ')
 
 // ── Main View ─────────────────────────────────────────────────────────────────
@@ -1291,33 +1387,40 @@ export default function EventsView() {
 
   useEffect(() => {
     const supabase = createClient()
+
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) return
+
       const { data: row } = await supabase
         .from('users')
         .select('role')
         .eq('id', data.user.id)
         .single()
+
       if (row?.role === 'admin') setIsAdmin(true)
     })
   }, [])
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
+
     try {
       const [er, ur] = await Promise.all([
         fetch('/api/events').then(r=>r.json()),
         fetch('/api/agents').then(r=>r.json()),
       ])
+
       if (Array.isArray(er)) setEvents(er)
       if (Array.isArray(ur)) setUsers(ur)
     } finally { setLoading(false) }
   }, [])
+
   useEffect(() => { fetchAll() }, [fetchAll])
 
   const handleDeleteConfirm = async () => {
     if (!delTarget) return
     setDeleting(true)
+
     try {
       await fetch(`/api/events?id=${delTarget.id}`, {method:'DELETE'})
       setEvents(prev=>prev.filter(e=>e.id!==delTarget.id))
@@ -1328,7 +1431,9 @@ export default function EventsView() {
   const filtered = useMemo(() => {
     if (!search.trim()) return events
     const q = search.toLowerCase()
-    return events.filter(ev =>
+
+    
+return events.filter(ev =>
       ev.description.toLowerCase().includes(q) ||
       ev.state_fk.toLowerCase().includes(q) ||
       (STATE_BY_ABBR[ev.state_fk]??'').toLowerCase().includes(q) ||

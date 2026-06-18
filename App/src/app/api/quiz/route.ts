@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 
@@ -8,6 +10,8 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
+
+
 // Server-side only: prefer OPENAI_API_KEY; fall back to the (deprecated)
 // NEXT_PUBLIC_* name during rollout so the running deploy doesn't break.
 const openai = new OpenAI({
@@ -51,6 +55,7 @@ export async function POST(req: NextRequest) {
       model: 'text-embedding-3-small',
       input: topic,
     })
+
     const queryEmbedding = embRes.data[0].embedding
 
     // 2. Retrieve top-8 chunks for richer context
@@ -98,13 +103,15 @@ Rules:
       response_format: { type: 'json_object' },
     })
 
-    let raw = completion.choices[0].message.content ?? '[]'
+    const raw = completion.choices[0].message.content ?? '[]'
 
     // GPT may wrap in an object — unwrap if needed
     let questions: QuizQuestion[]
+
     try {
       const parsed = JSON.parse(raw)
       const arr = Array.isArray(parsed) ? parsed : (parsed.questions ?? parsed.quiz ?? Object.values(parsed)[0])
+
       questions = (arr as QuizQuestion[]).slice(0, 5).map((q, i) => ({
         ...q,
         id: i,
@@ -117,8 +124,10 @@ Rules:
     return NextResponse.json({ topic, questions })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal error'
+
     console.error('[quiz] Error:', message)
-    return NextResponse.json({ error: message }, { status: 500 })
+    
+return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
