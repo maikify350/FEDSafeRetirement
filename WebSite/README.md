@@ -38,8 +38,8 @@ npm run dev      # apply layout/shared then serve New/ at http://localhost:4173
 
 ## Related Documentation
 
-- `docs/BUILD.md`
-- `docs/LAYOUT.md`
-- `docs/FORMS.md`
+- `Docs/BUILD.md`
+- `Docs/LAYOUT.md`
+- `Docs/FORMS.md`
 - `.agents/CONVENTIONS.md`
 - `SHARED_LAYOUT.md`

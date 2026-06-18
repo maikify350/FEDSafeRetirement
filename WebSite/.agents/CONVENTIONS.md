@@ -40,5 +40,5 @@ npm run preview
 ## Documentation Priority
 
 - First: source code + build scripts
-- Then: `README.md`, `docs/BUILD.md`, `docs/LAYOUT.md`, `docs/FORMS.md`
+- Then: `README.md`, `Docs/BUILD.md`, `Docs/LAYOUT.md`, `Docs/FORMS.md`
 - Treat `session-handoff.md` and `PRD.md` as historical context, not canonical instructions.
