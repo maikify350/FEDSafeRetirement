@@ -78,12 +78,17 @@ interface EchoLead {
   zip: string | null
   conference_location: string | null
   estimated_retirement_year: string | null
+  age: number | null
   guest_name: string | null
   guest_is_fed_employee: boolean | null
   call_summary: string | null
   call_duration_seconds: number | null
   call_score: number | null
   call_quality: string | null
+  sentiment_happy: number | null
+  sentiment_sad: number | null
+  sentiment_angry: number | null
+  sentiment_neutral: number | null
   recording_url: string | null
   parse_confidence: string | null
   notes: string | null
@@ -705,6 +710,10 @@ return (
       id: 'estimated_retirement_year', header: 'Ret. Year', size: 100,
       cell: ({ getValue }) => <Typography className='text-sm'>{getValue() || '—'}</Typography>,
     }),
+    columnHelper.accessor('age', {
+      id: 'age', header: 'Age', size: 80,
+      cell: ({ getValue }) => <Typography className='text-sm'>{getValue() ?? '—'}</Typography>,
+    }),
     columnHelper.accessor('guest_name', {
       id: 'guest_name', header: 'Guest', size: 150,
       cell: ({ row }) => {
@@ -732,6 +741,27 @@ return g
         />
       ),
     }),
+    // ── Remaining echo_leads fields — hidden by default, available in the
+    //    Show/Hide Columns picker so every column on the table is reachable. ──
+    columnHelper.accessor('agent_name',  { id: 'agent_name',  header: 'AI Agent',  size: 110, cell: ({ getValue }) => <Typography className='text-sm'>{getValue() || '—'}</Typography> }),
+    columnHelper.accessor('caller_phone',{ id: 'caller_phone',header: 'Caller ID', size: 140, cell: ({ getValue }) => <Typography className='text-sm'>{getValue() || '—'}</Typography> }),
+    columnHelper.accessor('city',        { id: 'city',        header: 'City',      size: 120, cell: ({ getValue }) => <Typography className='text-sm'>{getValue() || '—'}</Typography> }),
+    columnHelper.accessor('state',       { id: 'state',       header: 'State',     size: 80,  cell: ({ getValue }) => <Typography className='text-sm'>{getValue() || '—'}</Typography> }),
+    columnHelper.accessor('zip',         { id: 'zip',         header: 'ZIP',       size: 90,  cell: ({ getValue }) => <Typography className='text-sm'>{getValue() || '—'}</Typography> }),
+    columnHelper.accessor('guest_is_fed_employee', { id: 'guest_is_fed_employee', header: 'Guest Fed?', size: 100, cell: ({ getValue }) => { const v = getValue(); return <Typography className='text-sm'>{v == null ? '—' : v ? 'Yes' : 'No'}</Typography> } }),
+    columnHelper.accessor('call_summary',{ id: 'call_summary',header: 'Summary',   size: 300, cell: ({ getValue }) => <Typography className='text-sm' noWrap>{getValue() || '—'}</Typography> }),
+    columnHelper.accessor('notes',       { id: 'notes',       header: 'Notes',     size: 220, cell: ({ getValue }) => <Typography className='text-sm' noWrap>{getValue() || '—'}</Typography> }),
+    columnHelper.accessor('call_score',  { id: 'call_score',  header: 'Score',     size: 80,  cell: ({ getValue }) => <Typography className='text-sm'>{getValue() ?? '—'}</Typography> }),
+    columnHelper.accessor('call_quality',{ id: 'call_quality',header: 'Quality',   size: 100, cell: ({ getValue }) => <Typography className='text-sm'>{getValue() || '—'}</Typography> }),
+    columnHelper.accessor('sentiment_happy',  { id: 'sentiment_happy',  header: 'Happy',   size: 80, cell: ({ getValue }) => <Typography className='text-sm'>{getValue() ?? '—'}</Typography> }),
+    columnHelper.accessor('sentiment_sad',    { id: 'sentiment_sad',    header: 'Sad',     size: 80, cell: ({ getValue }) => <Typography className='text-sm'>{getValue() ?? '—'}</Typography> }),
+    columnHelper.accessor('sentiment_angry',  { id: 'sentiment_angry',  header: 'Angry',   size: 80, cell: ({ getValue }) => <Typography className='text-sm'>{getValue() ?? '—'}</Typography> }),
+    columnHelper.accessor('sentiment_neutral',{ id: 'sentiment_neutral',header: 'Neutral', size: 80, cell: ({ getValue }) => <Typography className='text-sm'>{getValue() ?? '—'}</Typography> }),
+    columnHelper.accessor('call_id',     { id: 'call_id',     header: 'Call ID',   size: 160, cell: ({ getValue }) => <Typography className='text-sm' noWrap>{getValue() || '—'}</Typography> }),
+    columnHelper.accessor('cre_by',      { id: 'cre_by',      header: 'Created By', size: 110, cell: ({ getValue }) => <Typography className='text-sm'>{getValue() || '—'}</Typography> }),
+    columnHelper.accessor('mod_by',      { id: 'mod_by',      header: 'Modified By',size: 110, cell: ({ getValue }) => <Typography className='text-sm'>{getValue() || '—'}</Typography> }),
+    columnHelper.accessor('mod_dt',      { id: 'mod_dt',      header: 'Modified',  size: 160, cell: ({ getValue }) => { const v = getValue(); return <Typography className='text-sm' color='text.secondary'>{v ? new Date(v as string).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—'}</Typography> } }),
+    columnHelper.accessor('version_no',  { id: 'version_no',  header: 'Ver',       size: 70,  cell: ({ getValue }) => <Typography className='text-sm'>{getValue() ?? '—'}</Typography> }),
     columnHelper.display({
       id: 'listen', header: 'Listen', size: 80,
       enableSorting: false, enableColumnFilter: false,
@@ -886,10 +916,15 @@ return u
         isLoading={loading}
         defaultSorting={[{ id: 'call_date', desc: true }]}
 
-        // Date (call_date) now shows time and covers the "calls arriving" view;
-        // Received (cre_dt) is the ingestion audit field — hidden by default,
-        // toggleable in the column picker.
-        defaultColVisibility={{ cre_dt: false }}
+        // Every echo_leads field is a column (so all appear in the Show/Hide
+        // picker), but the secondary/audit ones are hidden by default to keep
+        // the default view clean. Toggle any on via the columns picker.
+        defaultColVisibility={{
+          cre_dt: false, agent_name: false, caller_phone: false, city: false, state: false, zip: false,
+          guest_is_fed_employee: false, call_summary: false, notes: false, call_score: false, call_quality: false,
+          sentiment_happy: false, sentiment_sad: false, sentiment_angry: false, sentiment_neutral: false,
+          call_id: false, cre_by: false, mod_by: false, mod_dt: false, version_no: false,
+        }}
         filterChips={filterChips}
         searchValue={search}
         onSearchChange={setSearch}

@@ -93,6 +93,11 @@ export async function POST(req: NextRequest) {
   // Link the seminar to its scheduled event by city (carries the agent).
   const eventId = await resolveEventIdByCity(supabase, parsed.conferenceLocation)
 
+  // Caller age comes from the echowin webhook body (not the call transcript).
+  const ageRaw = body.age ?? body.callerAge ?? body.Age
+  const ageNum = ageRaw != null && String(ageRaw).trim() !== '' ? parseInt(String(ageRaw), 10) : NaN
+  const age = Number.isFinite(ageNum) ? ageNum : null
+
   const row = {
     call_id:                   payload.id,
     call_date:                 payload.createdAt,
@@ -102,6 +107,7 @@ export async function POST(req: NextRequest) {
     last_name:                 lastName,
     email:                     email,
     phone:                     parsed.phone ?? payload.from,
+    age:                       age,
     event_id:                  eventId,
     address:                   parsed.address,
     city:                      parsed.city,
