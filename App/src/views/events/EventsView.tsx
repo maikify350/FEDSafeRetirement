@@ -1136,9 +1136,26 @@ return }
         <Box sx={{width:36,height:36,borderRadius:2,bgcolor:'primary.lighter',display:'flex',alignItems:'center',justifyContent:'center'}}>
           <i className='tabler-calendar-edit' style={{fontSize:18,color:'var(--mui-palette-primary-main)'}} />
         </Box>
-        <Box sx={{flex:1}}>
+        <Box sx={{flex:1,minWidth:0}}>
           <Typography variant='h6' fontWeight={700}>Edit Event</Typography>
-          {event && <Typography variant='caption' color='text.secondary'>#{event.event_seq}</Typography>}
+          {event && (
+            <Box sx={{display:'flex',alignItems:'center',gap:0.75,flexWrap:'wrap'}}>
+              <Typography variant='caption' color='text.secondary'>#{event.event_seq}</Typography>
+              <Tooltip title='Click to copy event UUID (use as webinarUUID in the echowin webhook)'>
+                <Typography
+                  variant='caption'
+                  onClick={() => navigator.clipboard?.writeText(event.id)}
+                  sx={{
+                    cursor:'pointer', fontFamily:'monospace', color:'text.secondary',
+                    bgcolor:'action.hover', px:0.75, py:0.25, borderRadius:1,
+                    '&:hover':{color:'primary.main'}
+                  }}
+                >
+                  {event.id} <i className='tabler-copy' style={{fontSize:12,verticalAlign:'-1px'}} />
+                </Typography>
+              </Tooltip>
+            </Box>
+          )}
         </Box>
         <IconButton onClick={onClose} size='small' sx={{color:'text.secondary'}}>
           <i className='tabler-x' style={{fontSize:18}} />
