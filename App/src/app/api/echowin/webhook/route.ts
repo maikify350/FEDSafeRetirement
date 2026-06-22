@@ -15,7 +15,9 @@ import { createAdminClient } from '@/utils/supabase/server'
 import { parseCallTranscript } from '@/lib/echowin/parser'
 import { storeRecording } from '@/lib/echowin/recordings'
 import { findContactByNumber, getCall, listCalls, type EchoCall } from '@/lib/echowin/client'
-import { resolveEventIdByCity } from '@/lib/echowin/linkEvent'
+import { resolveEventIdByCity, resolveWebinarEventId } from '@/lib/echowin/linkEvent'
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 // Looking up the call + parsing + recording download can take a few seconds.
 export const maxDuration = 60
@@ -40,6 +42,20 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
+
+  // Log exactly what echowin sent (no secrets), so it's easy to confirm in the
+  // Vercel logs whether the webhook variables ($webinar, $eventId, ...) resolve.
+  console.log('[echowin/webhook] body fields:', JSON.stringify({
+    phone:          body.phone,
+    name:           body.name,
+    email:          body.email,
+    webinar:        body.webinar,
+    webinarDate:    body.webinarDate,
+    eventId:        body.eventId ?? body.event_id,
+    retirementYear: body.retirementYear,
+    address:        body.address,
+    age:            body.age,
+  }))
 
   const digits = (s: string) => (s || '').replace(/\D/g, '')
   const callId = body.call_id ?? body.callId ?? body.id ?? null
@@ -90,8 +106,25 @@ export async function POST(req: NextRequest) {
     if (contact?.email) email = contact.email
   }
 
-  // Link the seminar to its scheduled event by city (carries the agent).
-  const eventId = await resolveEventIdByCity(supabase, parsed.conferenceLocation)
+  // Link to the scheduled event (carries the assigned agent). Priority:
+  //   1. Explicit event UUID from the webhook body — deterministic, preferred.
+  //   2. In-person seminars: match by conference city.
+  //   3. City-less calls (webinars): match by webinar date, else nearest webinar.
+  let eventId: string | null = null
+  const explicitId = body.eventId ?? body.event_id ?? null
+
+  if (explicitId && UUID_RE.test(String(explicitId))) {
+    const { data: ev } = await supabase.from('events').select('id').eq('id', explicitId).maybeSingle()
+
+    eventId = ev?.id ?? null
+    if (!eventId) console.warn('[echowin/webhook] body.eventId not found in events:', explicitId)
+  }
+
+  if (!eventId) eventId = await resolveEventIdByCity(supabase, parsed.conferenceLocation)
+
+  if (!eventId && !parsed.conferenceLocation) {
+    eventId = await resolveWebinarEventId(supabase, [body.webinarDate, body.webinar])
+  }
 
   // Caller age comes from the echowin webhook body (not the call transcript).
   const ageRaw = body.age ?? body.callerAge ?? body.Age

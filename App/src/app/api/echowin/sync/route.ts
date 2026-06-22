@@ -16,7 +16,7 @@ import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { listCalls, findContactByNumber } from '@/lib/echowin/client'
 import { parseCallTranscript } from '@/lib/echowin/parser'
 import { storeRecording } from '@/lib/echowin/recordings'
-import { resolveEventIdByCity } from '@/lib/echowin/linkEvent'
+import { resolveEventIdByCity, resolveWebinarEventId } from '@/lib/echowin/linkEvent'
 
 // echowin's API ignores the `after` filter and a single call can take several
 // seconds (OpenAI parse + recording download), so give the catch-up run room.
@@ -145,7 +145,12 @@ return NextResponse.json({ synced: 0, message: 'No new calls', lastSync })
       }
 
       // Link the seminar to its scheduled event by city (carries the agent).
-      const eventId = await resolveEventIdByCity(supabase, parsed.conferenceLocation)
+      // City-less calls are webinars — fall back to the nearest webinar event.
+      let eventId = await resolveEventIdByCity(supabase, parsed.conferenceLocation)
+
+      if (!eventId && !parsed.conferenceLocation) {
+        eventId = await resolveWebinarEventId(supabase, [])
+      }
 
       const row = {
         call_id:                   call.id,
