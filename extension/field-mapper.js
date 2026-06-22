@@ -65,6 +65,39 @@ const ActFieldMapper = (() => {
         };
     }
 
+    // ── Telerik RadDatePicker resolution ─────────────────
+    // ACT date fields (Birth Date, SpouseDOB, RetireDate, SCD, …) render via a
+    // Telerik RadDatePicker. The element whose id decodes to the field name
+    // (class "AnnualEvent"/"Date") is ALWAYS EMPTY — the displayed value lives in
+    // a separate visible input whose id embeds the field id as:
+    //     [ctl00_viewPlaceHolder_]dtp_<base64FieldId>_dateInput
+    // Find that input so we read/write the value the user actually sees.
+    function findDatePickerInput(el) {
+        if (!el || !el.id || !el.ownerDocument) return null;
+        const doc = el.ownerDocument;
+        const token = 'dtp_' + el.id;
+        const direct = doc.getElementById(token + '_dateInput')
+                    || doc.getElementById('ctl00_viewPlaceHolder_' + token + '_dateInput');
+        if (direct) return direct;
+        // General fallback: any *_dateInput whose id embeds dtp_<fieldId>
+        const inputs = doc.querySelectorAll('input[id*="dtp_"][id$="_dateInput"]');
+        for (const i of inputs) { if (i.id.indexOf(token) !== -1) return i; }
+        return null;
+    }
+
+    // ── Effective value of a field element ───────────────
+    // Returns the visible/meaningful value: the element's own value, or the
+    // Telerik date-picker value when the element itself is an empty date field.
+    function effectiveValue(el) {
+        if (!el) return '';
+        if (el.type === 'checkbox') return String(el.checked);
+        const own = el.value;
+        if (own && String(own).trim()) return own;
+        const pick = findDatePickerInput(el);
+        if (pick && String(pick.value).trim()) return pick.value;
+        return own || '';
+    }
+
     // ── Collect all documents (main + same-origin iframes) ──
     function collectDocuments() {
         const docs = [{ doc: document, label: 'main' }];
@@ -106,7 +139,8 @@ const ActFieldMapper = (() => {
                 const key = info.fieldName.toLowerCase();
                 // Checkboxes: el.value is always "on" regardless of state —
                 // capture el.checked instead so we know the actual toggle state.
-                const capturedValue = el.type === 'checkbox' ? String(el.checked) : (el.value || '');
+                // Date fields: read the Telerik picker value (effectiveValue).
+                const capturedValue = el.type === 'checkbox' ? String(el.checked) : effectiveValue(el);
                 _fieldMap[key] = {
                     id: el.id,
                     element: el,
@@ -117,6 +151,7 @@ const ActFieldMapper = (() => {
                     isCustom: info.isCustom,
                     table: info.table,
                     layoutSuffix: info.layoutSuffix,
+                    dateInputEl: findDatePickerInput(el),
                     value: capturedValue,
                 };
                 _reverseMap[el.id] = key;
@@ -141,7 +176,8 @@ const ActFieldMapper = (() => {
         if (!entry) return undefined;
         // Checkboxes: return checked state, not the meaningless "on" value
         if (entry.element.type === 'checkbox') return String(entry.element.checked);
-        return entry.element.value;
+        // Date fields: resolve the Telerik picker value when the field is empty
+        return effectiveValue(entry.element);
     }
 
     // ── Dispatch a native DOM event on an element ────────
@@ -189,6 +225,53 @@ const ActFieldMapper = (() => {
             }
             entry.value = String(shouldCheck);
             (typeof verboseDebug !== "undefined" ? verboseDebug : false) && console.log(`[ActFieldMapper] Set checkbox ${fieldName}: ${prevValue} → ${shouldCheck} (${entry.frameLabel})`);
+            return true;
+        }
+
+        // ── Select dropdown: match by value, then by visible text ──
+        // The HTMLInputElement value setter doesn't apply to <select>; assign
+        // directly and fall back to matching an option's label.
+        if (el.tagName === 'SELECT') {
+            el.value = value;
+            if (el.value !== value) {
+                const opt = [...el.options].find(o =>
+                    o.text.trim() === String(value).trim() || o.value === String(value));
+                if (opt) el.value = opt.value;
+            }
+            fireEvent(el, 'change');
+            fireEvent(el, 'blur');
+            entry.value = el.value;
+            (typeof verboseDebug !== "undefined" ? verboseDebug : false) && console.log(`[ActFieldMapper] Set select ${fieldName}: "${prevValue}" → "${el.value}" (${entry.frameLabel})`);
+            return true;
+        }
+
+        // ── Date picker: write the visible Telerik input ─────
+        // The decoded-id element is the empty backing field; the value the user
+        // sees/posts lives in dtp_<id>_dateInput. Write there (and the backing
+        // field) and fire events so Telerik + ACT's handlers sync.
+        const pickEl = findDatePickerInput(el);
+        if (pickEl) {
+            const pWin = pickEl.ownerDocument.defaultView || window;
+            const pSetter = Object.getOwnPropertyDescriptor(pWin.HTMLInputElement.prototype, 'value')?.set;
+            const writeNative = (target, v) => { if (pSetter) pSetter.call(target, v); else target.value = v; };
+
+            fireEvent(pickEl, 'focus');
+            fireEvent(pickEl, 'click');
+            writeNative(pickEl, value);
+            pickEl.setAttribute('value', value);
+            fireEvent(pickEl, 'input');
+            fireEvent(pickEl, 'keyup');
+            fireEvent(pickEl, 'change');
+            fireEvent(pickEl, 'blur');
+
+            // Mirror onto the backing ACT field so server-side reads agree.
+            writeNative(el, value);
+            el.setAttribute('value', value);
+            fireEvent(el, 'change');
+            fireEvent(el, 'blur');
+
+            entry.value = value;
+            (typeof verboseDebug !== "undefined" ? verboseDebug : false) && console.log(`[ActFieldMapper] Set date ${fieldName}: "${prevValue}" → "${value}" via picker (${entry.frameLabel})`);
             return true;
         }
 
@@ -262,13 +345,15 @@ const ActFieldMapper = (() => {
                 if (!info) return;
                 const key = info.fieldName.toLowerCase();
                 if (!keySet.has(key)) return; // skip irrelevant fields
-                // Checkboxes: el.value is always "on" — capture el.checked instead
-                const capturedValue = el.type === 'checkbox' ? String(el.checked) : (el.value || '');
+                // Checkboxes: el.value is always "on" — capture el.checked instead.
+                // Date fields: read the Telerik picker value (effectiveValue).
+                const capturedValue = el.type === 'checkbox' ? String(el.checked) : effectiveValue(el);
                 _fieldMap[key] = {
                     id: el.id, element: el, ownerDoc: doc, frameLabel: label,
                     decoded: info.raw, fieldName: info.fieldName,
                     isCustom: info.isCustom, table: info.table,
                     layoutSuffix: info.layoutSuffix || '',
+                    dateInputEl: findDatePickerInput(el),
                     value: capturedValue,
                 };
                 _reverseMap[el.id] = key;
@@ -284,10 +369,11 @@ const ActFieldMapper = (() => {
     function snapshot() {
         const snap = {};
         for (const [name, entry] of Object.entries(_fieldMap)) {
-            // Checkboxes: use checked state, not the always-"on" value
+            // Checkboxes: use checked state, not the always-"on" value.
+            // Date fields: resolve the Telerik picker value.
             const val = entry.element.type === 'checkbox'
                 ? String(entry.element.checked)
-                : entry.element.value;
+                : effectiveValue(entry.element);
             snap[name] = {
                 value: val,
                 isCustom: entry.isCustom,
@@ -345,9 +431,10 @@ const ActFieldMapper = (() => {
 
         const serialized = {};
         for (const [name, entry] of Object.entries(_fieldMap)) {
-            // Checkboxes: broadcast checked state, not the always-"on" value
+            // Checkboxes: broadcast checked state, not the always-"on" value.
+            // Date fields: resolve the Telerik picker value.
             const val = entry.element
-                ? (entry.element.type === 'checkbox' ? String(entry.element.checked) : entry.element.value)
+                ? (entry.element.type === 'checkbox' ? String(entry.element.checked) : effectiveValue(entry.element))
                 : (entry.value || '');
             serialized[name] = {
                 fieldName: entry.fieldName,

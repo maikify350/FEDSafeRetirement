@@ -49,3 +49,11 @@ DataSeed/*.csv
 .gemini/
 
 .vercel
+
+# Throwaway / local artifacts (do not commit)
+.playwright-mcp/
+App/scratch/
+scratch/
+*.zip
+# Upstream source reference mirrors (cloned locally, not part of this repo)
+reference/

@@ -933,6 +933,14 @@
             return;
         }
 
+        // Resolve the display value via the mapper so date pickers (Birth Date,
+        // SpouseDOB, etc.) show their visible value, not the empty backing input.
+        // Guard element null for iframe-broadcast fields (use their captured value).
+        const fieldDisplayValue = (name, info) => {
+            const v = info.element ? ActFieldMapper.getFieldValue(name) : info.value;
+            return v == null ? '' : v;
+        };
+
         list.innerHTML = filtered.map(([name, info]) => `
             <div class="cp-field-item" data-field="${name}">
                 <div class="cp-field-item-header">
@@ -942,7 +950,7 @@
                     </span>
                 </div>
                 <div class="cp-field-value-row">
-                    <input type="text" class="cp-field-input" value="${escapeAttr(info.element.value)}" data-field="${name}" />
+                    <input type="text" class="cp-field-input" value="${escapeAttr(fieldDisplayValue(name, info))}" data-field="${name}" />
                     <button class="cp-field-apply-btn" data-field="${name}">Apply</button>
                 </div>
             </div>
@@ -3880,7 +3888,7 @@
     // ═══════════════════════════════════════════════════════
     function startAgeAutoCompute() {
         // All possible internal Act! names for the DOB field
-        const DOB_CANDIDATES = ['birth date', 'birthday', 'birthdate'];
+        const DOB_CANDIDATES = ['birth date', 'birthday', 'birthdate', 'dob', 'dateofbirth', 'birth_date'];
         // All possible internal Act! names for the output fields
         const YY_CANDIDATES  = ['ageyy', 'age_yy', 'ageyears'];
         const MM_CANDIDATES  = ['agemm', 'age_mm', 'agemonths'];
@@ -3894,6 +3902,16 @@
             if (!val) return null;
             const s = String(val).trim();
             if (!s) return null;
+            // ACT shows dates as M/D/YY. new Date("10/11/57") would parse as 2057,
+            // making DOB look like the future → age cleared. Pivot 2-digit years:
+            // YY <= current 2-digit year → 2000s, else 1900s (10/11/57→1957, 10/3/04→2004).
+            const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+            if (m) {
+                let yr = +m[3];
+                if (yr < 100) yr += (yr <= (new Date().getFullYear() % 100)) ? 2000 : 1900;
+                const d = new Date(yr, +m[1] - 1, +m[2]);
+                return isNaN(d.getTime()) ? null : d;
+            }
             const d = new Date(s);
             return isNaN(d.getTime()) ? null : d;
         }
@@ -3906,25 +3924,74 @@
             return { years: Math.max(0, years), months: Math.max(0, months) };
         }
 
+        // Keep AgeYY/AgeMM keyboard-disabled (computed-only). Programmatic writes
+        // still work on readOnly inputs — this only blocks manual typing/tabbing.
+        function lockAgeFields() {
+            for (const k of [YY_KEY, MM_KEY]) {
+                if (!k) continue;
+                const el = ActFieldMapper.getFieldElement(k);
+                if (el && !el.readOnly) {
+                    el.readOnly = true;
+                    el.tabIndex = -1;
+                    el.style.cursor = 'not-allowed';
+                    el.title = 'Auto-calculated from Date of Birth';
+                }
+            }
+        }
+
+        // ACT renders the DOB as a calendar field with a HIDDEN duplicate <input>
+        // that shares the SAME id as the visible one. The field-mapper may grab the
+        // empty hidden copy, so scan every element with that id and take the first
+        // non-empty value (with attribute fallbacks).
+        function readDobValue() {
+            const t = x => (x && String(x).trim()) ? String(x).trim() : '';
+            // The field-mapper now resolves the Telerik date-picker value
+            // (dtp_<id>_dateInput) when the backing field is empty.
+            let v = t(ActFieldMapper.getFieldValue(DOB_KEY));
+            if (v) return v;
+            const el = ActFieldMapper.getFieldElement(DOB_KEY);
+            if (!el) return '';
+            v = t(el.value);
+            if (v) return v;
+            try {
+                for (const d of new Set([el.ownerDocument, document])) {
+                    for (const dup of d.querySelectorAll('[id="' + el.id + '"]')) {
+                        v = t(dup.value) || t(dup.getAttribute('lastvalidvalue'));
+                        if (v) return v;
+                    }
+                }
+            } catch {}
+            return t(el.getAttribute('lastvalidvalue')) || t(el.defaultValue);
+        }
+
         function recompute() {
             if (!DOB_KEY) return;
             ActFieldMapper.scanFields([DOB_KEY, YY_KEY, MM_KEY].filter(Boolean));
-            const dobVal = ActFieldMapper.getFieldValue(DOB_KEY) || '';
+            const dobVal = readDobValue();
             const dobDate = parseDate(dobVal);
+            console.log(`[Copilot] Age recompute: DOB_KEY=${DOB_KEY} raw="${dobVal}" parsed=${dobDate} YY=${YY_KEY} MM=${MM_KEY}`);
 
-            verboseDebug && console.log(`[Copilot] Age recompute: DOB_KEY=${DOB_KEY}, raw="${dobVal}", parsed=${dobDate}`);
+            // Temporarily clear readOnly so the programmatic write isn't blocked by
+            // ACT's handlers; lockAgeFields() re-applies it right after.
+            for (const k of [YY_KEY, MM_KEY]) { const el = k && ActFieldMapper.getFieldElement(k); if (el) el.readOnly = false; }
 
             if (!dobDate || dobDate > new Date()) {
-                // No DOB or future date — clear the computed fields
                 if (YY_KEY) ActFieldMapper.setFieldValue(YY_KEY, '');
                 if (MM_KEY) ActFieldMapper.setFieldValue(MM_KEY, '');
+                lockAgeFields();
+                console.log(`[Copilot] Age cleared (no/invalid DOB raw="${dobVal}")`);
                 return;
             }
 
             const diff = diffYearsMonths(dobDate, new Date());
-            if (YY_KEY) ActFieldMapper.setFieldValue(YY_KEY, String(diff.years));
-            if (MM_KEY) ActFieldMapper.setFieldValue(MM_KEY, String(diff.months));
-            verboseDebug && console.log(`[Copilot] Age: ${diff.years}Y ${diff.months}M  (DOB=${DOB_KEY}, YY=${YY_KEY}, MM=${MM_KEY})`);
+            const yyStr = String(diff.years), mmStr = String(diff.months);
+            const curYY = YY_KEY ? (ActFieldMapper.getFieldValue(YY_KEY) || '') : yyStr;
+            const curMM = MM_KEY ? (ActFieldMapper.getFieldValue(MM_KEY) || '') : mmStr;
+            if (curYY === yyStr && curMM === mmStr) { lockAgeFields(); return; }   // already correct — skip write (no focus-steal)
+            const okYY = YY_KEY ? ActFieldMapper.setFieldValue(YY_KEY, yyStr) : null;
+            const okMM = MM_KEY ? ActFieldMapper.setFieldValue(MM_KEY, mmStr) : null;
+            lockAgeFields();
+            console.log(`[Copilot] Age: ${diff.years}Y ${diff.months}M wrote(YY=${okYY}, MM=${okMM})`);
         }
 
         // Retry until the DOB field appears in the DOM, then attach listeners
@@ -3985,11 +4052,46 @@
 
             verboseDebug && console.log('[Copilot] Age: onChange/onBlur listeners attached to ' + DOB_KEY);
 
-            // Compute once immediately so age is current on page load
-            recompute();
+            // Lock the outputs, then compute. ACT can populate the DOB value
+            // slightly AFTER the field renders, so if it's not parseable yet we
+            // poll briefly until it is (the old single-shot compute missed that
+            // and left Age blank for already-loaded contacts).
+            lockAgeFields();
+            if (parseDate(readDobValue())) recompute();
+            let pollTries = 0;
+            const pollId = setInterval(() => {
+                pollTries++;
+                const v = readDobValue();
+                if (v && parseDate(v)) { recompute(); clearInterval(pollId); }
+                else if (pollTries >= 12) { recompute(); clearInterval(pollId); }
+            }, 1500);
         }
 
         tryAttach();
+
+        // ACT is a single-page app: contacts navigate without a page reload, and
+        // date fields can render AFTER the initial attempts (we saw ACT's
+        // "SETTING DATE … BIRTHDATE" fire after tryAttach gave up). A lightweight
+        // persistent watcher keeps age in sync — re-resolving the fields,
+        // (re)attaching the DOB change listener, and recomputing. recompute()
+        // skips the write when the value is already correct, so this won't loop
+        // or steal focus once the fields are filled.
+        let watchedDobEl = null;
+        setInterval(() => {
+            ActFieldMapper.scanFields([...DOB_CANDIDATES, ...YY_CANDIDATES, ...MM_CANDIDATES]);
+            DOB_KEY = DOB_CANDIDATES.find(k => ActFieldMapper.getFieldElement(k)) || DOB_KEY;
+            YY_KEY  = YY_CANDIDATES.find(k => ActFieldMapper.getFieldElement(k)) || YY_KEY;
+            MM_KEY  = MM_CANDIDATES.find(k => ActFieldMapper.getFieldElement(k)) || MM_KEY;
+            if (!DOB_KEY || !(YY_KEY || MM_KEY)) return;
+            const el = ActFieldMapper.getFieldElement(DOB_KEY);
+            if (el && el !== watchedDobEl) {
+                watchedDobEl = el;
+                const h = () => setTimeout(recompute, 150);
+                el.addEventListener('change', h);
+                el.addEventListener('blur', h);
+            }
+            recompute();
+        }, 3000);
     }
 
 })();
