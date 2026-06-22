@@ -35,8 +35,8 @@ const verticalMenuData = (): VerticalMenuDataType[] => [
     icon: 'tabler-folders'
   },
   {
-    label: 'Echo Leads',
-    href: '/echo-leads',
+    label: 'Registrations',
+    href: '/registrations',
     icon: 'tabler-phone-incoming',
   },
   {

@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * EchoLeadsView — Seminar registrations captured by the AI phone agent.
+ * RegistrationsView — Seminar registrations captured by the AI phone agent.
  *
  * Built on the shared EntityListView grid (client-side mode — small dataset)
  * so it gets column sort / move / filter, density, column picker, export and
@@ -490,7 +490,7 @@ function EditLeadDialog({
 
 // ── Main View ─────────────────────────────────────────────────────────────────
 
-export default function EchoLeadsView() {
+export default function RegistrationsView() {
   const supabase = createClient()
   const [leads, setLeads]         = useState<EchoLead[]>([])
   const [events, setEvents]       = useState<EventLite[]>([])
@@ -911,8 +911,8 @@ return u
       <EntityListView<EnrichedEchoLead>
         columns={columns as any}
         data={filteredData}
-        title='Echo Leads'
-        storageKey='fs-echo-leads'
+        title='Registrations'
+        storageKey='fs-registrations'
         isLoading={loading}
         defaultSorting={[{ id: 'call_date', desc: true }]}
 
