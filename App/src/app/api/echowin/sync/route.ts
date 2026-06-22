@@ -17,6 +17,7 @@ import { listCalls, findContactByNumber } from '@/lib/echowin/client'
 import { parseCallTranscript } from '@/lib/echowin/parser'
 import { storeRecording } from '@/lib/echowin/recordings'
 import { resolveEventIdByCity, resolveWebinarEventId } from '@/lib/echowin/linkEvent'
+import { coerceDob, normalizeRetirementYear, computeAge } from '@/lib/echowin/normalize'
 
 // echowin's API ignores the `after` filter and a single call can take several
 // seconds (OpenAI parse + recording download), so give the catch-up run room.
@@ -161,13 +162,15 @@ return NextResponse.json({ synced: 0, message: 'No new calls', lastSync })
         last_name:                 lastName,
         email:                     email,
         phone:                     parsed.phone ?? call.from,
+        dob:                       coerceDob(parsed.dob),
+        age:                       computeAge(coerceDob(parsed.dob)),
         event_id:                  eventId,
         address:                   parsed.address,
         city:                      parsed.city,
         state:                     parsed.state,
         zip:                       parsed.zip,
         conference_location:       parsed.conferenceLocation,
-        estimated_retirement_year: parsed.estimatedRetirementYear,
+        estimated_retirement_year: normalizeRetirementYear(parsed.estimatedRetirementYear),
         guest_name:                parsed.guestName,
         guest_is_fed_employee:     parsed.guestIsFedEmployee,
         call_summary:              call.summary ?? parsed.rawSummary,

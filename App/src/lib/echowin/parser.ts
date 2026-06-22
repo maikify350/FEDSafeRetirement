@@ -23,6 +23,7 @@ export interface ParsedRegistration {
   state:                   string | null
   zip:                     string | null
   estimatedRetirementYear: string | null
+  dob:                     string | null
   conferenceLocation:      'Lexington, Kentucky' | 'Greenville, South Carolina' | null
   guestName:               string | null
   guestIsFedEmployee:      boolean | null
@@ -89,6 +90,7 @@ Extract and return ONLY a valid JSON object with these exact keys (null if not f
   "state": string | null,
   "zip": string | null,
   "estimatedRetirementYear": string | null,
+  "dob": string | null,
   "conferenceLocation": "Lexington, Kentucky" | "Greenville, South Carolina" | null,
   "guestName": string | null,
   "guestIsFedEmployee": boolean | null,
@@ -98,6 +100,8 @@ Extract and return ONLY a valid JSON object with these exact keys (null if not f
 
 Rules:
 - email: lowercase, reconstruct from phonetic spelling (e.g. "r g a r c i a 3 5 0 at aol dot com" → "rgarcia350@aol.com")
+- dob: caller's date of birth if stated, as ISO "YYYY-MM-DD" (e.g. "October 11th 1957" → "1957-10-11"); null if not mentioned
+- estimatedRetirementYear: full 4-digit year — if the caller says a 2-digit year like "27", return "2027"
 - phone: use caller's stated phone number if given, otherwise null
 - conferenceLocation: MUST be exactly "Lexington, Kentucky" or "Greenville, South Carolina" — match any mention of Lexington/KY or Greenville/SC
 - confidence: "high" = name + phone/email + conference all captured; "medium" = partial; "low" = mostly missing
@@ -133,7 +137,7 @@ function emptyResult(summary: string | null): ParsedRegistration {
   return {
     firstName: null, lastName: null, email: null, phone: null,
     address: null, city: null, state: null, zip: null,
-    estimatedRetirementYear: null, conferenceLocation: null,
+    estimatedRetirementYear: null, dob: null, conferenceLocation: null,
     guestName: null, guestIsFedEmployee: null,
     rawSummary: summary, confidence: 'low', notes: null,
   }

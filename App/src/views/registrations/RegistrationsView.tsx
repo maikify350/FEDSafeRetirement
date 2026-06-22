@@ -41,6 +41,7 @@ import EntityListView from '@/components/EntityListView'
 import { buildCsv, downloadBlob, downloadJson } from '@/utils/exportDownload'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { createClient } from '@/utils/supabase/client'
+import { computeAge } from '@/lib/echowin/normalize'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -79,6 +80,7 @@ interface EchoLead {
   conference_location: string | null
   estimated_retirement_year: string | null
   age: number | null
+  dob: string | null
   guest_name: string | null
   guest_is_fed_employee: boolean | null
   call_summary: string | null
@@ -338,6 +340,8 @@ function EditLeadDialog({
         zip:                       form.zip,
         conference_location:       form.conference_location,
         estimated_retirement_year: form.estimated_retirement_year,
+        dob:                       form.dob,
+        age:                       form.dob ? computeAge(form.dob) : form.age,
         guest_name:                form.guest_name,
         guest_is_fed_employee:     form.guest_is_fed_employee,
         event_id:                  form.event_id,
@@ -424,6 +428,20 @@ function EditLeadDialog({
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextField fullWidth size='small' label='Est. Retirement Year'
               value={form.estimated_retirement_year ?? ''} onChange={e => set('estimated_retirement_year', e.target.value)} />
+          </Grid>
+
+          {/* DOB (asked for starting with the June 28th webinar) + Age */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField fullWidth size='small' type='date' label='Date of Birth'
+              InputLabelProps={{ shrink: true }}
+              value={form.dob ?? ''} onChange={e => set('dob', e.target.value)} />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField fullWidth size='small' type='number' label='Age'
+              value={form.dob ? (computeAge(form.dob) ?? '') : (form.age ?? '')}
+              disabled={!!form.dob}
+              helperText={form.dob ? 'Calculated from DOB' : 'Set a DOB to auto-calculate'}
+              onChange={e => set('age', e.target.value === '' ? null : parseInt(e.target.value, 10))} />
           </Grid>
 
           {/* Event link → carries the assigned agent */}
@@ -712,7 +730,23 @@ return (
     }),
     columnHelper.accessor('age', {
       id: 'age', header: 'Age', size: 80,
-      cell: ({ getValue }) => <Typography className='text-sm'>{getValue() ?? '—'}</Typography>,
+      // Live-computed from DOB so it never goes stale; falls back to the stored
+      // age (e.g. echowin-provided) for rows without a DOB.
+      cell: ({ row }) => {
+        const a = computeAge(row.original.dob) ?? row.original.age
+
+
+return <Typography className='text-sm'>{a ?? '—'}</Typography>
+      },
+    }),
+    columnHelper.accessor('dob', {
+      id: 'dob', header: 'DOB', size: 110,
+      cell: ({ getValue }) => {
+        const v = getValue()
+
+
+return <Typography className='text-sm'>{v ? new Date(v + 'T00:00:00').toLocaleDateString('en-US') : '—'}</Typography>
+      },
     }),
     columnHelper.accessor('guest_name', {
       id: 'guest_name', header: 'Guest', size: 150,

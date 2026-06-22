@@ -16,6 +16,7 @@ import { parseCallTranscript } from '@/lib/echowin/parser'
 import { storeRecording } from '@/lib/echowin/recordings'
 import { findContactByNumber, getCall, listCalls, type EchoCall } from '@/lib/echowin/client'
 import { resolveEventIdByCity, resolveWebinarEventId } from '@/lib/echowin/linkEvent'
+import { coerceDob, normalizeRetirementYear, computeAge } from '@/lib/echowin/normalize'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -55,6 +56,7 @@ export async function POST(req: NextRequest) {
     retirementYear: body.retirementYear,
     address:        body.address,
     age:            body.age,
+    dob:            body.dob,
   }))
 
   const digits = (s: string) => (s || '').replace(/\D/g, '')
@@ -126,10 +128,17 @@ export async function POST(req: NextRequest) {
     eventId = await resolveWebinarEventId(supabase, [body.webinarDate, body.webinar])
   }
 
-  // Caller age comes from the echowin webhook body (not the call transcript).
+  // DOB: prefer the webhook body ($dob), fall back to whatever the parser found.
+  const dob = coerceDob(body.dob ?? body.DOB ?? body.dateOfBirth ?? body.birthDate) ?? coerceDob(parsed.dob)
+
+  // Age is derived from DOB when we have it (kept current on every read in the
+  // UI); otherwise fall back to the age echowin sent in the webhook body.
   const ageRaw = body.age ?? body.callerAge ?? body.Age
   const ageNum = ageRaw != null && String(ageRaw).trim() !== '' ? parseInt(String(ageRaw), 10) : NaN
-  const age = Number.isFinite(ageNum) ? ageNum : null
+  const age = computeAge(dob) ?? (Number.isFinite(ageNum) ? ageNum : null)
+
+  // Normalize a stated retirement year ("27" → "2027").
+  const retirementYear = normalizeRetirementYear(parsed.estimatedRetirementYear ?? body.retirementYear)
 
   const row = {
     call_id:                   payload.id,
@@ -141,13 +150,14 @@ export async function POST(req: NextRequest) {
     email:                     email,
     phone:                     parsed.phone ?? payload.from,
     age:                       age,
+    dob:                       dob,
     event_id:                  eventId,
     address:                   parsed.address,
     city:                      parsed.city,
     state:                     parsed.state,
     zip:                       parsed.zip,
     conference_location:       parsed.conferenceLocation,
-    estimated_retirement_year: parsed.estimatedRetirementYear,
+    estimated_retirement_year: retirementYear,
     guest_name:                parsed.guestName,
     guest_is_fed_employee:     parsed.guestIsFedEmployee,
     call_summary:              payload.summary ?? parsed.rawSummary,
