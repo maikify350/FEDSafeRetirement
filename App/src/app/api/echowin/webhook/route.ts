@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     email:          body.email,
     webinar:        body.webinar,
     webinarDate:    body.webinarDate,
-    eventId:        body.eventId ?? body.event_id,
+    eventId:        body.eventId ?? body.event_id ?? body.webinarUUID,
     retirementYear: body.retirementYear,
     address:        body.address,
     age:            body.age,
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
   //   2. In-person seminars: match by conference city.
   //   3. City-less calls (webinars): match by webinar date, else nearest webinar.
   let eventId: string | null = null
-  const explicitId = body.eventId ?? body.event_id ?? null
+  const explicitId = body.eventId ?? body.event_id ?? body.webinarUUID ?? body.eventUuid ?? null
 
   if (explicitId && UUID_RE.test(String(explicitId))) {
     const { data: ev } = await supabase.from('events').select('id').eq('id', explicitId).maybeSingle()
