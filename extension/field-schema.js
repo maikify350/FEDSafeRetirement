@@ -426,6 +426,128 @@ const ActFieldSchema = (() => {
     return paired;
   }
 
+  // ── Phase 3: fast resolver + get/set ───────────────────────────────────────
+  // Resolve a field's LIVE element by id, re-finding the frame each time
+  // (robust to frame-index drift and tab reloads). O(frames) getElementById —
+  // no full DOM scan. Returns null if the field's tab isn't currently loaded.
+  function resolveElement(field, root) {
+    if (!field || !field.dom || !field.dom.id) return null;
+    for (const { doc } of collectFrames(root)) {
+      try { const el = doc.getElementById(field.dom.id); if (el) return el; } catch {}
+    }
+    return null;
+  }
+
+  // Visible value of an element (own value, or the Telerik date-picker value).
+  function effectiveValueOf(el) {
+    if (!el) return '';
+    if (el.type === 'checkbox') return String(el.checked);
+    const own = el.value;
+    if (own && String(own).trim()) return own;
+    const pick = findDatePickerInput(el);
+    if (pick && String(pick.value).trim()) return pick.value;
+    return own || '';
+  }
+
+  // Read a value from an API contact object by api path ("birthday",
+  // "customFields.spousedob", "businessAddress.line1").
+  function apiReadValue(apiContact, apiPath) {
+    if (!apiContact || !apiPath) return null;
+    return apiPath.split('.').reduce((o, k) => (o == null ? o : o[k]), apiContact) ?? null;
+  }
+
+  // DOM-first read, API fallback when the field's element isn't loaded.
+  // opts: { root, apiContact }
+  function getValue(field, opts = {}) {
+    const el = resolveElement(field, opts.root);
+    if (el) return effectiveValueOf(el);
+    if (opts.apiContact && field.api) return apiReadValue(opts.apiContact, field.api.path);
+    return null;
+  }
+
+  // ── DOM write mechanics (self-contained; mirrors field-mapper) ─────────────
+  function fireOn(el, type) {
+    let evt;
+    if (type === 'input' || type === 'change') evt = new Event(type, { bubbles: true, cancelable: true });
+    else if (type.startsWith('key')) evt = new KeyboardEvent(type, { bubbles: true, cancelable: true });
+    else evt = new MouseEvent(type, { bubbles: true, cancelable: true });
+    try { el.dispatchEvent(evt); } catch {}
+  }
+  function nativeSet(el, value) {
+    const win = el.ownerDocument.defaultView || (typeof window !== 'undefined' ? window : null);
+    const proto = el.tagName === 'TEXTAREA' ? win.HTMLTextAreaElement.prototype : win.HTMLInputElement.prototype;
+    const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+    if (setter) setter.call(el, value); else el.value = value;
+  }
+
+  // Write `value` into a live element, firing the events ACT's layout handlers
+  // listen for. Handles checkbox / select / Telerik date picker / text.
+  function writeElement(el, value) {
+    if (el.type === 'checkbox') {
+      const v = typeof value === 'string' ? value.trim().toLowerCase() : value;
+      el.checked = (v === true || v === 'true' || v === '1' || v === 'on' || v === 'yes');
+      fireOn(el, 'change'); fireOn(el, 'blur');
+      return true;
+    }
+    if (el.tagName === 'SELECT') {
+      el.value = value;
+      if (el.value !== value) {
+        const opt = [...el.options].find(o => o.text.trim() === String(value).trim() || o.value === String(value));
+        if (opt) el.value = opt.value;
+      }
+      fireOn(el, 'change'); fireOn(el, 'blur');
+      return true;
+    }
+    const pick = findDatePickerInput(el);
+    if (pick) {
+      fireOn(pick, 'focus'); fireOn(pick, 'click');
+      nativeSet(pick, value); pick.setAttribute('value', value);
+      fireOn(pick, 'input'); fireOn(pick, 'keyup'); fireOn(pick, 'change'); fireOn(pick, 'blur');
+      nativeSet(el, value); el.setAttribute('value', value);
+      fireOn(el, 'change'); fireOn(el, 'blur');
+      return true;
+    }
+    fireOn(el, 'focus'); fireOn(el, 'click');
+    nativeSet(el, value); el.setAttribute('value', value);
+    fireOn(el, 'input'); fireOn(el, 'keyup'); fireOn(el, 'keydown'); fireOn(el, 'change'); fireOn(el, 'blur');
+    return true;
+  }
+
+  // Ensure a field's tab is loaded so its element resolves (activates the tab
+  // and waits). Returns the resolved element or null.
+  async function ensureFieldLoaded(field, root, waitMs = 1600) {
+    let el = resolveElement(field, root);
+    if (el) return el;
+    const wantTab = field?.dom?.tab;
+    if (!wantTab || wantTab === 'main') return null;
+    const strip = findTabStrip(root);
+    const td = strip && strip.tabs.find(t => (t.textContent || '').trim() === wantTab);
+    if (!td) return null;
+    activateTab(td);
+    await sleep(waitMs);
+    return resolveElement(field, root);
+  }
+
+  // Set a field's value. DOM-first (activating its tab if needed); optional API
+  // write-back fallback. opts: { root, contactId, bgFetch, allowApi, activateTab }
+  async function setValue(field, value, opts = {}) {
+    let el = resolveElement(field, opts.root);
+    if (!el && opts.activateTab !== false) el = await ensureFieldLoaded(field, opts.root);
+    if (el) { writeElement(el, value); return { ok: true, via: 'dom' }; }
+    if (opts.allowApi && opts.bgFetch && opts.contactId && field.api) {
+      try { await apiSetValue(field, value, opts); return { ok: true, via: 'api' }; }
+      catch (e) { return { ok: false, error: e.message }; }
+    }
+    return { ok: false, error: 'element not found and API write-back not enabled' };
+  }
+
+  // API write-back via our proxy (GET-merge-PUT compound update on the server).
+  // bgFetch(path, method, body) → resolves the proxy JSON (background worker).
+  async function apiSetValue(field, value, opts) {
+    const body = { updates: { [field.api.path]: value } };
+    return opts.bgFetch(`/api/proxy/act/contact/${opts.contactId}`, 'PUT', body);
+  }
+
   return {
     SCHEMA_VERSION,
     buildSchemaFromApi,
@@ -437,6 +559,9 @@ const ActFieldSchema = (() => {
     // Phase 2
     pairDom, collectFrames, detectControl, detectActiveSubTab, findDatePickerInput, safeAtob,
     sweepAndPair, findTabStrip, activateTab,
+    // Phase 3
+    resolveElement, effectiveValueOf, getValue, setValue, writeElement,
+    ensureFieldLoaded, apiReadValue, apiSetValue,
   };
 })();
 
