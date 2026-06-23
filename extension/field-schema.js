@@ -233,6 +233,199 @@ const ActFieldSchema = (() => {
     return hits.sort((a, b) => b.score - a.score).map(h => h.field);
   }
 
+  // ── DOM pairing (Phase 2) ──────────────────────────────────────────────────
+  // Joins the API-built schema to the live DOM: for each field we capture how to
+  // get/set it (element id, control type, date-picker companion, frame, tab) and
+  // refine type/access/options from what's actually rendered (authoritative).
+
+  function safeAtob(str) {
+    try { return atob(str + '='.repeat((4 - str.length % 4) % 4)); } catch { return null; }
+  }
+
+  // ACT date fields hide their visible value in a Telerik picker input:
+  // [ctl00_viewPlaceHolder_]dtp_<id>_dateInput. (Mirror of field-mapper's helper.)
+  function findDatePickerInput(el) {
+    if (!el || !el.id || !el.ownerDocument) return null;
+    const doc = el.ownerDocument, token = 'dtp_' + el.id;
+    const direct = doc.getElementById(token + '_dateInput')
+                || doc.getElementById('ctl00_viewPlaceHolder_' + token + '_dateInput');
+    if (direct) return direct;
+    for (const i of doc.querySelectorAll('input[id*="dtp_"][id$="_dateInput"]')) {
+      if (i.id.indexOf(token) !== -1) return i;
+    }
+    return null;
+  }
+
+  function detectControl(el) {
+    const readonly = !!(el.readOnly || el.disabled || el.getAttribute('readonly') !== null);
+    if (el.type === 'checkbox') return { control: 'checkbox', readonly };
+    if (el.tagName === 'SELECT') {
+      const options = [...el.options]
+        .map(o => ({ value: o.value, label: (o.text || '').trim() }))
+        .filter(o => o.label || o.value);
+      return { control: 'select', options, readonly };
+    }
+    if (el.tagName === 'TEXTAREA') return { control: 'textarea', readonly };
+    const dp = findDatePickerInput(el);
+    if (dp || (el.closest && el.closest('.layout-datetime-container'))) {
+      return { control: 'date', datePickerId: dp ? dp.id : null, readonly };
+    }
+    if (/\bDecimal\b/.test(el.className || '')) return { control: 'number', readonly };
+    return { control: 'text', readonly };
+  }
+
+  function isContactDetailDoc(doc) {
+    try { return /ContactDetail\.aspx/i.test(doc.defaultView.location.href); } catch { return false; }
+  }
+
+  // Best-effort: the currently-selected sub-tab label, searched across frames.
+  // ACT's contact sub-tabs are <td class="newtabsel" id="tab…">; RadTabStrip
+  // (used elsewhere) marks the selected item .rtsSelected.
+  function detectActiveSubTab(docs) {
+    for (const { doc } of docs) {
+      try {
+        const sel = doc.querySelector('td.newtabsel, .rtsSelected .rtsTxt, li.rtsSelected, .ui-tabs-active');
+        const t = sel && (sel.textContent || '').trim();
+        if (t) return t;
+      } catch {}
+    }
+    return null;
+  }
+
+  // Collect same-origin documents reachable from `root` (main + nested iframes),
+  // each tagged with a frame label and tab name. `tabOverride` forces the sub-tab
+  // name (used during the sweep, where we just activated a known tab).
+  function collectFrames(root, tabOverride) {
+    const startDoc = (root && root.document) || (typeof document !== 'undefined' ? document : null);
+    if (!startDoc) return [];
+    const docs = [];
+    const walk = (doc, label, depth) => {
+      docs.push({ doc, frameLabel: label });
+      if (depth > 5) return;
+      try {
+        doc.querySelectorAll('iframe,frame').forEach((f, i) => {
+          try { if (f.contentDocument) walk(f.contentDocument, `${label}>f${i}`, depth + 1); } catch { /* cross-origin */ }
+        });
+      } catch {}
+    };
+    walk(startDoc, 'top', 0);
+    const active = tabOverride || detectActiveSubTab(docs);
+    return docs.map(({ doc, frameLabel }) => ({
+      doc, frameLabel,
+      tab: isContactDetailDoc(doc) ? 'main' : (active || null),
+    }));
+  }
+
+  // ── Hybrid tab sweep ───────────────────────────────────────────────────────
+  // ACT contact sub-tabs are <td id="tab…" class="newtab" onclick="tabClick(event)">
+  // that load their content into a shared iframe. We activate each in-scope tab,
+  // wait for it to render, and pair it — accumulating a complete schema.
+  const EXCLUDE_TABS = /^(notes?|documents?|ora|history|activities|opportunities|secondary|contactaccess|campaign|marketing)/i;
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  function activateTab(td) {
+    for (const t of ['mouseover', 'mousedown', 'mouseup', 'click']) {
+      try { td.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, view: td.ownerDocument.defaultView })); } catch {}
+    }
+  }
+
+  // Locate the contact sub-tab strip (the frame holding the most `td#tab*` cells).
+  function findTabStrip(root) {
+    const frames = collectFrames(root);
+    let best = null;
+    for (const { doc } of frames) {
+      let tds;
+      try { tds = [...doc.querySelectorAll('td[id^="tab"]')].filter(td => /newtab/.test(td.className)); } catch { continue; }
+      if (tds.length > 3 && (!best || tds.length > best.tabs.length)) best = { doc, tabs: tds };
+    }
+    if (!best) return null;
+    best.original = best.tabs.find(t => /newtabsel/.test(t.className)) || null;
+    best.inScope = best.tabs.filter(t => !EXCLUDE_TABS.test((t.textContent || '').replace(/\s+/g, '')));
+    return best;
+  }
+
+  // Activate each in-scope tab, pairing after each loads; restore the original.
+  // opts: { root, tabDelayMs, onProgress }
+  async function sweepAndPair(schema, opts = {}) {
+    const root = opts.root || (typeof window !== 'undefined' ? window : null);
+    const delay = opts.tabDelayMs || 1600;
+    // Pair whatever is already loaded first.
+    pairDom(schema, collectFrames(root));
+    const strip = findTabStrip(root);
+    if (!strip) { schema.meta.sweptTabs = []; return { swept: [], note: 'no tab strip found' }; }
+    const swept = [];
+    for (const td of strip.inScope) {
+      const name = (td.textContent || '').trim();
+      activateTab(td);
+      await sleep(delay);
+      const added = pairDom(schema, collectFrames(root, name));
+      swept.push({ tab: name, id: td.id, added });
+      if (typeof opts.onProgress === 'function') opts.onProgress(name, schema.meta.domPaired);
+    }
+    if (strip.original) { activateTab(strip.original); await sleep(400); }
+    schema.meta.sweptTabs = swept.map(s => s.tab);
+    return { swept };
+  }
+
+  // Build an index of every DOM join-key → schema field, honoring api↔dom name
+  // overrides (e.g. API `birthday` is rendered as DOM `BIRTHDATE`).
+  function buildDomKeyIndex(schema) {
+    const idx = {};
+    for (const f of Object.values(schema.fields)) {
+      if (!idx[f.key]) idx[f.key] = f;
+      const hint = f.api && f.api.domHint;
+      if (hint) { const hk = normalizeForJoin(hint); if (!idx[hk]) idx[hk] = f; }
+    }
+    return idx;
+  }
+
+  // Pair the live DOM into `schema`. First match per field wins. DOM fields the
+  // API didn't return are added as `group:'dom-only'` so the map is complete.
+  // Returns the number of fields paired this call.
+  function pairDom(schema, frames) {
+    if (!schema || !schema.fields) return 0;
+    const idx = buildDomKeyIndex(schema);
+    let paired = 0;
+    for (const { doc, frameLabel, tab } of frames) {
+      let inputs;
+      try { inputs = doc.querySelectorAll('input[id],select[id],textarea[id]'); } catch { continue; }
+      for (const el of inputs) {
+        if (!el.id || el.id.length < 8) continue;
+        const decoded = safeAtob(el.id);
+        if (!decoded || !/\./.test(decoded)) continue;
+        const key = normalizeForJoin(decoded);
+        let f = idx[key];
+        if (!f) {
+          // DOM field not present in the API result — capture it for completeness.
+          const label = humanLabel(decoded.replace(/^.*\./, '').replace(/^CUST_/i, '').replace(/_\d{6,}$/, ''));
+          f = {
+            key, label, aliases: [key, label.toLowerCase()], group: 'dom-only',
+            dataType: 'text', access: 'readwrite', calculated: false,
+            api: null, dom: null,
+          };
+          schema.fields[key] = f;
+          idx[key] = f;
+        }
+        if (f.dom) continue;                          // already paired (first wins)
+        const c = detectControl(el);
+        f.dom = {
+          id: el.id, decoded, frame: frameLabel, tab: tab || null,
+          control: c.control, datePickerId: c.datePickerId || null, readonly: c.readonly,
+        };
+        // Refine type/access/options from the authoritative rendered control.
+        if (c.control === 'select') { f.dataType = 'enum'; f.options = c.options; }
+        else if (c.control === 'date') f.dataType = 'date';
+        else if (c.control === 'checkbox') f.dataType = 'boolean';
+        if (c.readonly) f.access = 'readonly';
+        paired++;
+      }
+    }
+    schema.meta.domPaired = Object.values(schema.fields).filter(f => f.dom).length;
+    schema.meta.domPairedTabs = [...new Set(Object.values(schema.fields).filter(f => f.dom?.tab).map(f => f.dom.tab))];
+    return paired;
+  }
+
   return {
     SCHEMA_VERSION,
     buildSchemaFromApi,
@@ -241,6 +434,9 @@ const ActFieldSchema = (() => {
     humanLabel,
     saveSchema, loadSchema, clearSchema,
     findFieldsByText,
+    // Phase 2
+    pairDom, collectFrames, detectControl, detectActiveSubTab, findDatePickerInput, safeAtob,
+    sweepAndPair, findTabStrip, activateTab,
   };
 })();
 
