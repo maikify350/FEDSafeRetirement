@@ -54,7 +54,10 @@
 
         // ── Listen for commands from top frame ───────────────
         // Guard: only accept messages from the same Act! origin.
-        const _iframeActOrigin = window.location.origin;
+        // Opaque frames (about:blank / sandboxed) report origin "null", which is
+        // an invalid postMessage targetOrigin — fall back to "*" so we never throw.
+        const _rawOrigin = window.location.origin;
+        const _iframeActOrigin = (_rawOrigin && _rawOrigin !== 'null') ? _rawOrigin : '*';
         window.addEventListener('message', (evt) => {
             if (!evt.data || !evt.data.type) return;
             if (evt.origin && evt.origin !== _iframeActOrigin && !evt.origin.endsWith('.act.com')) return;
