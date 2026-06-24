@@ -15,7 +15,8 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public assets (svg, png, jpg, etc.)
      * - api/proxy/* (public API routes — must return JSON without auth)
+     * - static .html pages (e.g. /ACT_PRIVACY_POLICY.html — must be public)
      */
-    '/((?!_next/static|_next/image|favicon.ico|api/proxy|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/proxy|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
   ],
 }
