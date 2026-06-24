@@ -13,6 +13,12 @@
 (function () {
     'use strict';
 
+    // ── Schema engine rollout flag ───────────────────────
+    // When true, the new ActFieldSchema engine (build-once + resolver-driven
+    // rules) replaces the per-frame scan-and-compute watchers. Default false so
+    // the extension runs exactly as before until verified; flip to true to test.
+    const USE_SCHEMA_V2 = false;
+
     // Calculate button trap — only relevant on the contact detail page
     setTimeout(() => trapCalculateButton(), 2000);
 
@@ -29,10 +35,11 @@
     setTimeout(() => trapBlueprintButton(), 2500);
 
     // Auto-compute Years/Months of Service from SCD & RetireDate (LES Info tab)
-    setTimeout(() => startServiceYearsAutoCompute(), 3000);
-
-    // Auto-compute Age (Years/Months) from Birthday → AgeYY / AgeMM
-    setTimeout(() => startAgeAutoCompute(), 3000);
+    // and Age from Birthday. Skipped when the schema engine owns computes.
+    if (!USE_SCHEMA_V2) {
+        setTimeout(() => startServiceYearsAutoCompute(), 3000);
+        setTimeout(() => startAgeAutoCompute(), 3000);
+    }
 
     // ─── FEGLI Code Validator: runs in ALL frames ─────────
     // The FEGLI code input lives in a cross-origin iframe.
@@ -177,6 +184,10 @@
     // ─── Initial Data Load ──────────────────────────────
     // Refresh contact data from API via proxy on startup
     loadContactData();
+
+    // ─── Schema engine (Phase 4, behind USE_SCHEMA_V2) ───
+    // Build-once field schema + resolver-driven compute rules. Top frame only.
+    if (USE_SCHEMA_V2) setTimeout(() => initSchemaEngine(), 1800);
 
     // ─── FEGLI Code Validation ───────────────────────────
     // ALL code knowledge comes from the API — never hardcoded inline.
@@ -364,6 +375,15 @@
                 } catch (e) { /* cross-origin, skip */ }
             });
         }, 2500);
+
+        // Schema engine: same layout, new record — re-pair element refs and
+        // re-attach compute rules to the new record's fields (no schema rebuild).
+        if (USE_SCHEMA_V2 && _schema) {
+            setTimeout(() => {
+                ActFieldSchema.pairDom(_schema, ActFieldSchema.collectFrames(window));
+                startRuleRunner();
+            }, 2000);
+        }
     }
 
     // Listen for standard navigation events
@@ -4092,6 +4112,131 @@
             }
             recompute();
         }, 3000);
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  Schema Engine (Phase 4) — active only when USE_SCHEMA_V2
+    //  Build-once field schema (ActFieldSchema) + resolver-driven compute rules,
+    //  replacing the per-frame scan-and-compute watchers above. Top frame only.
+    // ═══════════════════════════════════════════════════════
+    let _schema = null, _schemaDb = null, _ruleListeners = [], _progTimer = null;
+
+    async function initSchemaEngine() {
+        try {
+            const db = ActFieldMapper.getDatabaseName() || 'default';
+            const contactId = ActFieldMapper.getContactId();
+            _schemaDb = db;
+            _schema = await ActFieldSchema.loadSchema(db);
+            if (_schema && _schema.fields) {
+                ActFieldSchema.pairDom(_schema, ActFieldSchema.collectFrames(window));
+                console.log(`[Copilot] Schema loaded from cache (${db}): ${Object.keys(_schema.fields).length} fields`);
+            } else if (contactId) {
+                console.log('[Copilot] Building field schema (first run for this database)…');
+                const api = await bgFetch(`/api/proxy/act/contact/${contactId}`);
+                _schema = ActFieldSchema.buildSchemaFromApi(api, { db, now: new Date().toISOString() });
+                await ActFieldSchema.sweepAndPair(_schema, { root: window });
+                await ActFieldSchema.saveSchema(db, _schema);
+                console.log(`[Copilot] Schema built (${db}): ${_schema.meta.fieldCount} fields, ${_schema.meta.domPaired} paired; tabs: ${(_schema.meta.sweptTabs || []).join(', ')}`);
+            } else { return; }
+            startRuleRunner();
+            startProgressiveObserver();
+        } catch (e) { console.warn('[Copilot] Schema engine init failed:', e && e.message); }
+    }
+
+    // Force a full rebuild (API + sweep). Wired to the Remap button in Phase 5.
+    async function rebuildSchema() {
+        const db = ActFieldMapper.getDatabaseName() || 'default';
+        const contactId = ActFieldMapper.getContactId();
+        if (!contactId) return null;
+        await ActFieldSchema.clearSchema(db);
+        const api = await bgFetch(`/api/proxy/act/contact/${contactId}`);
+        _schema = ActFieldSchema.buildSchemaFromApi(api, { db, now: new Date().toISOString() });
+        await ActFieldSchema.sweepAndPair(_schema, { root: window });
+        await ActFieldSchema.saveSchema(db, _schema);
+        _schemaDb = db;
+        startRuleRunner();
+        console.log(`[Copilot] Schema remapped (${db}): ${_schema.meta.domPaired} paired`);
+        return _schema;
+    }
+    window.__copilotRebuildSchema = rebuildSchema;            // manual/console trigger
+    window.__copilotGetSchema = () => _schema;                // debugging
+
+    // ── Compute rules (FedSafe seed DATA; the engine is layout-generic) ──
+    function getSeedRules() {
+        return [
+            { id: 'age-from-dob',  from: 'birthday',               to: 'now',        yy: 'ageyy',                   mm: 'agemm' },
+            { id: 'service-years', from: 'servicecomputationdate', to: 'retiredate', yy: 'currectyrsmonthsofsvcyy', mm: 'currectyrsmonthsofsvcmm' },
+        ];
+    }
+
+    function _parseDatePivot(val) {
+        if (!val) return null;
+        const s = String(val).trim(); if (!s) return null;
+        let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+        if (m) { let yr = +m[3]; if (yr < 100) yr += (yr <= (new Date().getFullYear() % 100)) ? 2000 : 1900; const d = new Date(yr, +m[1] - 1, +m[2]); return isNaN(d.getTime()) ? null : d; }
+        m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+        if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+        const d = new Date(s); return isNaN(d.getTime()) ? null : d;
+    }
+    function _diffYM(from, to) { let y = to.getFullYear() - from.getFullYear(), mo = to.getMonth() - from.getMonth(); if (to.getDate() < from.getDate()) mo--; if (mo < 0) { y--; mo += 12; } return { years: Math.max(0, y), months: Math.max(0, mo) }; }
+
+    function _field(key) {
+        if (!_schema) return null;
+        if (_schema.fields[key]) return _schema.fields[key];
+        const hit = ActFieldSchema.findFieldsByText(_schema, key)[0];
+        return hit || null;
+    }
+    function _readDate(key) { const f = _field(key); return f ? _parseDatePivot(ActFieldSchema.getValue(f, { root: window })) : null; }
+    function _writeLocked(key, val) {
+        const f = _field(key); if (!f) return;
+        const el = ActFieldSchema.resolveElement(f, window);
+        if (!el) return;                                       // output's tab not loaded — skip (no flicker)
+        try { el.readOnly = false; } catch {}
+        ActFieldSchema.setValue(f, val, { root: window, activateTab: false });
+        try { el.readOnly = true; el.tabIndex = -1; el.title = 'Auto-calculated'; } catch {}
+    }
+
+    function runRule(rule) {
+        const from = _readDate(rule.from);
+        const to = rule.to === 'now' ? new Date() : _readDate(rule.to);
+        const ok = from && to && (rule.to === 'now' ? to >= from : to > from);
+        if (!ok) return;                                       // inputs incomplete — don't clobber outputs
+        const d = _diffYM(from, to);
+        _writeLocked(rule.yy, String(d.years));
+        _writeLocked(rule.mm, String(d.months));
+        console.log(`[Copilot] rule ${rule.id}: ${d.years}Y ${d.months}M`);
+    }
+
+    function startRuleRunner() {
+        _ruleListeners.forEach(({ el, h }) => { try { el.removeEventListener('change', h); el.removeEventListener('blur', h); } catch {} });
+        _ruleListeners = [];
+        for (const rule of getSeedRules()) {
+            const triggers = [rule.from, rule.to].filter(k => k && k !== 'now');
+            for (const k of triggers) {
+                const f = _field(k); if (!f) continue;
+                const el = ActFieldSchema.resolveElement(f, window); if (!el) continue;
+                const h = () => setTimeout(() => runRule(rule), 150);
+                el.addEventListener('change', h);
+                el.addEventListener('blur', h);
+                _ruleListeners.push({ el, h });
+            }
+            runRule(rule);
+        }
+    }
+
+    // Progressive pairing: as the user opens tabs, pair newly-rendered fields
+    // into the schema (cheap — only adds unpaired) + persist + re-attach rules.
+    // Replaces the old heavy full-scan polling.
+    function startProgressiveObserver() {
+        if (_progTimer) return;
+        _progTimer = setInterval(() => {
+            if (!_schema) return;
+            const added = ActFieldSchema.pairDom(_schema, ActFieldSchema.collectFrames(window));
+            if (added > 0) {
+                ActFieldSchema.saveSchema(_schemaDb, _schema);
+                startRuleRunner();
+            }
+        }, 4000);
     }
 
 })();
