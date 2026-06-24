@@ -4143,6 +4143,42 @@
     // ═══════════════════════════════════════════════════════
     let _schema = null, _schemaDb = null, _ruleListeners = [], _progTimer = null;
 
+    // ── Field-mapping overlay ───────────────────────────
+    // The sweep flips through tabs to read every field — without context that
+    // looks alarming. This overlay explains it + shows live progress, and blocks
+    // clicks so the user can't fight the auto-navigation.
+    function showFieldMapOverlay(title) {
+        hideFieldMapOverlay();
+        if (!document.getElementById('cp-mapping-style')) {
+            const st = document.createElement('style');
+            st.id = 'cp-mapping-style';
+            st.textContent = '@keyframes cp-spin{to{transform:rotate(360deg)}}';
+            document.head.appendChild(st);
+        }
+        const o = document.createElement('div');
+        o.id = 'cp-mapping-overlay';
+        o.style.cssText = 'position:fixed;inset:0;z-index:2147483646;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(3px);font-family:Outfit,-apple-system,sans-serif';
+        o.innerHTML = `
+            <div style="background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid rgba(99,102,241,0.35);border-radius:18px;padding:26px 30px;min-width:300px;box-shadow:0 20px 60px rgba(0,0,0,0.5);color:#e2e8f0;text-align:center">
+                <div style="width:46px;height:46px;margin:0 auto 16px;border:4px solid rgba(148,163,184,0.25);border-top-color:#6366f1;border-radius:50%;animation:cp-spin 0.9s linear infinite"></div>
+                <div style="font-size:16px;font-weight:700;color:#a5b4fc;margin-bottom:6px">⚡ ${title}</div>
+                <div style="font-size:12px;color:#94a3b8;margin-bottom:12px;line-height:1.5">Reading each tab so Copilot knows all your fields.<br>Tabs will flip automatically — this is normal.</div>
+                <div id="cp-mapping-progress" style="font-size:12px;color:#cbd5e1;font-weight:600">Starting…</div>
+            </div>`;
+        document.body.appendChild(o);
+    }
+    function updateFieldMapOverlay(s) {
+        const el = document.getElementById('cp-mapping-progress');
+        if (!el || !s) return;
+        if (s.phase === 'start') el.textContent = `0 / ${s.total} tabs`;
+        else if (s.phase === 'tab') el.textContent = `${s.tab} — ${s.index}/${s.total} tabs · ${s.paired} fields`;
+        else if (s.phase === 'done') el.textContent = `Done · ${s.paired} fields`;
+    }
+    function hideFieldMapOverlay() {
+        const o = document.getElementById('cp-mapping-overlay');
+        if (o) o.remove();
+    }
+
     async function initSchemaEngine() {
         try {
             const db = ActFieldMapper.getDatabaseName() || 'default';
@@ -4156,7 +4192,9 @@
                 console.log('[Copilot] Building field schema (first run for this database)…');
                 const api = await bgFetch(`/api/proxy/act/contact/${contactId}`);
                 _schema = ActFieldSchema.buildSchemaFromApi(api, { db, now: new Date().toISOString() });
-                await ActFieldSchema.sweepAndPair(_schema, { root: window });
+                showFieldMapOverlay('Mapping fields…');
+                try { await ActFieldSchema.sweepAndPair(_schema, { root: window, onProgress: updateFieldMapOverlay }); }
+                finally { hideFieldMapOverlay(); }
                 await ActFieldSchema.saveSchema(db, _schema);
                 console.log(`[Copilot] Schema built (${db}): ${_schema.meta.fieldCount} fields, ${_schema.meta.domPaired} paired; tabs: ${(_schema.meta.sweptTabs || []).join(', ')}`);
             } else { return; }
@@ -4173,7 +4211,9 @@
         await ActFieldSchema.clearSchema(db);
         const api = await bgFetch(`/api/proxy/act/contact/${contactId}`);
         _schema = ActFieldSchema.buildSchemaFromApi(api, { db, now: new Date().toISOString() });
-        await ActFieldSchema.sweepAndPair(_schema, { root: window });
+        showFieldMapOverlay('Remapping fields…');
+        try { await ActFieldSchema.sweepAndPair(_schema, { root: window, onProgress: updateFieldMapOverlay }); }
+        finally { hideFieldMapOverlay(); }
         await ActFieldSchema.saveSchema(db, _schema);
         _schemaDb = db;
         if (USE_SCHEMA_V2) startRuleRunner();              // avoid double-compute with old watchers when flag off

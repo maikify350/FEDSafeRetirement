@@ -354,15 +354,19 @@ const ActFieldSchema = (() => {
     pairDom(schema, collectFrames(root));
     const strip = findTabStrip(root);
     if (!strip) { schema.meta.sweptTabs = []; return { swept: [], note: 'no tab strip found' }; }
+    const total = strip.inScope.length;
+    const emit = (typeof opts.onProgress === 'function') ? opts.onProgress : null;
+    if (emit) emit({ phase: 'start', total, paired: schema.meta.domPaired });
     const swept = [];
     for (const td of strip.inScope) {
       const name = (td.textContent || '').trim();
       activateTab(td);
       await sleep(delay);
-      const added = pairDom(schema, collectFrames(root, name));
-      swept.push({ tab: name, id: td.id, added });
-      if (typeof opts.onProgress === 'function') opts.onProgress(name, schema.meta.domPaired);
+      pairDom(schema, collectFrames(root, name));
+      swept.push({ tab: name, id: td.id });
+      if (emit) emit({ phase: 'tab', tab: name, index: swept.length, total, paired: schema.meta.domPaired });
     }
+    if (emit) emit({ phase: 'done', total, paired: schema.meta.domPaired });
     if (strip.original) { activateTab(strip.original); await sleep(400); }
     schema.meta.sweptTabs = swept.map(s => s.tab);
     return { swept };
