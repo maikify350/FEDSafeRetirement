@@ -15,9 +15,10 @@
 
     // ── Schema engine rollout flag ───────────────────────
     // When true, the new ActFieldSchema engine (build-once + resolver-driven
-    // rules) replaces the per-frame scan-and-compute watchers. Default false so
-    // the extension runs exactly as before until verified; flip to true to test.
-    const USE_SCHEMA_V2 = false;
+    // rules) replaces the per-frame scan-and-compute watchers. The old watchers
+    // remain in place (this file) as an instant fallback — set this back to
+    // false and reload if anything misbehaves.
+    const USE_SCHEMA_V2 = true;
 
     // Calculate button trap — only relevant on the contact detail page
     setTimeout(() => trapCalculateButton(), 2000);
@@ -664,6 +665,7 @@
             <!-- Footer -->
             <div class="cp-footer">
                 <button class="cp-footer-btn" id="cp-run-rules" disabled>▶ Run All Active Rules</button>
+                <button class="cp-footer-btn" id="cp-remap" title="Re-read all fields from the API and re-map them across every tab. Use after changing the layout or adding custom fields.">⟳ Remap Fields</button>
             </div>
         </div>
 
@@ -754,6 +756,26 @@
 
         // Run rules
         document.getElementById('cp-run-rules').onclick = runAllRules;
+
+        // Remap: rebuild the field schema from the API + re-sweep all tabs.
+        const remapBtn = document.getElementById('cp-remap');
+        if (remapBtn) remapBtn.onclick = async () => {
+            const label = remapBtn.textContent;
+            remapBtn.disabled = true;
+            remapBtn.textContent = '⏳ Remapping…';
+            toast('Rebuilding field map (sweeping tabs)…', 'success');
+            try {
+                const schema = await rebuildSchema();
+                const n = schema ? schema.meta.domPaired : 0;
+                const tabs = schema ? (schema.meta.sweptTabs || []).length : 0;
+                toast(`Field map rebuilt: ${n} fields across ${tabs} tabs`, 'success');
+            } catch (e) {
+                toast('Remap failed: ' + (e && e.message), 'error');
+            } finally {
+                remapBtn.disabled = false;
+                remapBtn.textContent = label;
+            }
+        };
 
         // API Data tab
         document.getElementById('cp-api-load-btn').onclick = loadApiData;
@@ -4154,7 +4176,7 @@
         await ActFieldSchema.sweepAndPair(_schema, { root: window });
         await ActFieldSchema.saveSchema(db, _schema);
         _schemaDb = db;
-        startRuleRunner();
+        if (USE_SCHEMA_V2) startRuleRunner();              // avoid double-compute with old watchers when flag off
         console.log(`[Copilot] Schema remapped (${db}): ${_schema.meta.domPaired} paired`);
         return _schema;
     }
@@ -4172,8 +4194,11 @@
     function _parseDatePivot(val) {
         if (!val) return null;
         const s = String(val).trim(); if (!s) return null;
+        // 50-year pivot for 2-digit years — correct for past DOB/SCD AND future
+        // RetireDate (57→1957, 04→2004, 85→1985, 30→2030). new Date("10/11/57")
+        // would otherwise parse as 2057.
         let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-        if (m) { let yr = +m[3]; if (yr < 100) yr += (yr <= (new Date().getFullYear() % 100)) ? 2000 : 1900; const d = new Date(yr, +m[1] - 1, +m[2]); return isNaN(d.getTime()) ? null : d; }
+        if (m) { let yr = +m[3]; if (yr < 100) yr += (yr < 50) ? 2000 : 1900; const d = new Date(yr, +m[1] - 1, +m[2]); return isNaN(d.getTime()) ? null : d; }
         m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
         if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
         const d = new Date(s); return isNaN(d.getTime()) ? null : d;
@@ -4191,9 +4216,23 @@
         const f = _field(key); if (!f) return;
         const el = ActFieldSchema.resolveElement(f, window);
         if (!el) return;                                       // output's tab not loaded — skip (no flicker)
-        try { el.readOnly = false; } catch {}
-        ActFieldSchema.setValue(f, val, { root: window, activateTab: false });
+        // Skip the write when already correct — prevents change-event churn /
+        // focus-steal on the periodic recompute (mirrors the old watcher).
+        if (String(ActFieldSchema.effectiveValueOf(el)) !== String(val)) {
+            try { el.readOnly = false; } catch {}
+            ActFieldSchema.setValue(f, val, { root: window, activateTab: false });
+        }
         try { el.readOnly = true; el.tabIndex = -1; el.title = 'Auto-calculated'; } catch {}
+    }
+
+    // Keyboard-disable a rule's output fields even before they're computed.
+    function _lockRuleOutputs() {
+        for (const rule of getSeedRules()) {
+            for (const k of [rule.yy, rule.mm]) {
+                const f = _field(k); const el = f && ActFieldSchema.resolveElement(f, window);
+                if (el && !el.readOnly) { try { el.readOnly = true; el.tabIndex = -1; el.title = 'Auto-calculated'; } catch {} }
+            }
+        }
     }
 
     function runRule(rule) {
@@ -4222,6 +4261,7 @@
             }
             runRule(rule);
         }
+        _lockRuleOutputs();
     }
 
     // Progressive pairing: as the user opens tabs, pair newly-rendered fields
@@ -4234,7 +4274,9 @@
             const added = ActFieldSchema.pairDom(_schema, ActFieldSchema.collectFrames(window));
             if (added > 0) {
                 ActFieldSchema.saveSchema(_schemaDb, _schema);
-                startRuleRunner();
+                startRuleRunner();                      // new fields appeared — re-attach + compute
+            } else {
+                for (const r of getSeedRules()) runRule(r);   // idempotent recompute (skip-if-unchanged)
             }
         }, 4000);
     }
