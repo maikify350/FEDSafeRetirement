@@ -246,7 +246,11 @@ const ActFieldSchema = (() => {
   // [ctl00_viewPlaceHolder_]dtp_<id>_dateInput. (Mirror of field-mapper's helper.)
   function findDatePickerInput(el) {
     if (!el || !el.id || !el.ownerDocument) return null;
-    const doc = el.ownerDocument, token = 'dtp_' + el.id;
+    const doc = el.ownerDocument;
+    // Telerik strips base64 '=' padding from the field id in its picker id, so
+    // fields whose id ends in '='(e.g. RetireDate/SCD) won't match unless we
+    // strip it too. (Birth Date has no padding, which is why it worked.)
+    const token = 'dtp_' + el.id.replace(/=+$/, '');
     const direct = doc.getElementById(token + '_dateInput')
                 || doc.getElementById('ctl00_viewPlaceHolder_' + token + '_dateInput');
     if (direct) return direct;

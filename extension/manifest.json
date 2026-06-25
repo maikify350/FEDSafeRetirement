@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "FedSafe Retirement Copilot",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Federal retirement benefit intelligence, field mapping & auto-fill for Act! CRM — FedSafe Retirement",
   "icons": {
     "16": "icons/icon16.png",

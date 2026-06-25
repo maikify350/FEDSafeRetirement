@@ -75,7 +75,9 @@ const ActFieldMapper = (() => {
     function findDatePickerInput(el) {
         if (!el || !el.id || !el.ownerDocument) return null;
         const doc = el.ownerDocument;
-        const token = 'dtp_' + el.id;
+        // Telerik strips base64 '=' padding from the field id in its picker id,
+        // so fields whose id ends in '=' (RetireDate/SCD) need the same strip.
+        const token = 'dtp_' + el.id.replace(/=+$/, '');
         const direct = doc.getElementById(token + '_dateInput')
                     || doc.getElementById('ctl00_viewPlaceHolder_' + token + '_dateInput');
         if (direct) return direct;
