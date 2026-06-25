@@ -821,7 +821,10 @@ return g
   // ── Export ──────────────────────────────────────────────────────────────
   const exportRows = (rows: EnrichedEchoLead[]) => rows.map(r => ({
     date: r.call_date, name: leadName(r), phone: r.phone || r.caller_phone || '',
-    email: r.email || '', address: [r.address, r.city, r.state, r.zip].filter(Boolean).join(', '),
+    email: r.email || '',
+    dob: r.dob || '', age: (r.dob ? computeAge(r.dob) : r.age) ?? '',
+    // Each address part is its own column (was previously joined into one).
+    address: r.address || '', city: r.city || '', state: r.state || '', zip: r.zip || '',
     conference: r.conference_location || '',
     event: r._event ? eventLabel(r._event) : '',
     assigned_to: r._event?.assignedto ? userFullName(r._event.assignedto) : '',
