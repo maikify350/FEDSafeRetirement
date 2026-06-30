@@ -3,6 +3,7 @@
  * GET  /api/fegli-rates-annuitant?includeAudit=true      — Include audit/control fields
  * GET  /api/fegli-rates-annuitant?age=42                 — Find the rate band containing age 42
  * GET  /api/fegli-rates-annuitant?ageMin=40&ageMax=44    — Filter by exact age range
+ * GET  /api/fegli-rates-annuitant?isPostal=true|false    — Filter by Postal / Non-Postal scope
  * POST /api/fegli-rates-annuitant                        — Create a new rate row (admin only)
  */
 
@@ -12,7 +13,7 @@ import { NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { applyOData, parseODataSelect } from '@/utils/odata'
 
-const DATA_COLS = 'id, age_min, age_max, basic_75, basic_50, basic_0, opt_a, opt_b, opt_c, notes'
+const DATA_COLS = 'id, age_min, age_max, basic_75, basic_50, basic_0, opt_a, opt_b, opt_c, notes, is_postal'
 const AUDIT_COLS = 'cre_by, cre_dt, mod_by, mod_dt'
 
 export async function GET(request: NextRequest) {
@@ -41,6 +42,11 @@ export async function GET(request: NextRequest) {
   const ageMax = params.get('ageMax')
 
   if (ageMax) query = query.eq('age_max', parseInt(ageMax, 10))
+
+  // ?isPostal=true|false → filter by Postal / Non-Postal scope
+  const isPostal = params.get('isPostal')
+
+  if (isPostal !== null) query = query.eq('is_postal', isPostal === 'true')
 
   // Apply OData query options ($orderby, $top, $skip, $filter)
   query = applyOData(query, params)
@@ -75,6 +81,7 @@ export async function POST(request: NextRequest) {
 
   if (body.age_min === undefined || body.age_min === null) errors.push('age_min is required')
   if (body.age_max === undefined || body.age_max === null) errors.push('age_max is required')
+  if (body.is_postal === undefined || body.is_postal === null) errors.push('is_postal (Scope) is required')
 
   if (body.age_min !== undefined && body.age_max !== undefined && body.age_min > body.age_max) {
     errors.push('age_min must be ≤ age_max')
@@ -100,6 +107,7 @@ export async function POST(request: NextRequest) {
       opt_b: body.opt_b,
       opt_c: body.opt_c,
       notes: body.notes ?? '',
+      is_postal: !!body.is_postal,
       cre_by: authUser.email ?? 'system',
       mod_by: authUser.email ?? 'system',
     })

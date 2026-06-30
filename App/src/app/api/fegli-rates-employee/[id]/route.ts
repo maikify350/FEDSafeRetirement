@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server'
 
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 
-const DATA_COLS = 'id, age_min, age_max, basic, opt_a, opt_b, opt_c, notes'
+const DATA_COLS = 'id, age_min, age_max, basic, opt_a, opt_b, opt_c, notes, is_postal'
 const AUDIT_COLS = 'cre_by, cre_dt, mod_by, mod_dt'
 
 async function requireAdmin() {
@@ -80,6 +80,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       opt_b: body.opt_b,
       opt_c: body.opt_c,
       notes: body.notes ?? '',
+      is_postal: !!body.is_postal,
       mod_by: authUser.email ?? 'system',
       mod_dt: new Date().toISOString(),
     })

@@ -10,6 +10,9 @@ import { useState, useEffect } from 'react'
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+import FormLabel from '@mui/material/FormLabel'
 
 import CustomTextField from '@core/components/mui/TextField'
 import EntityEditDialog from '@/components/EntityEditDialog'
@@ -24,6 +27,7 @@ interface FegliRateEmployee {
   opt_b: number
   opt_c: number
   notes: string
+  is_postal: boolean
   cre_by: string
   cre_dt: string
   mod_by: string
@@ -47,6 +51,7 @@ export default function RatesEmployeeEditDialog({ open, onClose, rate, onSaved, 
     opt_b: 0,
     opt_c: 0,
     notes: '',
+    is_postal: false,
   })
 
   const [saving, setSaving] = useState(false)
@@ -66,9 +71,10 @@ export default function RatesEmployeeEditDialog({ open, onClose, rate, onSaved, 
         opt_b: rate.opt_b,
         opt_c: rate.opt_c,
         notes: rate.notes ?? '',
+        is_postal: rate.is_postal ?? false,
       })
     } else {
-      setForm({ age_min: 0, age_max: 0, basic: 0, opt_a: 0, opt_b: 0, opt_c: 0, notes: '' })
+      setForm({ age_min: 0, age_max: 0, basic: 0, opt_a: 0, opt_b: 0, opt_c: 0, notes: '', is_postal: false })
     }
 
     setDirty(false)
@@ -79,6 +85,12 @@ export default function RatesEmployeeEditDialog({ open, onClose, rate, onSaved, 
     const val = field === 'notes' ? e.target.value : (parseFloat(e.target.value) || 0)
 
     setForm(prev => ({ ...prev, [field]: val }))
+    setDirty(true)
+  }
+
+  const handleScopeChange = (_: React.MouseEvent<HTMLElement>, val: boolean | null) => {
+    if (val === null) return  // prevent deselection — one must always be active
+    setForm(prev => ({ ...prev, is_postal: val }))
     setDirty(true)
   }
 
@@ -136,8 +148,52 @@ return
         createdBy={rate?.cre_by || undefined}
         modifiedAt={rate?.mod_dt || undefined}
         modifiedBy={rate?.mod_by}
-        width='45vw' maxWidth={600} height='62vh'
+        width='45vw' maxWidth={600} height='68vh'
       >
+
+        {/* Scope — required Postal / Non-Postal selector */}
+        <Box sx={{ mb: 2.5 }}>
+          <FormLabel
+            required
+            sx={{ display: 'block', mb: 0.75, fontSize: '0.8125rem', fontWeight: 600, color: 'text.primary' }}
+          >
+            Scope
+          </FormLabel>
+          <ToggleButtonGroup
+            value={form.is_postal}
+            exclusive
+            onChange={handleScopeChange}
+            disabled={saving || !isAdmin}
+            size='small'
+            fullWidth
+            sx={{ height: 38 }}
+          >
+            <ToggleButton
+              value={false}
+              sx={{
+                flex: 1,
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                '&.Mui-selected': { bgcolor: 'primary.lightOpacity', color: 'primary.main', borderColor: 'primary.main' },
+              }}
+            >
+              <i className='tabler-building-bank text-base mr-1.5' />
+              Non-Postal
+            </ToggleButton>
+            <ToggleButton
+              value={true}
+              sx={{
+                flex: 1,
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                '&.Mui-selected': { bgcolor: 'warning.lightOpacity', color: 'warning.main', borderColor: 'warning.main' },
+              }}
+            >
+              <i className='tabler-mail text-base mr-1.5' />
+              Postal (USPS)
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
 
         <div className='grid grid-cols-2 gap-3 mb-2'>
           <CustomTextField

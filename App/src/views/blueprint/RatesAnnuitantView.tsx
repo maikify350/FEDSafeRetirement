@@ -9,6 +9,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
+import Chip from '@mui/material/Chip'
 import CircularProgress from '@mui/material/CircularProgress'
 import { createColumnHelper } from '@tanstack/react-table'
 
@@ -28,6 +29,7 @@ interface FegliRateAnnuitant {
   opt_b: number
   opt_c: number
   notes: string
+  is_postal: boolean
   cre_by: string
   cre_dt: string
   mod_by: string
@@ -65,12 +67,13 @@ function printRatesTable(rows: FegliRateAnnuitant[]) {
   <h1>FEGLI Rates – Annuitants</h1>
   <table>
     <thead><tr>
-      <th>Age Min</th><th>Age Max</th>
+      <th>Scope</th><th>Age Min</th><th>Age Max</th>
       <th class="right">Basic 75%</th><th class="right">Basic 50%</th><th class="right">Basic 0%</th>
       <th class="right">Option-A</th><th class="right">Option-B</th><th class="right">Option-C</th>
     </tr></thead>
     <tbody>
       ${rows.map(r => `<tr>
+        <td>${r.is_postal ? 'Postal' : 'Non-Postal'}</td>
         <td>${r.age_min}</td><td>${r.age_max}</td>
         <td class="right">${r.basic_75 === 0 ? '—' : '$' + r.basic_75.toFixed(4)}</td>
         <td class="right">${r.basic_50 === 0 ? '—' : '$' + r.basic_50.toFixed(4)}</td>
@@ -111,6 +114,7 @@ export default function RatesAnnuitantView() {
   const [editRate, setEditRate] = useState<FegliRateAnnuitant | null>(null)
   const [addNew, setAddNew] = useState(false)
   const [search, setSearch] = useState('')
+  const [scopeFilter, setScopeFilter] = useState<'all' | 'postal' | 'non-postal'>('all')
 
   const fetchRates = useCallback(async () => {
     setLoading(true)
@@ -125,7 +129,56 @@ export default function RatesAnnuitantView() {
 
   useEffect(() => { fetchRates() }, [fetchRates])
 
+  // ── Scope filter counts ────────────────────────────────────────────────────
+  const postalCount    = useMemo(() => rates.filter(r => r.is_postal).length,  [rates])
+  const nonPostalCount = useMemo(() => rates.filter(r => !r.is_postal).length, [rates])
+
+  const filteredRates = useMemo(() => {
+    if (scopeFilter === 'postal')     return rates.filter(r => r.is_postal)
+    if (scopeFilter === 'non-postal') return rates.filter(r => !r.is_postal)
+    
+return rates
+  }, [rates, scopeFilter])
+
+  // ── Filter pill chips ──────────────────────────────────────────────────────
+  const filterChips = (
+    <>
+      <Chip
+        label={`All (${rates.length})`}
+        size='small'
+        onClick={() => setScopeFilter('all')}
+        variant={scopeFilter === 'all' ? 'filled' : 'outlined'}
+        color={scopeFilter === 'all' ? 'primary' : 'default'}
+        sx={{ fontWeight: 600, cursor: 'pointer' }}
+      />
+      <Chip
+        label={`Postal (${postalCount})`}
+        size='small'
+        onClick={() => setScopeFilter('postal')}
+        variant={scopeFilter === 'postal' ? 'filled' : 'outlined'}
+        color={scopeFilter === 'postal' ? 'warning' : 'default'}
+        icon={<i className='tabler-mail text-xs' />}
+        sx={{ fontWeight: 600, cursor: 'pointer' }}
+      />
+      <Chip
+        label={`Non-Postal (${nonPostalCount})`}
+        size='small'
+        onClick={() => setScopeFilter('non-postal')}
+        variant={scopeFilter === 'non-postal' ? 'filled' : 'outlined'}
+        color={scopeFilter === 'non-postal' ? 'primary' : 'default'}
+        icon={<i className='tabler-building-bank text-xs' />}
+        sx={{ fontWeight: 600, cursor: 'pointer' }}
+      />
+    </>
+  )
+
   const columns = useMemo(() => [
+    columnHelper.accessor('is_postal', {
+      header: 'Scope', size: 130,
+      cell: ({ row }) => row.original.is_postal
+        ? <Chip label='Postal' size='small' color='warning' variant='tonal' icon={<i className='tabler-mail text-xs' />} sx={{ fontWeight: 600 }} />
+        : <Chip label='Non-Postal' size='small' color='primary' variant='tonal' icon={<i className='tabler-building-bank text-xs' />} sx={{ fontWeight: 600 }} />,
+    }),
     columnHelper.accessor('age_min', {
       header: 'Age Min', size: 90,
       cell: ({ row }) => <Typography className='font-semibold text-sm' sx={{ textAlign: 'center' }}>{row.original.age_min}</Typography>,
@@ -180,6 +233,7 @@ export default function RatesAnnuitantView() {
     }),
   ], [])
 
+  // is_postal is visible by default (not in the hidden-by-default set)
   const defaultColVisibility = { notes: false, cre_by: false, cre_dt: false }
 
   const handleSaved = useCallback(() => {
@@ -197,18 +251,19 @@ export default function RatesAnnuitantView() {
     <>
       <EntityListView<FegliRateAnnuitant>
         columns={columns as any}
-        data={rates}
+        data={filteredRates}
         storageKey='fs-fegli-rates-annuitant'
         defaultColVisibility={defaultColVisibility}
         title='FEGLI Rates – Annuitants'
+        filterChips={filterChips}
         searchValue={search}
         onSearchChange={setSearch}
         searchPlaceholder='Search rates...'
         newButtonLabel='Add Rate'
         onNewClick={() => isAdmin && setAddNew(true)}
         onExportCsv={(rows) => {
-          const csv = ['AgeMin,AgeMax,Basic_75,Basic_50,Basic_0,OptA,OptB,OptC'].concat(
-            rows.map(r => `${r.age_min},${r.age_max},${r.basic_75},${r.basic_50},${r.basic_0},${r.opt_a},${r.opt_b},${r.opt_c}`)
+          const csv = ['Scope,AgeMin,AgeMax,Basic_75,Basic_50,Basic_0,OptA,OptB,OptC'].concat(
+            rows.map(r => `${r.is_postal ? 'Postal' : 'Non-Postal'},${r.age_min},${r.age_max},${r.basic_75},${r.basic_50},${r.basic_0},${r.opt_a},${r.opt_b},${r.opt_c}`)
           ).join('\n')
 
           downloadBlob(csv, 'fegli_rates_annuitant.csv', 'text/csv')
