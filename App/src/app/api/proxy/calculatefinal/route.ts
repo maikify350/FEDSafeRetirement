@@ -79,15 +79,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Fetch FEGLI rate tables from Supabase
+    // Resolve is_postal scope — the ACT! contact field is 'postal' (logical checkbox).
+    // Defaults to false (Non-Postal) if absent/null. Both rate tables are filtered
+    // so USPS employees get Postal rates throughout the full calculation.
+    const isPostal = !!(actJson.customFields?.postal)
+
+    // Fetch FEGLI rate tables from Supabase — filtered by is_postal scope
     const admin = createAdminClient()
 
     const [empResult, annResult] = await Promise.all([
       admin.from('fegli_rates_employee')
         .select('age_min, age_max, basic, opt_a, opt_b, opt_c')
+        .eq('is_postal', isPostal)
         .order('age_min', { ascending: true }),
       admin.from('fegli_rates_annuitant')
         .select('age_min, age_max, basic_75, basic_50, basic_0, opt_a, opt_b, opt_c')
+        .eq('is_postal', isPostal)
         .order('age_min', { ascending: true }),
     ])
 

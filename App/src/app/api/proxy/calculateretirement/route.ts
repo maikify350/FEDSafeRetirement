@@ -61,12 +61,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Fetch annuitant rate table from Supabase
+    // Resolve is_postal scope — the ACT! contact field is 'postal' (logical checkbox)
+    // Defaults to false (Non-Postal) if the field is absent or null.
+    const isPostal = !!rawFields.postal
+
+    // Fetch annuitant rate table from Supabase — scoped to the contact's Postal/Non-Postal scope
     const admin = createAdminClient()
 
     const { data: rateTable, error: rateError } = await admin
       .from('fegli_rates_annuitant')
       .select('id, age_min, age_max, basic_75, basic_50, basic_0, opt_a, opt_b, opt_c')
+      .eq('is_postal', isPostal)
       .order('age_min', { ascending: true })
 
     if (rateError || !rateTable) {
@@ -82,7 +87,7 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         contactId: contactId ?? null,
-        ratesSource: 'supabase:fegli_rates_annuitant',
+        ratesSource: `supabase:fegli_rates_annuitant[is_postal=${isPostal}]`,
         input: rawFields,
         result: result.customFields,
         displayFields: result.displayFields,
