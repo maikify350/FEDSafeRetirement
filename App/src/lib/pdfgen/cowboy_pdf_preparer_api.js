@@ -19,7 +19,9 @@ const FINAL_CALCULATION_CRM_FIELDS = [
     "feglinetcost",
     "add_total",
     "minus_total",
-    "annualleavepayout"
+    "annualleavepayout",
+    "fedtaxtotal",
+    "fedtaxrate"
 ];
 
 const PDF_Preparer_API = {
