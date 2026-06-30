@@ -1276,7 +1276,8 @@ return Math.floor((yearsValue * 12) + 0.000001);
         vaDisabilityNet,
         spouseSocialSecurityNet,
         spousePensionNet,
-        annualLeavePayout
+        annualLeavePayout,
+        totalFedTaxMonthly
     }) {
         const stateTaxGuidance = this.buildCrmStateTaxGuidance(
             clientState,
@@ -1324,6 +1325,7 @@ return Math.floor((yearsValue * 12) + 0.000001);
         const roundedSpousePensionNet = Math.round(spousePensionNet);
         const roundedSurvivorBenefitCost = Math.round(survivorReductionMonthly);
         const roundedAnnualLeavePayout = Math.round(annualLeavePayout);
+        const roundedTotalFedTaxMonthly = Math.round(totalFedTaxMonthly);
 
         const fersSupplement = (bridgeActive && roundedNetBridge > 0) ? this.formatCrmWholeNumber(roundedNetBridge) : "";
         const federalPension = this.formatCrmWholeNumber(roundedNetFERS);
@@ -1417,7 +1419,9 @@ return Math.floor((yearsValue * 12) + 0.000001);
                 cust_minus_total_052407686: minusTotal,
                 add_total: addTotal,
                 minus_total: minusTotal,
-                annualleavepayout: this.formatCrmWholeNumber(roundedAnnualLeavePayout)
+                annualleavepayout: this.formatCrmWholeNumber(roundedAnnualLeavePayout),
+                fedtaxtotal: this.formatCrmWholeNumber(roundedTotalFedTaxMonthly),
+                fedtaxrate: this.formatCrmWholeNumber(roundedFederalMarginalRate)
             },
             stateTaxGuidance,
             displayFields: {
@@ -2570,6 +2574,7 @@ return this.buildFegliOnlyResponse(actJson, fegliResult);
         const socialSecurityTaxMonthly = this.roundMoney(socialSecurityFedTax + socialSecurityStateTax);
         const bridgeTaxMonthly = this.roundMoney(bridgeFedTax + bridgeStateTax);
         const tspTaxMonthly = this.roundMoney(tspFedTax + tspStateTax);
+        const totalFedTaxMonthly = this.roundMoney(fersFedTax + socialSecurityFedTax + bridgeFedTax + tspFedTax);
 
         const netSocialSecurity = this.roundMoney(socialSecurityGross - socialSecurityTaxMonthly);
 
@@ -2809,7 +2814,8 @@ return this.buildFegliOnlyResponse(actJson, fegliResult);
             vaDisabilityNet,
             spouseSocialSecurityNet,
             spousePensionNet,
-            annualLeavePayout
+            annualLeavePayout,
+            totalFedTaxMonthly
         });
         output["crm_update_payload"] = JSON.stringify(output.crmUpdatePayload);
 
