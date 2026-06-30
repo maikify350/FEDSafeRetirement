@@ -52,6 +52,93 @@
             setTimeout(() => startIframeFegliValidator(), 3000);
         }
 
+        // ── Lock all input fields on FEGLI and Income tabs ──────────
+        // These tabs are calculator-driven — users should only edit
+        // the free-text notes fields (textareas). Everything else is
+        // set by Calculate Current, Calculate Retirement, or Final Calculation.
+        //
+        // Tab detection: check if this iframe contains characteristic fields:
+        //   FEGLI tab  → has an element with label containing "FEGLI" or "Basic Life"
+        //   Income tab → has an element with label containing "Federal Pension" or "FEHB"
+        function _isLockedTab() {
+            const fieldMap = ActFieldMapper.getFieldMap();
+            const labels = Object.values(fieldMap).map(e => (e.label || '').toLowerCase());
+            // FEGLI tab markers
+            if (labels.some(l => l.includes('basic life') || l.includes('fegli code') || l.includes('option a'))) return true;
+            // Income tab markers
+            if (labels.some(l => l.includes('federal pension') || l.includes('fehb') || l.includes('additions'))) return true;
+            return false;
+        }
+
+        // Specific calculated fields on non-locked tabs (e.g. Assets)
+        // that should always be read-only regardless of which tab is locked.
+        const ALWAYS_LOCKED_FIELDS = [
+            'totalassets1', 'totalassetsbalance',  // Total Assets Balance (sum of all assets)
+        ];
+
+        function _lockSpecificFields() {
+            const fieldMap = ActFieldMapper.getFieldMap();
+            for (const key of ALWAYS_LOCKED_FIELDS) {
+                const entry = fieldMap[key];
+                if (!entry?.element) continue;
+                const el = entry.element;
+                if (el.readOnly) continue;
+                el.readOnly = true;
+                el.tabIndex = -1;
+                el.style.backgroundColor = '#e8e8e8';
+                el.style.cursor = 'not-allowed';
+                el.title = 'Computed field — updated by calculator';
+            }
+        }
+
+        // Fields that should remain editable even on locked tabs
+        const EDITABLE_FIELD_KEYS = [
+            'calculatedtspgrossmonthly', 'tspgrossmonthly', 'grossmonth', 'grossmonthlydist',  // TSP Gross Monthly: defaults to calc but user can override
+            'otherpensions', 'otherincomesources',            // notes fields (backup in case they're <input> not <textarea>)
+        ];
+
+        function _lockTabFields() {
+            if (!_isLockedTab()) return;
+            const fieldMap = ActFieldMapper.getFieldMap();
+            for (const [key, entry] of Object.entries(fieldMap)) {
+                const el = entry.element;
+                if (!el) continue;
+                // Skip textareas — these are the notes fields the user CAN edit
+                if (el.tagName === 'TEXTAREA') continue;
+                // Skip selects (dropdowns) — readOnly doesn't work on them
+                if (el.tagName === 'SELECT') continue;
+                // Skip explicitly editable fields
+                if (EDITABLE_FIELD_KEYS.includes(key)) continue;
+                if (el.readOnly) continue;
+                el.readOnly = true;
+                el.tabIndex = -1;
+                el.style.backgroundColor = '#e8e8e8';
+                el.style.cursor = 'not-allowed';
+                el.title = 'Computed field — updated by calculator';
+            }
+        }
+
+        // Lock on initial scan — retry if iframe DOM isn't ready yet.
+        // Act! can load slowly after login; a single timeout is unreliable.
+        let _lockAttempts = 0;
+        const _maxLockAttempts = 4;
+        const _lockDelays = [3500, 2000, 2500, 4000]; // cumulative: 3.5s, 5.5s, 8s, 12s
+
+        function _attemptLock() {
+            _lockAttempts++;
+            const fieldMap = ActFieldMapper.scanPage();
+            const fieldCount = Object.keys(fieldMap).length;
+
+            _lockTabFields();
+            _lockSpecificFields();
+
+            if (fieldCount === 0 && _lockAttempts < _maxLockAttempts) {
+                // No fields found yet — DOM probably not ready. Retry.
+                setTimeout(_attemptLock, _lockDelays[_lockAttempts] || 3000);
+            }
+        }
+        setTimeout(_attemptLock, _lockDelays[0]);
+
         // ── Listen for commands from top frame ───────────────
         // Guard: only accept messages from the same Act! origin.
         // Opaque frames (about:blank / sandboxed) report origin "null", which is
@@ -71,6 +158,9 @@
                 }
                 window.top.postMessage({ type: 'ACT_COPILOT_FIELDS', fields }, _iframeActOrigin);
                 verboseDebug && console.log('[Copilot/iframe] RESCAN → broadcasting', Object.keys(fields).length, 'fields');
+                // Re-lock computed fields after rescan
+                _lockTabFields();
+                _lockSpecificFields();
                 return;
             }
 
@@ -93,6 +183,8 @@
                 } else {
                     verboseDebug && console.log('[Copilot/iframe] SET_FIELDS: no matching fields in this frame — skipping response');
                 }
+                // Re-lock computed fields after setting values
+                _lockTabFields();
             }
         });
     }
@@ -1373,6 +1465,40 @@
     }
 
     // ═══════════════════════════════════════════════════════
+    //  Calculate Button Loading State
+    // ═══════════════════════════════════════════════════════
+
+    // Shared helpers: disable buttons until Copilot has hooked them.
+    // Prevents premature clicks during the 2-3s initialization window.
+    function _markCalcBtnLoading(el) {
+        if (!el || el.dataset.copilotLoading || el.dataset.copilotTrapped ||
+            el.dataset.copilotRetireTrapped || el.dataset.copilotFinalTrapped) return;
+        el.dataset.copilotLoading = '1';
+        el.style.opacity = '0.5';
+        el.style.pointerEvents = 'none';
+        el.style.cursor = 'wait';
+        el.title = '⏳ Copilot loading…';
+    }
+
+    function _markCalcBtnReady(el) {
+        if (!el) return;
+        delete el.dataset.copilotLoading;
+        el.style.opacity = '1';
+        el.style.pointerEvents = '';
+        el.style.cursor = 'pointer';
+    }
+
+    // Immediately find and disable all calc buttons so they can't fire before hooks
+    function _disableCalcButtonsUntilReady() {
+        ['Calculate Current', 'Calculate Retirement', 'Final Calculation'].forEach(label => {
+            const el = findElementByText(label);
+            if (el) _markCalcBtnLoading(el);
+        });
+    }
+    // Run ASAP — before the 2s trap delays
+    setTimeout(_disableCalcButtonsUntilReady, 500);
+
+    // ═══════════════════════════════════════════════════════
     //  Calculate Button Trap
     // ═══════════════════════════════════════════════════════
 
@@ -1395,7 +1521,7 @@
         function attachToBtn(el) {
             if (el.dataset.copilotTrapped) return;
             el.dataset.copilotTrapped = '1';
-            el.style.cursor = 'pointer';
+            _markCalcBtnReady(el);
             el.title = '\u26a1 Copilot: Click to run FEGLI calculation';
             el.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -1420,6 +1546,7 @@
         // Does NOT disconnect so re-renders after contact navigation stay hooked.
         const obs = new MutationObserver(() => {
             const b = findCalcBtn();
+            if (b && !b.dataset.copilotTrapped) _markCalcBtnLoading(b);
             if (b) attachToBtn(b); // idempotent via data-copilot-trapped
         });
         obs.observe(document.body || document.documentElement, {
@@ -1516,7 +1643,7 @@
         function attachToBtn(el) {
             if (el.dataset.copilotRetireTrapped) return;
             el.dataset.copilotRetireTrapped = '1';
-            el.style.cursor = 'pointer';
+            _markCalcBtnReady(el);
             el.title = '\u26a1 Copilot: Click to run Retirement FEGLI calculation';
             el.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -1537,6 +1664,7 @@
 
         const obs = new MutationObserver(() => {
             const b = findRetireBtn();
+            if (b && !b.dataset.copilotRetireTrapped) _markCalcBtnLoading(b);
             if (b) attachToBtn(b);
         });
         obs.observe(document.body || document.documentElement, {
@@ -1620,7 +1748,7 @@
         function attachToBtn(el) {
             if (el.dataset.copilotFinalTrapped) return;
             el.dataset.copilotFinalTrapped = '1';
-            el.style.cursor = 'pointer';
+            _markCalcBtnReady(el);
             el.title = '\u26a1 Copilot: Click to run Final Retirement Calculation';
             el.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -1641,6 +1769,7 @@
 
         const obs = new MutationObserver(() => {
             const b = findFinalBtn();
+            if (b && !b.dataset.copilotFinalTrapped) _markCalcBtnLoading(b);
             if (b) attachToBtn(b);
         });
         obs.observe(document.body || document.documentElement, {
@@ -1909,6 +2038,8 @@
             { key: 'optionb',               label: 'Option B',            value: getVal('optionb'),               required: false, computed: true },
             { key: 'optionc',               label: 'Option C',            value: getVal('optionc'),               required: false, computed: true },
             { key: 'feglinetcost',          label: 'Current FEGLI Cost',  value: getVal('feglinetcost'),          required: false, computed: true },
+            // ── Scope: Postal vs Non-Postal (from ACT! 'postal' logical field) ──
+            { key: 'postal',               label: 'Postal (USPS)',        value: getVal('postal'),               required: false, hidden: true },
         ];
 
         const missingRequired = fields.filter(f => f.required && (f.value === null || f.value === undefined || f.value === ''));
@@ -2550,6 +2681,8 @@
             // ── Computed outputs ─────────────────────────────
             { key: 'basicliferetired',  label: 'Basic Life Retire',   value: getVal('basicliferetired'),  required: false, computed: true },
             { key: 'lessfegliretired',  label: 'Retired FEGLI Cost',  value: getVal('lessfegliretired'),  required: false, computed: true },
+            // ── Scope: Postal vs Non-Postal (from ACT! 'postal' logical field) ──
+            { key: 'postal',            label: 'Postal (USPS)',        value: getVal('postal'),            required: false, hidden: true },
         ];
 
         const missingRequired = fields.filter(f => f.required && (f.value === null || f.value === undefined || f.value === ''));
@@ -3247,6 +3380,8 @@
         // Military tab (actual DOM field names from debug dump)
         'militarypensionnet',   // "Military Pension Amount" = $2,500 → militarypension
         'vadisabilitynet',      // "VA Disability Monthly Income" = $4,200 → vadisabilitymonthlyamt
+        // Scope: Postal vs Non-Postal — selects the correct FEGLI rate table partition
+        'postal',
     ];
 
     // Map DOM field names → API-expected field names
@@ -3264,6 +3399,7 @@
         'federalpension', 'ferssupplement', 'militarypension',
         'survisorbenetit', 'survivorbenefit',
         'feglinetcost', 'add_total', 'minus_total', 'annualleavepayout',
+        'fedtaxtotal', 'fedtaxrate',
     ]);
 
     const FINAL_CALC_RESULT_MAP = [
@@ -3279,6 +3415,9 @@
         { key: 'add_total',            alts: ['additionstotal'],                           isCurrency: true },
         { key: 'minus_total',          alts: ['subtractionstotal'],                        isCurrency: true },
         { key: 'annualleavepayout',    alts: [],                                           isCurrency: true },
+        { key: 'fedtaxtotal',          alts: ['FedTaxTotal'],                               isCurrency: true },
+        { key: 'fedtaxrate',           alts: ['FedTaxRate', 'FedTa'],                        isCurrency: false },
+        { key: 'calculatedtspgrossmonthly', alts: ['grossmonth', 'grossmonthlydist', 'tspgrossmonthly'], isCurrency: true, editable: true, crossTab: true },
     ];
 
     // Flat list for scanFields
@@ -3331,6 +3470,7 @@
             verboseDebug && console.log(`[Copilot] Using cached Retired FEGLI Cost: $${_cachedRetiredFegliCost} (API returned 0)`);
         }
 
+
         FINAL_CALC_RESULT_MAP.forEach(field => {
             // Try primary key first, then alts as source keys in the result object
             let val = result[field.key];
@@ -3362,12 +3502,22 @@
                     }
                 }
             }
-            let ok = ActFieldMapper.setFieldValue(field.key, String(val));
-            if (!ok) ok = ActFieldMapper.setFieldValue('calculated' + field.key, String(val));
+            // Temporarily unlock the field so Act!'s change detection registers the write
+            function trySetWithUnlock(key, val) {
+                const el = ActFieldMapper.getFieldElement(key);
+                const wasReadOnly = el?.readOnly;
+                if (el) el.readOnly = false;
+                const ok = ActFieldMapper.setFieldValue(key, String(val));
+                if (el && wasReadOnly) el.readOnly = true;
+                return ok;
+            }
+
+            let ok = trySetWithUnlock(field.key, val);
+            if (!ok) ok = trySetWithUnlock('calculated' + field.key, val);
             if (!ok) {
                 for (const alt of field.alts) {
-                    ok = ActFieldMapper.setFieldValue(alt, String(val));
-                    if (!ok) ok = ActFieldMapper.setFieldValue('calculated' + alt, String(val));
+                    ok = trySetWithUnlock(alt, val);
+                    if (!ok) ok = trySetWithUnlock('calculated' + alt, val);
                     if (ok) {
                         verboseDebug && console.log(`[Copilot] Alt key worked: ${alt} (primary ${field.key} failed)`);
                         break;
@@ -3378,8 +3528,15 @@
                 applied++;
                 if (apiContactData?.customFields) apiContactData.customFields[field.key] = val;
             } else {
-                failed.push(field.key);
+                // Cross-tab fields may not be in the current DOM — API PUT saves them anyway
+                if (!field.crossTab) failed.push(field.key);
             }
+        });
+
+        // Tell iframes to rescan + re-lock fields (fields live in iframes,
+        // locking is handled by _lockTabFields inside each iframe instance)
+        document.querySelectorAll('iframe, frame').forEach(f => {
+            try { f.contentWindow.postMessage({ type: 'ACT_COPILOT_RESCAN' }, '*'); } catch {}
         });
 
         return { applied, failed };
@@ -3422,9 +3579,72 @@
             } else {
                 toast(`${applied} applied, ${failed.length} not found: ${failed.join(', ')}`, 'info');
             }
+
+            // ── Auto-save: persist all computed values to Act! ──
+            // Uses dual strategy: tries Save button click + API PUT fallback
+            setTimeout(() => _persistFinalCalcResults(result), 1500);
         } catch (err) {
             toast('Final calculation failed: ' + err.message, 'error');
             console.error('[Copilot] Auto-final error:', err);
+        }
+    }
+
+    // ── Persist computed fields to Act! contact via API PUT ──
+    // Direct API call is the ONLY 100% reliable method.
+    // Act!'s UI dirty-tracking is unreliable for programmatically-set
+    // readOnly fields. The API bypasses that entirely.
+    async function _persistFinalCalcResults(result) {
+        const contactId = ActFieldMapper.getContactId();
+        if (!contactId) return;
+
+        const updates = {};
+
+        // Include all Final Calc result fields from the API response
+        for (const [key, val] of Object.entries(result)) {
+            if (val === null || val === undefined || val === '') continue;
+            updates[`customFields.${key}`] = val;
+        }
+
+        // Scan ALL fields we marked readOnly and include their current values.
+        // This catches AGEYY, AGEMM, FEGLI fields, Income tab fields,
+        // totals — anything our extension computed and locked.
+        const fieldMap = ActFieldMapper.getFieldMap();
+        for (const [key, entry] of Object.entries(fieldMap)) {
+            const el = entry.element;
+            if (!el) continue;
+            if (!el.readOnly) continue;
+            if (el.tagName === 'TEXTAREA') continue;
+            const val = (el.value || '').trim();
+            if (!val) continue;
+            if (!updates[`customFields.${key}`]) {
+                updates[`customFields.${key}`] = val;
+            }
+        }
+
+        if (!Object.keys(updates).length) return;
+
+        try {
+            const saveResp = await new Promise((resolve, reject) => {
+                chrome.runtime.sendMessage(
+                    { type: 'api_call', method: 'PUT', path: `/api/proxy/act/contact/${contactId}`, body: { updates } },
+                    (r) => {
+                        if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+                        else resolve(r);
+                    }
+                );
+            });
+
+            const saveData = saveResp?.data || saveResp;
+            if (saveData?.success) {
+                console.log('[Copilot] Saved', Object.keys(updates).length, 'computed fields to Act! contact via API');
+                toast('Results saved to contact record', 'success');
+            } else {
+                console.warn('[Copilot] API save failed:', saveData?.error || 'unknown');
+                toast('Auto-save failed — please click Save manually', 'info');
+            }
+        } catch (err) {
+            console.warn('[Copilot] API save error:', err.message);
+            toast('Auto-save failed — please click Save manually', 'info');
         }
     }
 
@@ -3436,6 +3656,11 @@
 
         // Scan all input fields from the DOM (same pattern as other calculators)
         const scannedMap = ActFieldMapper.scanFields(FINAL_CALC_INPUT_FIELDS);
+
+        // Tell iframes to rescan + re-lock all computed fields
+        document.querySelectorAll('iframe, frame').forEach(f => {
+            try { f.contentWindow.postMessage({ type: 'ACT_COPILOT_RESCAN' }, '*'); } catch {}
+        });
 
         // Date fields that need MM/DD/YYYY conversion
         const DATE_KEYS = ['retiredate', 'servicecomputationdate', 'birth date', 'birthdate', 'spousedob'];
@@ -3979,6 +4204,7 @@
                     el.readOnly = true;
                     el.tabIndex = -1;
                     el.style.cursor = 'not-allowed';
+                    el.style.backgroundColor = '#e8e8e8';
                     el.title = 'Auto-calculated from Date of Birth';
                 }
             }
@@ -4265,7 +4491,7 @@
             try { el.readOnly = false; } catch {}
             ActFieldSchema.setValue(f, val, { root: window, activateTab: false });
         }
-        try { el.readOnly = true; el.tabIndex = -1; el.title = 'Auto-calculated'; } catch {}
+        try { el.readOnly = true; el.tabIndex = -1; el.title = 'Auto-calculated'; el.style.backgroundColor = '#e8e8e8'; el.style.cursor = 'not-allowed'; } catch {}
     }
 
     // Keyboard-disable a rule's output fields even before they're computed.
@@ -4273,8 +4499,49 @@
         for (const rule of getSeedRules()) {
             for (const k of [rule.yy, rule.mm]) {
                 const f = _field(k); const el = f && ActFieldSchema.resolveElement(f, window);
-                if (el && !el.readOnly) { try { el.readOnly = true; el.tabIndex = -1; el.title = 'Auto-calculated'; } catch {} }
+                if (el && !el.readOnly) { try { el.readOnly = true; el.tabIndex = -1; el.title = 'Auto-calculated'; el.style.backgroundColor = '#e8e8e8'; el.style.cursor = 'not-allowed'; } catch {} }
             }
+        }
+        // Lock all computed/calculator-driven fields across FEGLI and Income tabs.
+        // These are set by Calculate Current, Calculate Retirement, or Final Calculation
+        // and must not be manually edited. Only notes/memo fields remain editable.
+        const LOCKED_FIELDS = [
+            // ── FEGLI tab: Current FEGLI section ──
+            'feglicodeactive', 'fegliperpayperiod',
+            'basiclife', 'optiona', 'optionb', 'optionc',
+            'feglinetcost',
+            // ── FEGLI tab: Changes to FEGLI / Retirement section ──
+            'feglicostage', 'feglireduction',
+            'optiona_retire', 'optionb_retire', 'optionc_retire',
+            'basicliferetired', 'lessfegliretired', 'lessfegliretire', 'calculatedlessfegli',
+            // ── Income tab: left column (income sources) ──
+            'federalpension',
+            'socialsecurityincome', 'grosssocialsecurity',
+            'ferssupplement',
+            'militarypension', 'militarypensionnet',
+            'vadisabilitynet', 'vadisability', 'vadisability2', 'vadisabilitymonthlyamt',
+            'spousessnet', 'spousesocialsecurityinco', 'spousesocialsecurityincome', 'spousessincome', 'spousess',
+            'spousepensionnet', 'spousepension', 'spouse_pension',
+            // ── Income tab: middle column (deductions) ──
+            'fehbpermonth',
+            'dentalinsurancepermonth',
+            'visioninsurancepermonth',
+            'ltcpermonth',
+            'survisorbenetit', 'survivorbenefits', 'survivorbenefit',
+            'fegli', 'feglicost', 'feglipermonth', 'lessfegliretire',
+            'fedtaxtotal', 'fedtaxrate',
+            // ── Income tab: computed sum totals ──
+            'add_total', 'additionstotal', 'minus_total', 'subtractionstotal',
+            // ── Income tab: right column (results) ──
+            'currentnetincomeperpayperiod',
+            'totalretirementincome',
+            'annualleavepayout',
+            // Note: 'Other Pensions' and 'Other Income Sources' are intentionally
+            // NOT locked — they are free-text notes fields the user can edit.
+        ];
+        for (const k of LOCKED_FIELDS) {
+            const f = _field(k); const el = f && ActFieldSchema.resolveElement(f, window);
+            if (el && !el.readOnly) { try { el.readOnly = true; el.tabIndex = -1; el.title = 'Computed field — updated by calculator'; el.style.backgroundColor = '#e8e8e8'; el.style.cursor = 'not-allowed'; } catch {} }
         }
     }
 
