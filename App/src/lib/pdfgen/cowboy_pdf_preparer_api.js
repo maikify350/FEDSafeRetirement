@@ -21,7 +21,8 @@ const FINAL_CALCULATION_CRM_FIELDS = [
     "minus_total",
     "annualleavepayout",
     "fedtaxtotal",
-    "fedtaxrate"
+    "fedtaxrate",
+    "calculatedtspgrossmonthly"
 ];
 
 const PDF_Preparer_API = {
