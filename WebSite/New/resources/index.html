@@ -203,6 +203,54 @@ body .container-wrap {
   transform: translateY(-50%) !important;
 }
 </style>
+<style id="fedsafe-resources-hero-mobile-css">
+/* ── Resources page hero: center text and reduce padding on mobile ── */
+@media only screen and (max-width: 690px) {
+  #fws_69d505b88de30 .row_col_wrap_12_inner {
+    text-align: center !important;
+  }
+  #fws_69d505b88de30 .col.padding-10-percent > .vc_column-inner {
+    padding-left: 4% !important;
+    padding-right: 4% !important;
+  }
+  #fws_69d505b88de30 .nectar-responsive-text p {
+    text-align: center !important;
+  }
+  /* Let the overlay gradient work better for centered text */
+  #fws_69d505b88de30 .column-overlay-layer {
+    background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.2) 100%) !important;
+  }
+  /* ── "Start With the Checklist" CTA section: reduce padding, center text ── */
+  #fws_69d505b89de65 .col.padding-10-percent > .vc_column-inner {
+    padding-left: 3% !important;
+    padding-right: 3% !important;
+  }
+  #fws_69d505b89de65 .row_col_wrap_12_inner {
+    text-align: center !important;
+  }
+  #fws_69d505b89de65 .nectar-responsive-text p {
+    text-align: center !important;
+  }
+}
+/* Hide the down-arrow scroll button on the Resources page hero (all viewports) */
+#fws_69d505b88de30 .nectar-next-section-wrap {
+  display: none !important;
+}
+</style>
+<script>
+/* Fix: Resources nav menu item should navigate directly on mobile, not just open submenu */
+document.addEventListener('DOMContentLoaded', function() {
+  var slideOut = document.getElementById('slide-out-widget-area');
+  if (!slideOut) return;
+  slideOut.addEventListener('click', function(e) {
+    var link = e.target.closest('a[href*="resources/"]');
+    if (link && link.closest('.menu-item-has-children') && link === link.closest('.menu-item-has-children').querySelector(':scope > a')) {
+      e.stopPropagation();
+      window.location.href = link.href;
+    }
+  }, true);
+});
+</script>
 <style id="fedsafe-footer-legal-css">
 #footer-outer .fedsafe-legal-footer-links {
   display: flex;
@@ -549,6 +597,26 @@ body .container-wrap {
     justify-content: flex-end;
   }
 }
+/* ── Mobile: reduce header pill height by ~8px (4px top + 4px bottom) ── */
+@media only screen and (max-width: 690px) {
+  #header-outer {
+    height: 68px !important;
+    min-height: 68px !important;
+    max-height: 68px !important;
+    top: 15px !important;
+  }
+  #header-outer header#top {
+    height: 68px !important;
+    min-height: 68px !important;
+  }
+  #header-outer #logo img {
+    max-height: 54px !important;
+    height: 54px !important;
+  }
+  body .container-wrap {
+    padding-top: 68px;
+  }
+}
 </style>
 <!-- FedSafe favicons -->
 <link rel="icon" href="../assets/favicons/favicon.ico" sizes="any">
@@ -811,7 +879,7 @@ body .container-wrap {
 			class="plus-line plus-line-horizontal"
 			d="M15,20 L25,20"
 		/>
-		</svg>What makes FedSafe Retirement different from a general financial advisor?</a></h3><div><div class="inner-toggle-wrap">
+		</svg>What makes FedSafe Retirement different from a general financial consultant?</a></h3><div><div class="inner-toggle-wrap">
 <div class="wpb_text_column wpb_content_element " >
 	<p>Federal retirement involves FERS or CSRS pensions, TSP, FEHB, Social Security coordination, and strict paperwork timelines. We focus specifically on those systems, and not generic retirement planning models.</p>
 </div>

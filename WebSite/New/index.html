@@ -1948,7 +1948,7 @@
   color: #c1260d;
 }
 .fedsafe-home-hero-copy p {
-  margin: 0 0 22px;
+  margin: 0 0 12px;         /* Reduced from 22px → 12px to close gap above red CTA */
   max-width: 560px;
   color: #101820;
   font-family: Manrope, Arial, sans-serif;
@@ -2082,14 +2082,14 @@
     width: 300px;
     max-width: calc(100vw - 72px);
     box-sizing: border-box;
-    min-height: 620px;
+    min-height: auto;           /* Fix 3: remove fixed min-height to close gap */
     justify-content: flex-start;
-    padding-top: 38px;
+    padding-top: 26px;          /* Fix 2: shift content up (was 38px) */
     padding-left: 0;
     padding-right: 0;
   }
   .fedsafe-hero-phone-pill {
-    align-self: flex-start;
+    align-self: center;         /* Fix 2: horizontally center the pill */
     min-width: 218px;
     min-height: 68px;
     margin-bottom: 22px;
@@ -2152,6 +2152,87 @@
   }
   .fedsafe-home-hero-trust small {
     font-size: 11px;
+  }
+}
+</style>
+<style id="fedsafe-services-card-gap-css">
+/* Tighten gap between card section title (h3) and description (p) — ~16px */
+#fws_69d504036f219 .child_column .nectar-responsive-text[data-inherit-heading-family="h3"] {
+  margin-bottom: 0 !important;
+}
+#fws_69d504036f219 .child_column .nectar-responsive-text[data-inherit-heading-family="h3"] p {
+  margin-bottom: 6px !important;
+}
+#fws_69d504036f219 .child_column .nectar-responsive-text[data-inherit-heading-family="p"] {
+  margin-top: 0 !important;
+}
+#fws_69d504036f219 .child_column .nectar-responsive-text[data-inherit-heading-family="p"] p {
+  margin-top: 0 !important;
+}
+/* Fix: dark-blue section needs more top padding — theme JS resets inline styles,
+   so we must use CSS !important to override */
+#fws_69d504036c78a {
+  padding-top: 40px !important;
+}
+/* Also tighten the heading gap in the dark-blue section above the cards */
+#fws_69d504036c78a .nectar-responsive-text[data-inherit-heading-family="h2"] p {
+  margin-bottom: 10px !important;
+}
+
+/* ── Mobile: linearize sticky-scroll sections so text/images aren't clipped ── */
+@media only screen and (max-width: 690px) {
+  /* Remove the fixed height so content flows naturally */
+  .type--scroll-pinned-sections.section-height-70vh.subtract-nav-height .nectar-sticky-media-section__content-section {
+    height: auto !important;
+    position: relative !important;
+    top: auto !important;
+  }
+  /* Allow content to be visible — no clipping */
+  .nectar-sticky-media-sections.type--scroll-pinned-sections.media-border-radius-15px .nectar-sticky-media-section__content-section__wrap {
+    overflow: visible !important;
+  }
+  /* Let the wrap expand to fit content */
+  .type--scroll-pinned-sections .nectar-sticky-media-section__content-section__wrap {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  /* Remove the large transparent border-bottom spacer */
+  .type--scroll-pinned-sections.section-height-70vh.subtract-nav-height .nectar-sticky-media-section__content__wrap > div {
+    border-bottom: none !important;
+  }
+  /* Ensure images display at full width and natural aspect ratio */
+  .nectar-sticky-media-sections .img-with-aniamtion-wrap img {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+}
+
+/* ── Footer "Getting Started" section — center everything on mobile ── */
+@media only screen and (max-width: 900px) {
+  #fws_69d50403827e5 {
+    text-align: center !important;
+  }
+  #fws_69d50403827e5 .row_col_wrap_12_inner {
+    justify-items: center !important;
+  }
+  #fws_69d50403827e5 .wpb_column.child_column {
+    text-align: center !important;
+  }
+  #fws_69d50403827e5 .wpb_wrapper {
+    align-items: center !important;
+  }
+  #fws_69d50403827e5 .nectar-button,
+  #fws_69d50403827e5 .fedsafe-footer-pill-link,
+  #fws_69d50403827e5 .fedsafe-footer-schedule-pill {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  #fws_69d50403827e5 .nectar-cta {
+    justify-content: center !important;
+  }
+  #fws_69d50403827e5 .img-with-aniamtion-wrap {
+    text-align: center !important;
   }
 }
 </style>
@@ -2255,6 +2336,26 @@
   }
   #header-outer .col.span_9 {
     justify-content: flex-end;
+  }
+}
+/* ── Mobile: reduce header pill height by ~8px (4px top + 4px bottom) ── */
+@media only screen and (max-width: 690px) {
+  #header-outer {
+    height: 68px !important;
+    min-height: 68px !important;
+    max-height: 68px !important;
+    top: 15px !important;
+  }
+  #header-outer header#top {
+    height: 68px !important;
+    min-height: 68px !important;
+  }
+  #header-outer #logo img {
+    max-height: 54px !important;
+    height: 54px !important;
+  }
+  body .container-wrap {
+    padding-top: 68px;
   }
 }
 </style>
@@ -2581,7 +2682,7 @@
 													<p>Federal retirement transition specialists providing retirement education, benefits guidance, and workforce readiness programs trusted by employees across all federal agencies.</p>
 													<div class="fedsafe-home-hero-actions">
 														<a class="primary" href="./retirement-updates/">Join Our Federal Retirement Updates List</a>
-														<a class="secondary" href="assets/videos/fedsafe-who-we-are-homepage-video.mp4?v=20260606-1345" data-fedsafe-video>Watch: Who We Are</a>
+														<a class="secondary" href="assets/videos/fedsafe-who-we-are-homepage-video.mp4?v=20260606-1701" data-fedsafe-video>Watch: Who We Are</a>
 													</div>
 													<div class="fedsafe-home-hero-trust">
 														<div>SAM.gov Registered Federal Contractor<small>UEI: PPQ9UAWNKQ84 CAGE Code: 1A8S5</small></div>
@@ -2650,7 +2751,7 @@
 								</div>
 							</div>
 							<div id="fws_69d504036c78a" data-column-margin="default" data-midnight="light"
-								class="wpb_row vc_row-fluid vc_row" style="padding-top: 10px; padding-bottom: -10px; ">
+								class="wpb_row vc_row-fluid vc_row" style="padding-top: 40px; padding-bottom: -10px; ">
 								<div class="row-bg-wrap" data-bg-animation="none" data-bg-animation-delay=""
 									data-bg-overlay="false">
 									<div class="inner-wrap row-bg-layer">
@@ -3202,10 +3303,10 @@
 																											height="941"
 																											width="1672"
 																											data-animation="none"
-																											data-nectar-img-src="assets/images/Blimp.png"
+																											data-nectar-img-src="assets/images/Blimp.webp"
 																											src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%201672%20941'%2F%3E"
 																											alt=""
-																											data-nectar-img-srcset="assets/images/Blimp.png 1672w"
+																											data-nectar-img-srcset="assets/images/Blimp.webp 1672w"
 																											sizes="(max-width: 1672px) 100vw, 1672px" />
 																									</div>
 																								</div>
@@ -3320,12 +3421,12 @@
 																											height="948"
 																											width="1659"
 																											data-animation="none"
-																											data-nectar-img-src="assets/images/Hero_Partners_Page_FInal.png"
-																											data-nectar-img-srcset="assets/images/Hero_Partners_Page_FInal.png 1659w"
+																											data-nectar-img-src="assets/images/Hero_Partners_Page_FInal.webp"
+																											data-nectar-img-srcset="assets/images/Hero_Partners_Page_FInal.webp 1659w"
 																											sizes="(max-width: 1659px) 100vw, 1659px"
 																											src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%201659%20948'%2F%3E"
 																											alt=""
-																											data-nectar-img-srcset="assets/images/Hero_Partners_Page_FInal.png 1659w"
+																											data-nectar-img-srcset="assets/images/Hero_Partners_Page_FInal.webp 1659w"
 																											sizes="(max-width: 1659px) 100vw, 1659px" />
 																									</div>
 																								</div>
@@ -3989,7 +4090,7 @@
 																<div class="wpb_wrapper">
 																	<div class="nectar-responsive-text custom_tailored nectar-link-underline-effect"
 																		data-inherit-heading-family="h2">
-																		<p>This Is Checklist Is<br />
+																		<p>This Checklist Is<br />
 																			For You If&#8230;</p>
 																	</div>
 																	<div
@@ -4352,7 +4453,7 @@
 		<div class="fedsafe-video-modal__dialog" role="dialog" aria-modal="true" aria-label="FedSafe Retirement who we are video">
 			<button class="fedsafe-video-modal__close" type="button" aria-label="Close video" data-fedsafe-video-close>&times;</button>
 			<video class="fedsafe-video-modal__video" controls preload="auto" playsinline>
-				<source src="assets/videos/fedsafe-who-we-are-homepage-video.mp4?v=20260606-1345" type="video/mp4">
+				<source src="assets/videos/fedsafe-who-we-are-homepage-video.mp4?v=20260606-1701" type="video/mp4">
 			</video>
 		</div>
 	</div>
