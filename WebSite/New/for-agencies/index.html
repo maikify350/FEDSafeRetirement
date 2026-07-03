@@ -1107,6 +1107,49 @@ body.page-id-2305 .container-wrap.fedsafe-agencies-redesign {
   }
 }
 </style>
+<style>
+/* ══ Desktop/Mobile visibility toggle ══ */
+.fa-desktop-images{display:block}
+.fa-mobile-sections{display:none}
+@media only screen and (max-width:999px){.fa-desktop-images{display:none}.fa-mobile-sections{display:block}}
+
+/* ══ Mobile card section styles ══ */
+.fa-rebuilt-section{width:min(100% - 32px,2048px);margin:0 auto 10px;box-sizing:border-box;box-shadow:0 18px 50px rgba(0,0,0,.14)}
+.fa-section-eyebrow{font-family:'Oswald',sans-serif;font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;margin-bottom:14px}
+.fa-briefings-section{background:#002443;padding:56px 64px}
+.fa-briefings-headline{font-family:'Oswald',sans-serif;font-size:clamp(26px,3.2vw,46px);font-weight:700;color:#fff;line-height:1.08;max-width:820px;margin:0 0 14px}
+.fa-briefings-subtext{font-size:clamp(14px,1.05vw,17px);color:rgba(255,255,255,.68);max-width:720px;line-height:1.65;margin:0 0 40px}
+.fa-briefings-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:44px}
+.fa-briefings-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-top:3px solid rgba(210,30,18,.7);border-radius:10px;padding:26px 22px}
+.fa-briefings-card-title{font-family:'Oswald',sans-serif;font-size:clamp(15px,1.1vw,19px);font-weight:600;color:#fff;margin:0 0 9px;line-height:1.2}
+.fa-briefings-card-body{font-size:clamp(13px,.9vw,15px);color:rgba(255,255,255,.65);line-height:1.58;margin:0}
+.fa-briefings-cta{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 42px;background:#d21e12;color:#fff;font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;text-decoration:none;border-radius:7px;box-shadow:0 10px 24px rgba(0,0,0,.28);animation:fedsafe-cta-grow-bounce 2.7s ease-in-out infinite}
+.fa-briefings-cta::after{content:" >";margin-left:10px}
+.fa-walkaway-section{background:#f6f8fb;padding:56px 64px 48px;margin-bottom:0}
+.fa-walkaway-headline{font-family:'Oswald',sans-serif;font-size:clamp(22px,2.6vw,40px);font-weight:700;color:#002443;line-height:1.1;margin:0 0 32px}
+.fa-walkaway-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.fa-walkaway-card{background:#fff;border:1px solid rgba(0,36,67,.1);border-left:4px solid #002443;border-radius:8px;padding:22px 20px;display:flex;align-items:flex-start;gap:14px}
+.fa-walkaway-num{font-family:'Oswald',sans-serif;font-size:30px;font-weight:700;color:rgba(0,36,67,.13);line-height:1;flex-shrink:0;min-width:30px;margin-top:1px}
+.fa-walkaway-card-title{font-family:'Oswald',sans-serif;font-size:clamp(14px,1vw,17px);font-weight:600;color:#002443;margin:0 0 5px;line-height:1.2}
+.fa-walkaway-card-body{font-size:clamp(12px,.85vw,14px);color:rgba(0,36,67,.62);line-height:1.55;margin:0}
+.fa-howitworks-section{background:#002443;padding:52px 64px 56px;margin-bottom:10px}
+.fa-howitworks-headline{font-family:'Oswald',sans-serif;font-size:clamp(22px,2.6vw,40px);font-weight:700;color:#fff;line-height:1.1;margin:0 0 36px}
+.fa-howitworks-steps{display:grid;grid-template-columns:repeat(2,1fr);gap:32px;margin-bottom:40px}
+.fa-howitworks-step-num{font-family:'Oswald',sans-serif;font-size:52px;font-weight:700;color:rgba(255,255,255,.15);line-height:1;margin-bottom:10px}
+.fa-howitworks-step-title{font-family:'Oswald',sans-serif;font-size:clamp(17px,1.2vw,22px);font-weight:600;color:#fff;margin:0 0 10px;line-height:1.2}
+.fa-howitworks-step-body{font-size:clamp(13px,.9vw,16px);color:rgba(255,255,255,.65);line-height:1.6;margin:0}
+.fa-howitworks-divider{border:none;border-top:1px solid rgba(255,255,255,.14);margin-bottom:36px}
+.fa-howitworks-actions{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.fa-howitworks-primary{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 42px;background:#d21e12;color:#fff;font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;text-decoration:none;border-radius:7px;box-shadow:0 10px 24px rgba(0,0,0,.28);animation:fedsafe-cta-grow-bounce 2.7s ease-in-out infinite}
+.fa-howitworks-primary::after{content:" >";margin-left:10px}
+.fa-howitworks-secondary{font-family:'Oswald',sans-serif;font-size:17px;font-weight:500;color:rgba(255,255,255,.82);text-decoration:none;border-bottom:2px solid #d21e12;padding-bottom:3px}
+@media only screen and (max-width:690px){
+  .fa-briefings-section,.fa-walkaway-section,.fa-howitworks-section{padding:32px 18px;width:calc(100% - 12px)}
+  .fa-briefings-cards,.fa-walkaway-grid,.fa-howitworks-steps{grid-template-columns:1fr}
+  .fa-briefings-cta,.fa-howitworks-primary{min-height:52px;padding:0 24px;font-size:17px;width:100%}
+  .fa-howitworks-actions{flex-direction:column;align-items:stretch}
+}
+</style>
 <main class="fedsafe-agencies-main" role="main" aria-label="Federal retirement education for agencies">
   <section class="fedsafe-agency-hero" aria-label="Federal Retirement Education for Agencies">
     <div class="fedsafe-agency-hero-photo">
@@ -1140,14 +1183,59 @@ body.page-id-2305 .container-wrap.fedsafe-agencies-redesign {
       </div>
     </div>
   </section>
-  <section id="briefings-cover" class="fedsafe-agency-frame" aria-label="Why agencies bring FedSafe in">
-    <img src="../assets/images/for-agencies/For_Agencies_02.png" alt="Why agencies bring FedSafe in. Help employees make retirement decisions before confusion becomes a problem. Benefits include reducing repeated HR questions, clarifying benefits decisions, preventing avoidable mistakes, and supporting workforce transitions." loading="lazy" />
-  </section>
-  <section class="fedsafe-agency-frame light final" aria-label="What employees walk away understanding and how it works">
-    <img src="../assets/images/for-agencies/For_Agencies_03.png" alt="What your employees walk away understanding: eligibility and timing, FERS and CSRS fundamentals, survivor benefit elections, FEHB and Medicare coordination, TSP, and the retirement application process. How it works: choose the format, tailor the focus, deliver the briefing." loading="lazy" />
-    <a class="fedsafe-agency-hotspot fedsafe-agency-final-request" href="../for-agencies-contact/">Request an Agency Briefing</a>
-    <a class="fedsafe-agency-hotspot fedsafe-agency-final-cover" href="#briefings-cover">See What Briefings Cover</a>
-  </section>
+  <!-- Desktop: original designed images (≥1000px) -->
+  <div class="fa-desktop-images">
+    <section id="briefings-cover" class="fedsafe-agency-frame" aria-label="Why agencies bring FedSafe in">
+      <img src="../assets/images/for-agencies/For_Agencies_02.png" alt="Why agencies bring FedSafe in: Help employees make retirement decisions before confusion becomes a problem." loading="lazy" />
+    </section>
+    <section class="fedsafe-agency-frame light final" aria-label="What employees walk away understanding and how it works">
+      <img src="../assets/images/for-agencies/For_Agencies_03.png" alt="What your employees walk away understanding: eligibility and timing, FERS and CSRS fundamentals, survivor benefit elections, FEHB and Medicare coordination, TSP, and the retirement application process. How it works: choose the format, tailor the focus, deliver the briefing." loading="lazy" />
+      <a class="fedsafe-agency-hotspot fedsafe-agency-final-request" href="../for-agencies-contact/">Request an Agency Briefing</a>
+      <a class="fedsafe-agency-hotspot fedsafe-agency-final-cover" href="#briefings-cover">See What Briefings Cover</a>
+    </section>
+  </div>
+
+  <!-- Mobile/Tablet: responsive HTML sections (<1000px) -->
+  <div class="fa-mobile-sections">
+    <section id="briefings-cover-mobile" class="fa-rebuilt-section fa-briefings-section" aria-label="Why agencies bring FedSafe in">
+      <p class="fa-section-eyebrow" style="color:rgba(255,255,255,0.45)">Why Agencies Bring FedSafe In</p>
+      <h2 class="fa-briefings-headline">Help Employees Make Retirement Decisions Before Confusion Becomes a Problem</h2>
+      <p class="fa-briefings-subtext">Federal retirement decisions are layered, time-sensitive, and often misunderstood. Structured education helps employees prepare before deadlines, elections, and paperwork mistakes create avoidable stress.</p>
+      <div class="fa-briefings-cards">
+        <div class="fa-briefings-card"><h3 class="fa-briefings-card-title">Reduce Repeated HR Questions</h3><p class="fa-briefings-card-body">Give employees a clearer understanding of common retirement topics before they come to HR for help.</p></div>
+        <div class="fa-briefings-card"><h3 class="fa-briefings-card-title">Clarify Benefits Decisions</h3><p class="fa-briefings-card-body">Help employees understand elections involving retirement timing, survivor benefits, health coverage, and TSP options.</p></div>
+        <div class="fa-briefings-card"><h3 class="fa-briefings-card-title">Prevent Avoidable Mistakes</h3><p class="fa-briefings-card-body">Address common misunderstandings before forms are submitted or deadlines are missed.</p></div>
+        <div class="fa-briefings-card"><h3 class="fa-briefings-card-title">Support Workforce Transitions</h3><p class="fa-briefings-card-body">Provide consistent education for employees approaching retirement eligibility.</p></div>
+      </div>
+      <a class="fa-briefings-cta" href="../for-agencies-contact/">Request an Agency Briefing</a>
+    </section>
+    <section class="fa-rebuilt-section fa-walkaway-section" aria-label="What employees walk away understanding">
+      <p class="fa-section-eyebrow" style="color:rgba(0,36,67,0.45)">Education That Moves the Needle</p>
+      <h2 class="fa-walkaway-headline">What Your Employees Walk Away Understanding</h2>
+      <div class="fa-walkaway-grid">
+        <div class="fa-walkaway-card"><span class="fa-walkaway-num">01</span><div><p class="fa-walkaway-card-title">Eligibility &amp; Timing</p><p class="fa-walkaway-card-body">When employees may be eligible, and how timing can affect the retirement process.</p></div></div>
+        <div class="fa-walkaway-card"><span class="fa-walkaway-num">02</span><div><p class="fa-walkaway-card-title">FERS &amp; CSRS Fundamentals</p><p class="fa-walkaway-card-body">A clear overview of how the federal retirement systems work.</p></div></div>
+        <div class="fa-walkaway-card"><span class="fa-walkaway-num">03</span><div><p class="fa-walkaway-card-title">Survivor Benefit Elections</p><p class="fa-walkaway-card-body">How survivor elections can affect a spouse or family member after retirement.</p></div></div>
+        <div class="fa-walkaway-card"><span class="fa-walkaway-num">04</span><div><p class="fa-walkaway-card-title">FEHB &amp; Medicare Coordination</p><p class="fa-walkaway-card-body">How federal health benefits may continue into retirement and where Medicare fits in.</p></div></div>
+        <div class="fa-walkaway-card"><span class="fa-walkaway-num">05</span><div><p class="fa-walkaway-card-title">Thrift Savings Plan (TSP)</p><p class="fa-walkaway-card-body">Key questions employees should understand before making TSP decisions.</p></div></div>
+        <div class="fa-walkaway-card"><span class="fa-walkaway-num">06</span><div><p class="fa-walkaway-card-title">Retirement Application Process</p><p class="fa-walkaway-card-body">What to expect with paperwork, timing, submissions, and common application issues.</p></div></div>
+      </div>
+    </section>
+    <section class="fa-rebuilt-section fa-howitworks-section" aria-label="How agency briefings work">
+      <p class="fa-section-eyebrow" style="color:rgba(255,255,255,0.45)">Simple to Schedule. Built to Deliver.</p>
+      <h2 class="fa-howitworks-headline">How It Works</h2>
+      <div class="fa-howitworks-steps">
+        <div><div class="fa-howitworks-step-num">01</div><h3 class="fa-howitworks-step-title">Choose the Format</h3><p class="fa-howitworks-step-body">Virtual, on-site, or hybrid &mdash; whatever works best for your agency.</p></div>
+        <div><div class="fa-howitworks-step-num">02</div><h3 class="fa-howitworks-step-title">Tailor the Focus</h3><p class="fa-howitworks-step-body">Topics are aligned to your workforce needs and priorities.</p></div>
+        <div><div class="fa-howitworks-step-num">03</div><h3 class="fa-howitworks-step-title">Deliver the Briefing</h3><p class="fa-howitworks-step-body">Structured education, clear materials, and time for questions that matter.</p></div>
+      </div>
+      <hr class="fa-howitworks-divider" />
+      <div class="fa-howitworks-actions">
+        <a class="fa-howitworks-primary" href="../for-agencies-contact/">Request an Agency Briefing</a>
+        <a class="fa-howitworks-secondary" href="#briefings-cover-mobile">See What Briefings Cover</a>
+      </div>
+    </section>
+  </div>
 </main>
 </div>
 <div id="fws_69d504e54ffc9"  data-column-margin="10px" data-midnight="dark" data-top-percent="3%"  class="wpb_row vc_row-fluid vc_row vc_row-o-equal-height vc_row-flex vc_row-o-content-top"  style="padding-top: calc(100vw * 0.03); padding-bottom: 0px; "><div class="row-bg-wrap" data-bg-animation="none" data-bg-animation-delay="" data-bg-overlay="false"><div class="inner-wrap row-bg-layer" ><div class="row-bg viewport-desktop"  style=""></div></div></div><div class="row_col_wrap_12 col span_12 dark center">
