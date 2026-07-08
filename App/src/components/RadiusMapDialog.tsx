@@ -263,7 +263,6 @@ return () => window.clearTimeout(t)
   // ── Render facility markers (split inner / outer) ──────────────────────
   useEffect(() => {
     const map = mapInstanceRef.current
-
     if (!map || !window.google?.maps) return
 
     facilityMarkersRef.current.forEach(m => m.setMap(null))
@@ -279,41 +278,65 @@ return () => window.clearTimeout(t)
     const infoWindow = facilityInfoRef.current
 
     facilities.forEach((f) => {
-      const isOuter = f.distance_miles > radiusMiles
-      const scale = Math.min(8, Math.max(3, Math.log10(f.lead_count + 1) * 2.5 + 2))
+      const isOuter     = f.distance_miles > radiusMiles
+      // Purple for inside-radius, cyan for beyond radius
+      const pinFill     = isOuter ? '#0891b2' : '#7c3aed'
+      const pinStroke   = isOuter ? '#164e63' : '#4c1d95'
+      // Scale pin size logarithmically with lead count (min 2.2, max 4.0)
+      const pinScale    = Math.min(4.0, Math.max(2.2, 1.6 + Math.log10(f.lead_count + 1) * 0.7))
 
       const addrLine = [f.facility_address, f.facility_city, f.facility_state]
-        .filter(Boolean)
-        .join(', ')
+        .filter(Boolean).join(', ')
 
       const ringLabel = isOuter
-        ? `<span style="color:#0e7490;font-weight:700;">+${(f.distance_miles - radiusMiles).toFixed(1)} mi beyond</span>`
+        ? `<span style="color:#0e7490;font-weight:700;">+${(f.distance_miles - radiusMiles).toFixed(1)} mi beyond radius</span>`
         : ''
 
       const tooltipHtml = `
-        <div style="font-family: sans-serif; padding: 4px 0; max-width: 240px;">
-          <strong style="font-size: 13px;">${f.facility_name ?? 'Unknown facility'}</strong><br/>
-          <span style="color: #666; font-size: 12px;">${addrLine || '&nbsp;'}</span><br/>
-          <span style="color: ${isOuter ? '#0e7490' : '#b45309'}; font-size: 13px; font-weight: 700;">
-            ${f.lead_count.toLocaleString()} lead${f.lead_count === 1 ? '' : 's'} · ${f.distance_miles} mi
-          </span>
-          ${ringLabel ? `<br/>${ringLabel}` : ''}
+        <div style="font-family:system-ui,sans-serif;padding:10px 12px;max-width:270px;line-height:1.5;">
+          <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;">
+            <span style="font-size:22px;line-height:1;flex-shrink:0;">🏣</span>
+            <strong style="font-size:13.5px;color:#1e293b;line-height:1.3;">${f.facility_name ?? 'Unknown facility'}</strong>
+          </div>
+          ${addrLine ? `<div style="font-size:11.5px;color:#64748b;margin-bottom:8px;">${addrLine}</div>` : ''}
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="background:${pinFill};color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;">
+              ${f.lead_count.toLocaleString()} lead${f.lead_count === 1 ? '' : 's'}
+            </span>
+            <span style="color:#94a3b8;font-size:11.5px;">${f.distance_miles.toFixed(1)} mi from center</span>
+          </div>
+          ${ringLabel ? `<div style="margin-top:6px;font-size:11px;">${ringLabel}</div>` : ''}
         </div>
       `
+
+      // Lead count label — abbreviate if >= 100
+      const labelText = f.lead_count >= 1000
+        ? `${(f.lead_count / 1000).toFixed(1)}k`
+        : String(f.lead_count)
 
       const marker = new google.maps.Marker({
         map,
         position: { lat: f.lat, lng: f.lon },
-        title: `${f.facility_name ?? ''}  —  ${f.lead_count.toLocaleString()} leads`,
+        title: `${f.facility_name ?? 'Facility'} — ${f.lead_count.toLocaleString()} leads`,
         icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale,
-          fillColor: isOuter ? '#06b6d4' : '#f59e0b',
-          fillOpacity: isOuter ? 0.75 : 0.9,
-          strokeColor: isOuter ? '#0e7490' : '#fff',
+          // Standard Google teardrop / drop-pin path (viewBox 0 0 24 24)
+          path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+          fillColor:   pinFill,
+          fillOpacity: 1,
+          strokeColor: pinStroke,
           strokeWeight: 1.5,
+          scale: pinScale,
+          anchor:      new google.maps.Point(12, 22),
+          labelOrigin: new google.maps.Point(12, 8.5),
         },
-        zIndex: isOuter ? 40 : 50,
+        label: {
+          text:       labelText,
+          color:      '#fff',
+          fontSize:   labelText.length > 3 ? '7px' : '8px',
+          fontWeight: '800',
+          fontFamily: 'system-ui,sans-serif',
+        },
+        zIndex: isOuter ? 40 : 60,
       })
 
       marker.addListener('mouseover', () => {
