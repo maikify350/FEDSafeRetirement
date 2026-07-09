@@ -10,7 +10,6 @@ reference/
 # Large binary/archive files
 *.zip
 *.zip.dat
-*.mjs
 
 # Python scripts
 *.py
@@ -27,6 +26,6 @@ web/node_modules/
 App/.next/
 web/.next/
 
-# Local env files (Vercel uses its own env)
+# Local env files
 App/.env.local
 web/.env.local
