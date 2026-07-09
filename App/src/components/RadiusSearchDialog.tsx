@@ -124,6 +124,7 @@ export default function RadiusSearchDialog({ open, onClose, onResults, onSaveToC
 
   // ── Common state ─────────────────────────────────────────────────────
   const [loading, setLoading] = useState(false)
+  const [exportLoading, setExportLoading] = useState(false)
   const [error, setError] = useState('')
   const [mergeFilters, setMergeFilters] = useState(true)
   const [appliedFilterDescs, setAppliedFilterDescs] = useState<{ key: string; label: string; icon: string }[]>([])
@@ -385,6 +386,38 @@ return allData
       setLoading(false)
     }
   }, [resultData, address, zones, searchMode, onSaveToCollection, onClose, fetchAllRows])
+
+  // ── CSV Export — uses server-side export route, no client batching ──
+  const handleExportCsv = useCallback(() => {
+    if (!resultData?.center) return
+
+    setExportLoading(true)
+
+    const storedParams = new URLSearchParams(resultData._searchParams ?? '')
+    const exportParams = new URLSearchParams()
+
+    exportParams.set('lat',    String(resultData.center.lat))
+    exportParams.set('lon',    String(resultData.center.lon))
+    exportParams.set('radius', String(resultData.radius ?? radius))
+    exportParams.set('format', 'csv')
+
+    // Forward any active filter params from the original search
+    for (const key of ['search', 'state', 'gender', 'favorite', 'filters']) {
+      const val = storedParams.get(key)
+      if (val && val !== '[]' && val !== '') exportParams.set(key, val)
+    }
+
+    // Trigger browser download via hidden anchor
+    const link = document.createElement('a')
+    link.href = `/api/leads/radius/export?${exportParams}`
+    link.download = `leads_${resultData.radius ?? radius}mi_${new Date().toISOString().slice(0, 10)}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    // Clear loading after short delay (file download begins)
+    setTimeout(() => setExportLoading(false), 2000)
+  }, [resultData, radius])
 
   const handleClose = () => { if (!loading) { setError(''); setResultData(null); onClose() } }
   const handleNewSearch = () => { setResultData(null); setError('') }
@@ -816,18 +849,31 @@ return allData
             </Button>
           </>
         ) : (
-          <>
+        <>
             <Button onClick={handleNewSearch} disabled={loading} variant='outlined' color='secondary'>New Search</Button>
             {onSaveToCollection && (
               <Button onClick={handleSaveToCollection} disabled={loading} variant='outlined' color='primary' startIcon={loading ? <CircularProgress size={14} color='inherit' /> : <i className='tabler-bookmark-plus' />} sx={{ fontWeight: 600 }}>
                 Save to Collection
               </Button>
             )}
+            {/* Export CSV — available for seminar (include) mode only */}
+            {searchMode === 'include' && resultData?.center && (
+              <Button
+                onClick={handleExportCsv}
+                disabled={exportLoading || loading}
+                variant='outlined'
+                color='success'
+                startIcon={exportLoading ? <CircularProgress size={14} color='inherit' /> : <i className='tabler-download' />}
+                sx={{ fontWeight: 600 }}
+              >
+                {exportLoading ? 'Preparing...' : 'Export CSV'}
+              </Button>
+            )}
             <Button
               onClick={handleApplyResults}
               disabled={loading}
               variant='contained'
-              startIcon={loading ? <CircularProgress size={16} color='inherit' /> : <i className='tabler-filter' />}
+              startIcon={loading ? <CircularProgress size={16} color='inherit' /> : <i className={searchMode === 'include' ? 'tabler-filter' : 'tabler-circle-off'} />}
               sx={{
                 background: searchMode === 'include'
                   ? 'linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)'
@@ -838,6 +884,7 @@ return allData
               {loading ? 'Loading all...' : `View ${resultData.total.toLocaleString()} Results`}
             </Button>
           </>
+
         )}
       </DialogActions>
 
