@@ -93,9 +93,8 @@ return NextResponse.json({ error: 'Geocoding failed' }, { status: 500 })
     }
   }
 
-  // Supabase / PostgREST caps RPC responses at 1,000 rows by default
-  // regardless of p_limit, so fetch in chunks until the cap is reached
-  // or the RPC reports fewer rows than asked for.
+  // Use the optimised export RPC — single query, no COUNT overhead, benefits from
+  // the composite (lat, lon) partial index added in migration 029.
   const supabase = await createClient()
 
   const search        = searchParams.get('search') ?? ''
@@ -112,48 +111,27 @@ return NextResponse.json({ error: 'Geocoding failed' }, { status: 500 })
     console.error('[API /leads/radius/export] Failed to parse filtersRaw:', e)
   }
 
-  const PAGE = 1000
-  const leads: Lead[] = []
-  let offset = 0
+  const { data, error } = await supabase.rpc('export_leads_by_radius', {
+    p_lat:          lat,
+    p_lon:          lon,
+    p_radius_miles: radiusMi,
+    p_max_rows:     max,
+    p_search:       search.trim(),
+    p_state:        stateParam,
+    p_gender:       genderParam,
+    p_favorite:     favoriteParam === 'true' ? true : null,
+    p_filters:      parsedFilters,
+  })
 
-  while (offset < max) {
-    const limit = Math.min(PAGE, max - offset)
-
-    const { data, error } = await supabase.rpc('search_leads_by_radius', {
-      p_lat: lat,
-      p_lon: lon,
-      p_radius_miles: radiusMi,
-      p_limit: limit,
-      p_offset: offset,
-      p_search: search.trim(),
-      p_state: stateParam,
-      p_gender: genderParam,
-      p_favorite: favoriteParam === 'true' ? true : null,
-      p_filters: parsedFilters,
-    })
-
-    if (error) {
-      console.error('[API /leads/radius/export] RPC error:', error.message)
-      
-return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    const batch = (data ?? []).filter((r: any) => r.lead_data !== null)
-
-    if (batch.length === 0) break
-
-    for (const r of batch) {
-      leads.push({
-        ...r.lead_data,
-        distance_miles: parseFloat(r.distance_miles?.toFixed(1) ?? '0'),
-      })
-    }
-
-
-    // RPC returned fewer than asked for → no more rows
-    if (batch.length < limit) break
-    offset += limit
+  if (error) {
+    console.error('[API /leads/radius/export] RPC error:', error.message)
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
+
+  const leads: Lead[] = (data ?? []).map((r: any) => ({
+    ...r.lead_data,
+    distance_miles: parseFloat(Number(r.distance_miles).toFixed(1)),
+  }))
 
   if (format === 'csv') {
     const csv = leadsToCsv(leads)
