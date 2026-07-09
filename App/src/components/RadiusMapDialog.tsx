@@ -120,9 +120,10 @@ export default function RadiusMapDialog({
   const [facilitiesLoading, setFacilitiesLoading] = useState(false)
   const [showFacilities, setShowFacilities] = useState(true)
 
-  // Extra "look-beyond" radius (mi). 0 = disabled.
-  const [extendedRadius, setExtendedRadius] = useState(0)
-  const [extendedInput, setExtendedInput] = useState('0')
+  // Extra "look-beyond" radius (mi). Default 25 mi so the outer ring is on by default.
+  const [extendedRadius, setExtendedRadius] = useState(25)
+  const [extendedInput, setExtendedInput] = useState('25')
+  const [lookBeyondOn, setLookBeyondOn] = useState(true)
 
   const [maximized, setMaximized] = useState(false)
 
@@ -197,8 +198,9 @@ return
     if (open) return
     setFacilities(null)
     setMapLoaded(false)
-    setExtendedRadius(0)
-    setExtendedInput('0')
+    setExtendedRadius(25)
+    setExtendedInput('25')
+    setLookBeyondOn(true)
     setMaximized(false)
     facilityMarkersRef.current.forEach(m => m.setMap(null))
     facilityMarkersRef.current = []
@@ -248,11 +250,12 @@ return () => window.clearTimeout(t)
         map,
         center: { lat: center.lat, lng: center.lon },
         radius: milesToMeters(totalRadius),
-        fillColor: '#06b6d4',
-        fillOpacity: 0.06,
-        strokeColor: '#0891b2',
-        strokeOpacity: 0.55,
-        strokeWeight: 2,
+        fillColor: '#dc2626',
+        fillOpacity: 0.05,
+        strokeColor: '#dc2626',
+        strokeOpacity: 0.5,
+        strokeWeight: 1.5,
+        strokePattern: [{ icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, scale: 4 }, offset: '0', repeat: '20px' }],
       })
     }
 
@@ -279,9 +282,9 @@ return () => window.clearTimeout(t)
 
     facilities.forEach((f) => {
       const isOuter     = f.distance_miles > radiusMiles
-      // Purple for inside-radius, cyan for beyond radius
-      const pinFill     = isOuter ? '#0891b2' : '#7c3aed'
-      const pinStroke   = isOuter ? '#164e63' : '#4c1d95'
+      // Purple for inside-radius, red for beyond radius
+      const pinFill     = isOuter ? '#dc2626' : '#7c3aed'
+      const pinStroke   = isOuter ? '#7f1d1d' : '#4c1d95'
       // Scale pin size logarithmically with lead count (min 2.2, max 4.0)
       const pinScale    = Math.min(4.0, Math.max(2.2, 1.6 + Math.log10(f.lead_count + 1) * 0.7))
 
@@ -289,7 +292,7 @@ return () => window.clearTimeout(t)
         .filter(Boolean).join(', ')
 
       const ringLabel = isOuter
-        ? `<span style="color:#0e7490;font-weight:700;">+${(f.distance_miles - radiusMiles).toFixed(1)} mi beyond radius</span>`
+        ? `<span style="color:#dc2626;font-weight:700;">🔴 +${(f.distance_miles - radiusMiles).toFixed(1)} mi beyond search radius</span>`
         : ''
 
       const tooltipHtml = `
@@ -303,7 +306,7 @@ return () => window.clearTimeout(t)
             <span style="background:${pinFill};color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;">
               ${f.lead_count.toLocaleString()} lead${f.lead_count === 1 ? '' : 's'}
             </span>
-            <span style="color:#94a3b8;font-size:11.5px;">${f.distance_miles.toFixed(1)} mi from center</span>
+            <span style="color:#94a3b8;font-size:11.5px;">${f.distance_miles.toFixed(1)} mi away</span>
           </div>
           ${ringLabel ? `<div style="margin-top:6px;font-size:11px;">${ringLabel}</div>` : ''}
         </div>
@@ -471,10 +474,23 @@ return () => window.clearTimeout(t)
   const facilityCount   = facilities?.length ?? 0
 
   const commitExtended = () => {
-    const n = Math.max(0, Math.min(200, parseInt(extendedInput) || 0))
+    const n = Math.max(1, Math.min(200, parseInt(extendedInput) || 25))
 
     setExtendedInput(String(n))
     setExtendedRadius(n)
+  }
+
+  const toggleLookBeyond = () => {
+    if (lookBeyondOn) {
+      setLookBeyondOn(false)
+      setExtendedRadius(0)
+      setExtendedInput('25')
+    } else {
+      setLookBeyondOn(true)
+      const n = Math.max(1, Math.min(200, parseInt(extendedInput) || 25))
+      setExtendedInput(String(n))
+      setExtendedRadius(n)
+    }
   }
 
   return (
@@ -553,64 +569,91 @@ return () => window.clearTimeout(t)
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-          {/* Extended (look-beyond) radius input */}
-          <Tooltip title='Show facilities up to this many miles BEYOND the search radius. Helps decide whether to widen.'>
+          {/* Look-beyond toggle button + distance input */}
+          <Tooltip title={lookBeyondOn ? 'Click to hide outside-radius facilities (red dots)' : 'Click to show facilities beyond the search radius as red dots'}>
             <Box
+              onClick={toggleLookBeyond}
               sx={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: 0.5,
-                bgcolor: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.25)',
-                borderRadius: 1,
-                px: 0.75,
-                py: 0.25,
+                bgcolor: lookBeyondOn ? 'rgba(220,38,38,0.85)' : 'rgba(255,255,255,0.12)',
+                border: `1px solid ${lookBeyondOn ? 'rgba(239,68,68,0.6)' : 'rgba(255,255,255,0.25)'}`,
+                borderRadius: 1.5,
+                px: 1,
+                py: 0.4,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                '&:hover': {
+                  bgcolor: lookBeyondOn ? 'rgba(220,38,38,1)' : 'rgba(255,255,255,0.2)',
+                },
               }}
             >
-              <Typography variant='caption' sx={{ color: '#fff', fontWeight: 700, opacity: 0.85 }}>
-                + look beyond
-              </Typography>
-              <input
-                type='number'
-                value={extendedInput}
-                min={0}
-                max={200}
-                step={5}
-                onChange={(e) => setExtendedInput(e.target.value)}
-                onBlur={commitExtended}
-                onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
-                style={{
-                  width: 52,
-                  padding: '2px 4px',
-                  borderRadius: 4,
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  background: 'rgba(255,255,255,0.15)',
-                  color: '#fff',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  textAlign: 'center',
-                  outline: 'none',
-                }}
-              />
-              <Typography variant='caption' sx={{ color: '#fff', fontWeight: 700, opacity: 0.85 }}>
-                mi
+              <span style={{ fontSize: 13 }}>🔴</span>
+              <Typography variant='caption' sx={{ color: '#fff', fontWeight: 700, fontSize: 11 }}>
+                {lookBeyondOn ? `+${extendedRadius}mi beyond` : 'Show beyond'}
               </Typography>
             </Box>
           </Tooltip>
 
-          {/* Outer-ring summary */}
-          {extendedRadius > 0 && outerFacilities.length > 0 && (
+          {/* Distance input — only visible when look-beyond is ON */}
+          {lookBeyondOn && (
+            <Tooltip title='Adjust how many miles beyond the search radius to show (red dots)'>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.4,
+                  bgcolor: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.25)',
+                  borderRadius: 1,
+                  px: 0.75,
+                  py: 0.25,
+                }}
+              >
+                <input
+                  type='number'
+                  value={extendedInput}
+                  min={1}
+                  max={200}
+                  step={5}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => setExtendedInput(e.target.value)}
+                  onBlur={commitExtended}
+                  onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+                  style={{
+                    width: 44,
+                    padding: '2px 4px',
+                    borderRadius: 4,
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    background: 'rgba(255,255,255,0.15)',
+                    color: '#fff',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    textAlign: 'center',
+                    outline: 'none',
+                  }}
+                />
+                <Typography variant='caption' sx={{ color: '#fff', fontWeight: 700, opacity: 0.85, fontSize: 11 }}>
+                  mi
+                </Typography>
+              </Box>
+            </Tooltip>
+          )}
+
+          {/* Outer-ring summary chip */}
+          {lookBeyondOn && extendedRadius > 0 && outerFacilities.length > 0 && (
             <Tooltip
-              title={`${outerFacilities.length.toLocaleString()} facilities between ${radiusMiles} mi and ${totalRadius} mi totaling ${outerLeadSum.toLocaleString()} leads. Widen the baseline radius to capture them.`}
+              title={`${outerFacilities.length.toLocaleString()} facilities ${extendedRadius} mi beyond your ${radiusMiles}-mi radius — ${outerLeadSum.toLocaleString()} total leads. Widen your radius to capture them.`}
             >
               <Chip
-                label={`+${outerLeadSum.toLocaleString()} in +${extendedRadius}mi`}
+                label={`+${outerLeadSum.toLocaleString()} leads in +${extendedRadius}mi`}
                 size='small'
                 sx={{
                   height: 22,
                   fontSize: 11,
                   fontWeight: 700,
-                  bgcolor: 'rgba(6,182,212,0.95)',
+                  bgcolor: 'rgba(220,38,38,0.9)',
                   color: '#fff',
                   border: '1px solid rgba(255,255,255,0.25)',
                 }}
