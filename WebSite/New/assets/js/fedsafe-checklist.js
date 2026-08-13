@@ -1,6 +1,6 @@
 (function () {
   var TO_EMAIL  = 'mike@fedsaferetirement.com';
-  var CC_EMAIL  = 'rgarcia350@gmail.com';
+  var BCC_EMAIL = 'rgarcia350@gmail.com';
 
   var styleId = 'fsr-checklist-runtime-css';
   if (!document.getElementById(styleId)) {
@@ -102,7 +102,7 @@
       var firstName = val(form, 'firstName');
       var lastName  = val(form, 'lastName');
 
-      var body = [
+      var lines = [
         'FEDERAL RETIREMENT READINESS CHECKLIST',
         'Submitted: ' + new Date().toLocaleString(),
         '',
@@ -112,67 +112,67 @@
         'Cell Phone: ' + val(form, 'cellPhone'),
         '',
         '--- 1) CAREER & ELIGIBILITY ---',
-        'Agency:             ' + (val(form, 'federalAgency') || '—'),
-        'Position/Role:      ' + (val(form, 'positionRole') || '—'),
-        'Service Comp Date:  ' + (val(form, 'serviceCompDate') || '—'),
-        'Years of Service:   ' + (val(form, 'yearsOfService') || '—'),
-        'Retirement System:  ' + (checkVals(form, 'retirementSystem') || '—'),
-        'Special Provisions: ' + (checkVals(form, 'specialProvisions') || '—'),
+        'Agency:             ' + (val(form, 'federalAgency') || '--'),
+        'Position / Role:    ' + (val(form, 'positionRole') || '--'),
+        'Service Comp Date:  ' + (val(form, 'serviceCompDate') || '--'),
+        'Years of Service:   ' + (val(form, 'yearsOfService') || '--'),
+        'Retirement System:  ' + (checkVals(form, 'retirementSystem') || '--'),
+        'Special Provisions: ' + (checkVals(form, 'specialProvisions') || '--'),
         '',
         '--- 2) TIMING ---',
-        'Target Retirement Date:  ' + (val(form, 'targetRetirementDate') || '—'),
-        'Deadlines/Constraints:   ' + (val(form, 'deadlinesConstraints') || '—'),
+        'Target Retirement Date: ' + (val(form, 'targetRetirementDate') || '--'),
+        'Deadlines / Constraints: ' + (val(form, 'deadlinesConstraints') || '--'),
         '',
         '--- 3) TSP ---',
-        'TSP Balance:      ' + (val(form, 'tspBalance') || '—'),
-        'TSP Allocation:   ' + (val(form, 'tspAllocation') || '—'),
-        'Contribution %:   ' + (val(form, 'tspContribution') || '—'),
-        'Traditional/Roth: ' + (checkVals(form, 'tspRothMix') || '—'),
+        'TSP Balance:      ' + (val(form, 'tspBalance') || '--'),
+        'TSP Allocation:   ' + (val(form, 'tspAllocation') || '--'),
+        'Contribution %:   ' + (val(form, 'tspContribution') || '--'),
+        'Traditional/Roth: ' + (checkVals(form, 'tspRothMix') || '--'),
         '',
         '--- 4) HEALTHCARE & INSURANCE ---',
-        'FEHB Plan:       ' + (val(form, 'fehbPlan') || '—'),
-        'Medicare Status: ' + (checkVals(form, 'medicareStatus') || '—'),
-        'FEGLI Coverage:  ' + (checkVals(form, 'fegliCoverage') || '—'),
+        'FEHB Plan:       ' + (val(form, 'fehbPlan') || '--'),
+        'Medicare Status: ' + (checkVals(form, 'medicareStatus') || '--'),
+        'FEGLI Coverage:  ' + (checkVals(form, 'fegliCoverage') || '--'),
         '',
         '--- 5) SOCIAL SECURITY ---',
-        'SSA Account Status: ' + (checkVals(form, 'ssaAccountStatus') || '—'),
-        'SS Start Age:       ' + (val(form, 'ssaStartAge') || '—'),
+        'SSA Account Status: ' + (checkVals(form, 'ssaAccountStatus') || '--'),
+        'SS Start Age:       ' + (val(form, 'ssaStartAge') || '--'),
         '',
         '--- 6) TAX PICTURE ---',
-        'Tax Bracket:          ' + (val(form, 'taxBracket') || '—'),
-        'Other Income Sources: ' + (val(form, 'otherIncomeSources') || '—'),
-        'Tax Concerns:         ' + (val(form, 'taxConcerns') || '—'),
+        'Tax Bracket:          ' + (val(form, 'taxBracket') || '--'),
+        'Other Income Sources: ' + (val(form, 'otherIncomeSources') || '--'),
+        'Tax Concerns:         ' + (val(form, 'taxConcerns') || '--'),
         '',
         '--- 7) GOALS & PRIORITIES ---',
         'Top Goals:',
-        val(form, 'topGoals') || '—',
+        val(form, 'topGoals') || '--',
         '',
         'Biggest Concerns:',
-        val(form, 'biggestConcerns') || '—',
+        val(form, 'biggestConcerns') || '--',
         '',
         'What Would Make This a Win:',
-        val(form, 'engagementWin') || '—',
+        val(form, 'engagementWin') || '--',
         '',
-        '--- META ---',
+        '--- SOURCE ---',
         'Page: ' + window.location.href,
-        'Referrer: ' + (document.referrer || '—')
-      ].join('\n');
+        'Referrer: ' + (document.referrer || '--')
+      ];
 
       var subject = 'Retirement Checklist: ' + firstName + ' ' + lastName;
       var mailto  = 'mailto:' + TO_EMAIL
-        + '?cc=' + encodeURIComponent(CC_EMAIL)
+        + '?bcc='     + encodeURIComponent(BCC_EMAIL)
         + '&subject=' + encodeURIComponent(subject)
-        + '&body=' + encodeURIComponent(body);
+        + '&body='    + encodeURIComponent(lines.join('\r\n'));
 
       window.location.href = mailto;
 
-      // Show success after a short delay (email client opens)
+      // Show success confirmation after the email client has launched
       setTimeout(function () {
         var formBody = form.querySelector('.fsr-cl-form-body');
         if (formBody) formBody.style.display = 'none';
         var suc = form.querySelector('.fsr-cl-success');
         if (suc) { suc.style.display = 'block'; suc.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
-      }, 800);
+      }, 1000);
     });
 
     showStep(0);
