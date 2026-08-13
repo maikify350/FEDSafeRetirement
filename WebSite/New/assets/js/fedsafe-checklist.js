@@ -1,6 +1,5 @@
 (function () {
-  var TO_EMAIL  = 'mike@fedsaferetirement.com';
-  var BCC_EMAIL = 'rgarcia350@gmail.com';
+  var endpoint = 'https://fedsafe-retirement.vercel.app/api/public/website-lead';
 
   var styleId = 'fsr-checklist-runtime-css';
   if (!document.getElementById(styleId)) {
@@ -92,89 +91,70 @@
       btn.addEventListener('click', function () { current--; showStep(current); });
     });
 
-    form.addEventListener('submit', function (e) {
+    form.addEventListener('submit', async function (e) {
       e.preventDefault();
       if (!validateStep(current)) return;
-
-      // Honeypot — bail silently if bot filled hidden field
-      if (val(form, 'website')) return;
-
-      var firstName = val(form, 'firstName');
-      var lastName  = val(form, 'lastName');
-
-      var lines = [
-        'FEDERAL RETIREMENT READINESS CHECKLIST',
-        'Submitted: ' + new Date().toLocaleString(),
-        '',
-        '--- CONTACT ---',
-        'Name:       ' + firstName + ' ' + lastName,
-        'Email:      ' + val(form, 'personalEmail'),
-        'Cell Phone: ' + val(form, 'cellPhone'),
-        '',
-        '--- 1) CAREER & ELIGIBILITY ---',
-        'Agency:             ' + (val(form, 'federalAgency') || '--'),
-        'Position / Role:    ' + (val(form, 'positionRole') || '--'),
-        'Service Comp Date:  ' + (val(form, 'serviceCompDate') || '--'),
-        'Years of Service:   ' + (val(form, 'yearsOfService') || '--'),
-        'Retirement System:  ' + (checkVals(form, 'retirementSystem') || '--'),
-        'Special Provisions: ' + (checkVals(form, 'specialProvisions') || '--'),
-        '',
-        '--- 2) TIMING ---',
-        'Target Retirement Date: ' + (val(form, 'targetRetirementDate') || '--'),
-        'Deadlines / Constraints: ' + (val(form, 'deadlinesConstraints') || '--'),
-        '',
-        '--- 3) TSP ---',
-        'TSP Balance:      ' + (val(form, 'tspBalance') || '--'),
-        'TSP Allocation:   ' + (val(form, 'tspAllocation') || '--'),
-        'Contribution %:   ' + (val(form, 'tspContribution') || '--'),
-        'Traditional/Roth: ' + (checkVals(form, 'tspRothMix') || '--'),
-        '',
-        '--- 4) HEALTHCARE & INSURANCE ---',
-        'FEHB Plan:       ' + (val(form, 'fehbPlan') || '--'),
-        'Medicare Status: ' + (checkVals(form, 'medicareStatus') || '--'),
-        'FEGLI Coverage:  ' + (checkVals(form, 'fegliCoverage') || '--'),
-        '',
-        '--- 5) SOCIAL SECURITY ---',
-        'SSA Account Status: ' + (checkVals(form, 'ssaAccountStatus') || '--'),
-        'SS Start Age:       ' + (val(form, 'ssaStartAge') || '--'),
-        '',
-        '--- 6) TAX PICTURE ---',
-        'Tax Bracket:          ' + (val(form, 'taxBracket') || '--'),
-        'Other Income Sources: ' + (val(form, 'otherIncomeSources') || '--'),
-        'Tax Concerns:         ' + (val(form, 'taxConcerns') || '--'),
-        '',
-        '--- 7) GOALS & PRIORITIES ---',
-        'Top Goals:',
-        val(form, 'topGoals') || '--',
-        '',
-        'Biggest Concerns:',
-        val(form, 'biggestConcerns') || '--',
-        '',
-        'What Would Make This a Win:',
-        val(form, 'engagementWin') || '--',
-        '',
-        '--- SOURCE ---',
-        'Page: ' + window.location.href,
-        'Referrer: ' + (document.referrer || '--')
-      ];
-
-      var subject = 'Retirement Checklist: ' + firstName + ' ' + lastName;
-      var mailto  = 'mailto:' + TO_EMAIL
-        + '?bcc='     + encodeURIComponent(BCC_EMAIL)
-        + '&subject=' + encodeURIComponent(subject)
-        + '&body='    + encodeURIComponent(lines.join('\r\n'));
-
-      window.location.href = mailto;
-
-      // Show success confirmation after the email client has launched
-      setTimeout(function () {
-        var formBody = form.querySelector('.fsr-cl-form-body');
-        if (formBody) formBody.style.display = 'none';
-        var suc = form.querySelector('.fsr-cl-success');
-        if (suc) { suc.style.display = 'block'; suc.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
-      }, 1000);
+      var submitBtn = form.querySelector('.fsr-cl-submit-btn');
+      var origText  = submitBtn ? submitBtn.textContent : 'Submit Checklist';
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting\u2026'; }
+      try {
+        if (val(form, 'website')) {
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = origText; }
+          return;
+        }
+        var payload = {
+          formType: 'checklist',
+          firstName:            val(form, 'firstName'),
+          lastName:             val(form, 'lastName'),
+          personalEmail:        val(form, 'personalEmail'),
+          cellPhone:            val(form, 'cellPhone'),
+          federalAgency:        val(form, 'federalAgency'),
+          positionRole:         val(form, 'positionRole'),
+          serviceCompDate:      val(form, 'serviceCompDate'),
+          yearsOfService:       val(form, 'yearsOfService'),
+          retirementSystem:     checkVals(form, 'retirementSystem'),
+          specialProvisions:    checkVals(form, 'specialProvisions'),
+          targetRetirementDate: val(form, 'targetRetirementDate'),
+          deadlinesConstraints: val(form, 'deadlinesConstraints'),
+          tspBalance:           val(form, 'tspBalance'),
+          tspAllocation:        val(form, 'tspAllocation'),
+          tspContribution:      val(form, 'tspContribution'),
+          tspRothMix:           checkVals(form, 'tspRothMix'),
+          fehbPlan:             val(form, 'fehbPlan'),
+          medicareStatus:       checkVals(form, 'medicareStatus'),
+          fegliCoverage:        checkVals(form, 'fegliCoverage'),
+          ssaAccountStatus:     checkVals(form, 'ssaAccountStatus'),
+          ssaStartAge:          val(form, 'ssaStartAge'),
+          taxBracket:           val(form, 'taxBracket'),
+          otherIncomeSources:   val(form, 'otherIncomeSources'),
+          taxConcerns:          val(form, 'taxConcerns'),
+          topGoals:             val(form, 'topGoals'),
+          biggestConcerns:      val(form, 'biggestConcerns'),
+          engagementWin:        val(form, 'engagementWin'),
+          smsConsent:           true,
+          sourcePage:           window.location.href,
+          referrer:             document.referrer,
+          turnstileToken:       '',
+          website:              val(form, 'website')
+        };
+        var resp   = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        var result = await resp.json().catch(function () { return {}; });
+        if (resp.ok && result.ok) {
+          var body = form.querySelector('.fsr-cl-form-body');
+          if (body) body.style.display = 'none';
+          var suc = form.querySelector('.fsr-cl-success');
+          if (suc) { suc.style.display = 'block'; suc.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+        } else {
+          showErr(form, result.error || 'Something went wrong. Please try again.');
+        }
+      } catch (err) {
+        showErr(form, err.message || 'Unable to submit. Please try again.');
+      } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = origText; }
+      }
     });
 
     showStep(0);
   });
 })();
+
