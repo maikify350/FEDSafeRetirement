@@ -1,0 +1,362 @@
+﻿[
+    {
+        "crmField":  "fullName",
+        "pdfField":  "Client Name"
+    },
+    {
+        "crmField":  "calendar[].date where items[].title = BP1",
+        "pdfField":  "Appt Date"
+    },
+    {
+        "crmField":  "homeAddress.state",
+        "pdfField":  "Client State"
+    },
+    {
+        "crmField":  "editedBy",
+        "pdfField":  "FRC Name"
+    },
+    {
+        "crmField":  "cust_age_033220843, birthday",
+        "pdfField":  "Client Age"
+    },
+    {
+        "crmField":  "cust_spouseage_074349200, spousedob",
+        "pdfField":  "Spouse Age"
+    },
+    {
+        "crmField":  "servicecomputationdate",
+        "pdfField":  "Hire Date"
+    },
+    {
+        "crmField":  "birthday, retiredate",
+        "pdfField":  "Retire Age"
+    },
+    {
+        "crmField":  "sickleavehours",
+        "pdfField":  "Sick Leave"
+    },
+    {
+        "crmField":  "salaryamount",
+        "pdfField":  "Current Salary"
+    },
+    {
+        "crmField":  "feglicodeactive, fegliperpayperiod",
+        "pdfField":  "FEGLI Code"
+    },
+    {
+        "crmField":  "optiona_retire, optionb_retire, optionc_retire, feglicodeactive",
+        "pdfField":  "FEGLI Code Retire"
+    },
+    {
+        "crmField":  "feglireduction",
+        "pdfField":  "FEGLI 75"
+    },
+    {
+        "crmField":  "feglireduction",
+        "pdfField":  "FEGLI 50"
+    },
+    {
+        "crmField":  "feglireduction",
+        "pdfField":  "FEGLI 0"
+    },
+    {
+        "crmField":  "surviborbenefits, maritalstatus",
+        "pdfField":  "Survivor 50"
+    },
+    {
+        "crmField":  "surviborbenefits",
+        "pdfField":  "Survivor 25"
+    },
+    {
+        "crmField":  "surviborbenefits",
+        "pdfField":  "Survivor 0"
+    },
+    {
+        "crmField":  "servicecomputationdate, retiredate, yrsofmilitaryservice, sickleavehours",
+        "pdfField":  "Years of Service"
+    },
+    {
+        "crmField":  "birthday, retiredate, servicecomputationdate, yrsofmilitaryservice, sickleavehours",
+        "pdfField":  "Multiplier"
+    },
+    {
+        "crmField":  "high3avgsalary, salaryamount",
+        "pdfField":  "High 3 Salary"
+    },
+    {
+        "crmField":  "high3avgsalary, salaryamount, servicecomputationdate, retiredate, yrsofmilitaryservice, sickleavehours, birthday",
+        "pdfField":  "Gross FERS"
+    },
+    {
+        "crmField":  "surviborbenefits, maritalstatus",
+        "pdfField":  "less Survivor Benefit"
+    },
+    {
+        "crmField":  "optiona_retire, optionb_retire, optionc_retire, salaryamount, birthday, retiredate, feglireduction",
+        "pdfField":  "less FEGLI"
+    },
+    {
+        "crmField":  "maritalstatus",
+        "pdfField":  "Fed Tax"
+    },
+    {
+        "crmField":  "homeAddress.state",
+        "pdfField":  "State Tax"
+    },
+    {
+        "crmField":  "servicecomputationdate, retiredate, yrsofmilitaryservice, sickleavehours",
+        "pdfField":  "Bridge Years of Service"
+    },
+    {
+        "crmField":  "age62socialsecurityestimate, birthday, retiredate",
+        "pdfField":  "Age 62 Social Security"
+    },
+    {
+        "crmField":  "birthday, retiredate, servicecomputationdate, yrsofmilitaryservice, sickleavehours, age62socialsecurityestimate",
+        "pdfField":  "Gross Bridge"
+    },
+    {
+        "crmField":  "maritalstatus",
+        "pdfField":  "Bridge Fed Tax"
+    },
+    {
+        "crmField":  "homeAddress.state",
+        "pdfField":  "Bridge State Tax"
+    },
+    {
+        "crmField":  "birthday, retiredate, servicecomputationdate, yrsofmilitaryservice, sickleavehours, age62socialsecurityestimate, maritalstatus, homeAddress.state",
+        "pdfField":  "Net Bridge"
+    },
+    {
+        "crmField":  "socialsecurityincome",
+        "pdfField":  "Gross Social Security"
+    },
+    {
+        "crmField":  "maritalstatus, socialsecurityincome",
+        "pdfField":  "Social Security 85 Fed"
+    },
+    {
+        "crmField":  "maritalstatus, socialsecurityincome",
+        "pdfField":  "Social Security 50 Fed"
+    },
+    {
+        "crmField":  "homeAddress.state",
+        "pdfField":  "Social Security State"
+    },
+    {
+        "crmField":  "maritalstatus, socialsecurityincome",
+        "pdfField":  "Fed Tax Social Security"
+    },
+    {
+        "crmField":  "homeAddress.state, socialsecurityincome",
+        "pdfField":  "State Tax Social Security"
+    },
+    {
+        "crmField":  "high3avgsalary, salaryamount, servicecomputationdate, retiredate, yrsofmilitaryservice, sickleavehours, birthday, surviborbenefits, maritalstatus, optiona_retire, optionb_retire, optionc_retire, feglireduction, cust_fehbpermonth_023844547, dentalinsuranceperpayperiod, visioninsuranceperpayperiod, cust_ltcpermonth_062304353, homeAddress.state",
+        "pdfField":  "Projected FERS"
+    },
+    {
+        "crmField":  "birthday, retiredate, socialsecurityincome, age62socialsecurityestimate, servicecomputationdate, yrsofmilitaryservice, sickleavehours, maritalstatus, homeAddress.state",
+        "pdfField":  "Projected Social Security"
+    },
+    {
+        "crmField":  "high3avgsalary, salaryamount, servicecomputationdate, retiredate, yrsofmilitaryservice, sickleavehours, birthday, surviborbenefits, maritalstatus, optiona_retire, optionb_retire, optionc_retire, feglireduction, socialsecurityincome, age62socialsecurityestimate, currentnetincomeperpayperiod, cust_fehbpermonth_023844547, dentalinsuranceperpayperiod, visioninsuranceperpayperiod, cust_ltcpermonth_062304353, tsptraditionalbalance, tsprothbalance, tspbalanceused, tspdistributionrate, birthday, retiredate, homeAddress.state",
+        "pdfField":  "Projected Net Monthly"
+    },
+    {
+        "crmField":  "currentnetincomeperpayperiod",
+        "pdfField":  "Current Bi-Weekly Net"
+    },
+    {
+        "crmField":  "currentnetincomeperpayperiod",
+        "pdfField":  "Current Yearly Net"
+    },
+    {
+        "crmField":  "tsptraditionalbalance",
+        "pdfField":  "TSP Traditional Balance"
+    },
+    {
+        "crmField":  "tsprothbalance",
+        "pdfField":  "TSP Roth Balance"
+    },
+    {
+        "crmField":  "tsptraditionalbalance, tsprothbalance",
+        "pdfField":  "TSP Total Balance"
+    },
+    {
+        "crmField":  "tspdistributionrate, birthday, retiredate",
+        "pdfField":  "Distribution Rate"
+    },
+    {
+        "crmField":  "tsptraditionalbalance, tsprothbalance, tspbalanceused, tspdistributionrate, birthday, retiredate",
+        "pdfField":  "TSP Gross Yearly"
+    },
+    {
+        "crmField":  "tsptraditionalbalance, tsprothbalance, tspbalanceused, tspdistributionrate, birthday, retiredate",
+        "pdfField":  "TSP Gross Monthly"
+    },
+    {
+        "crmField":  "tsptraditionalbalance, tspbalanceused, tspdistributionrate, birthday, retiredate, maritalstatus",
+        "pdfField":  "Fed Tax TSP"
+    },
+    {
+        "crmField":  "tsptraditionalbalance, tspbalanceused, tspdistributionrate, birthday, retiredate, homeAddress.state",
+        "pdfField":  "State Tax TSP"
+    },
+    {
+        "crmField":  "high3avgsalary, salaryamount, servicecomputationdate, retiredate, yrsofmilitaryservice, sickleavehours, birthday, surviborbenefits, maritalstatus, optiona_retire, optionb_retire, optionc_retire, feglireduction, cust_fehbpermonth_023844547, dentalinsuranceperpayperiod, visioninsuranceperpayperiod, cust_ltcpermonth_062304353, homeAddress.state",
+        "pdfField":  "Net FERS"
+    },
+    {
+        "crmField":  "socialsecurityincome, maritalstatus, homeAddress.state",
+        "pdfField":  "Net Social Security"
+    },
+    {
+        "crmField":  "tsptraditionalbalance, tsprothbalance, tspbalanceused, tspdistributionrate, birthday, retiredate, maritalstatus, homeAddress.state",
+        "pdfField":  "Net TSP"
+    },
+    {
+        "crmField":  "high3avgsalary, salaryamount, servicecomputationdate, retiredate, yrsofmilitaryservice, sickleavehours, birthday, surviborbenefits, maritalstatus, optiona_retire, optionb_retire, optionc_retire, feglireduction, socialsecurityincome, age62socialsecurityestimate, cust_fehbpermonth_023844547, dentalinsuranceperpayperiod, visioninsuranceperpayperiod, cust_ltcpermonth_062304353, tsptraditionalbalance, tsprothbalance, tspbalanceused, tspdistributionrate, homeAddress.state",
+        "pdfField":  "Net Retirement Income"
+    },
+    {
+        "crmField":  "currentnetincomeperpayperiod",
+        "pdfField":  "Current Monthly Net"
+    },
+    {
+        "crmField":  "stocksbonds",
+        "pdfField":  "Stocks And Bonds"
+    },
+    {
+        "crmField":  "brokerageaccountsnq",
+        "pdfField":  "Brokerage Account"
+    },
+    {
+        "crmField":  "other40ksira",
+        "pdfField":  "Other 401ks and IRAs"
+    },
+    {
+        "crmField":  "homevalue",
+        "pdfField":  "Home Value"
+    },
+    {
+        "crmField":  "mortgage",
+        "pdfField":  "Mortgage"
+    },
+    {
+        "crmField":  "currentnetincomeperpayperiod, high3avgsalary, salaryamount, servicecomputationdate, retiredate, yrsofmilitaryservice, sickleavehours, birthday, surviborbenefits, maritalstatus, optiona_retire, optionb_retire, optionc_retire, feglireduction, socialsecurityincome, age62socialsecurityestimate, cust_fehbpermonth_023844547, dentalinsuranceperpayperiod, visioninsuranceperpayperiod, cust_ltcpermonth_062304353, tsptraditionalbalance, tsprothbalance, tspbalanceused, tspdistributionrate, homeAddress.state",
+        "pdfField":  "Gap Yes"
+    },
+    {
+        "crmField":  "currentnetincomeperpayperiod, high3avgsalary, salaryamount, servicecomputationdate, retiredate, yrsofmilitaryservice, sickleavehours, birthday, surviborbenefits, maritalstatus, optiona_retire, optionb_retire, optionc_retire, feglireduction, socialsecurityincome, age62socialsecurityestimate, cust_fehbpermonth_023844547, dentalinsuranceperpayperiod, visioninsuranceperpayperiod, cust_ltcpermonth_062304353, tsptraditionalbalance, tsprothbalance, tspbalanceused, tspdistributionrate, homeAddress.state",
+        "pdfField":  "Gap No"
+    },
+    {
+        "crmField":  "Always checked",
+        "pdfField":  "Ensuring"
+    },
+    {
+        "crmField":  "Always checked",
+        "pdfField":  "Protecting"
+    },
+    {
+        "crmField":  "Always checked",
+        "pdfField":  "Making"
+    },
+    {
+        "crmField":  "Always checked",
+        "pdfField":  "Creating"
+    },
+    {
+        "crmField":  "Always checked",
+        "pdfField":  "Understanding"
+    },
+    {
+        "crmField":  "Always checked",
+        "pdfField":  "Reducing"
+    },
+    {
+        "crmField":  "birthday, retiredate, socialsecurityincome, age62socialsecurityestimate, servicecomputationdate, yrsofmilitaryservice, sickleavehours, maritalstatus, homeAddress.state",
+        "pdfField":  "Summary Net SS"
+    },
+    {
+        "crmField":  "high3avgsalary, salaryamount, servicecomputationdate, retiredate, yrsofmilitaryservice, sickleavehours, birthday, surviborbenefits, maritalstatus, optiona_retire, optionb_retire, optionc_retire, feglireduction, cust_fehbpermonth_023844547, dentalinsuranceperpayperiod, visioninsuranceperpayperiod, cust_ltcpermonth_062304353, homeAddress.state",
+        "pdfField":  "Summary Net FERS"
+    },
+    {
+        "crmField":  "tsptraditionalbalance, tsprothbalance, tspbalanceused, tspdistributionrate, birthday, retiredate, maritalstatus, homeAddress.state",
+        "pdfField":  "Summary Net TSP"
+    },
+    {
+        "crmField":  "cust_fehbpermonth_023844547",
+        "pdfField":  "less Health Insurance"
+    },
+    {
+        "crmField":  "dentalinsuranceperpayperiod",
+        "pdfField":  "less Dental Insurance"
+    },
+    {
+        "crmField":  "visioninsuranceperpayperiod",
+        "pdfField":  "less Vision Insurance"
+    },
+    {
+        "crmField":  "salaryamount, feglicodeactive, fegliperpayperiod",
+        "pdfField":  "FEGLI Basic Now"
+    },
+    {
+        "crmField":  "feglicodeactive, fegliperpayperiod, optiona",
+        "pdfField":  "FEGLI A Now"
+    },
+    {
+        "crmField":  "salaryamount, feglicodeactive, fegliperpayperiod, optionb",
+        "pdfField":  "FEGLI B Now"
+    },
+    {
+        "crmField":  "feglicodeactive, fegliperpayperiod, optionc",
+        "pdfField":  "FEGLI C Now"
+    },
+    {
+        "crmField":  "optionc_retire",
+        "pdfField":  "FEGLI C Retire"
+    },
+    {
+        "crmField":  "salaryamount, optionb_retire",
+        "pdfField":  "FEGLI B Retire"
+    },
+    {
+        "crmField":  "optiona_retire",
+        "pdfField":  "FEGLI A Retire"
+    },
+    {
+        "crmField":  "salaryamount, feglireduction, optiona_retire, optionb_retire, optionc_retire",
+        "pdfField":  "FEGLI Basic Retire"
+    },
+    {
+        "crmField":  "birthday",
+        "pdfField":  "Client DOB"
+    },
+    {
+        "crmField":  "retiredate",
+        "pdfField":  "Retire Date"
+    },
+    {
+        "crmField":  "yrsofmilitaryservice",
+        "pdfField":  "Military Time"
+    },
+    {
+        "crmField":  "tspbalanceused, tsptraditionalbalance, tsprothbalance",
+        "pdfField":  "TSP Balance Used"
+    },
+    {
+        "crmField":  "liquid",
+        "pdfField":  "Cash Checking Savings"
+    },
+    {
+        "crmField":  "change2fegli, beneficiaries, otherincomesources, otherpensions, tsptraditionalbalancenote, tsprothbalancenote, tsptotalbalancenote, liquidnote, debtbox, other40ksiranote, inheritedaccountsnote,  brokerageaccountsnqnote, stocksbondsnote, otherassetsnote",
+        "pdfField":  "Notes"
+    },
+    {
+        "crmField":  "rep.name, rep.email, rep.phone",
+        "pdfField":  "Advisor"
+    }
+]

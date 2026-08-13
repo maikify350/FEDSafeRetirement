@@ -1,0 +1,997 @@
+=== fw4p.pdf (44 actionable fields) ===
+  [Text] topmostSubform[0].Page1[0].Step1a[0].f1_01[0]  ||  
+  [Text] topmostSubform[0].Page1[0].Step1a[0].f1_02[0]  ||  
+  [Text] topmostSubform[0].Page1[0].Step1a[0].f1_03[0]  ||  
+  [Text] topmostSubform[0].Page1[0].Step1a[0].f1_04[0]  ||  
+  [Text] topmostSubform[0].Page1[0].f1_05[0]  ||  
+  [Butt] topmostSubform[0].Page1[0].c1_1[0]  ||  
+  [Butt] topmostSubform[0].Page1[0].c1_1[1]  ||  
+  [Butt] topmostSubform[0].Page1[0].c1_1[2]  ||  
+  [Text] topmostSubform[0].Page1[0].f1_06[0]  ||  
+  [Text] topmostSubform[0].Page1[0].f1_07[0]  ||  
+  [Text] topmostSubform[0].Page1[0].f1_08[0]  ||  
+  [Text] topmostSubform[0].Page1[0].Step3_ReadOrder[0].f1_09[0]  ||  
+  [Text] topmostSubform[0].Page1[0].Step3_ReadOrder[0].f1_10[0]  ||  
+  [Text] topmostSubform[0].Page1[0].Step3_ReadOrder[0].f1_11[0]  ||  
+  [Text] topmostSubform[0].Page1[0].f1_12[0]  ||  
+  [Text] topmostSubform[0].Page1[0].f1_13[0]  ||  
+  [Text] topmostSubform[0].Page1[0].f1_14[0]  ||  
+  [Text] topmostSubform[0].Page1[0].f1_15[0]  ||  
+  [Butt] topmostSubform[0].Page1[0].c1_2[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_01[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_02[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_03[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_04[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_05[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_06[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_07[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_08[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_09[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_10[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_11[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_12[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_13[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_14[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_15[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_16[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_17[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_18[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_19[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_20[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_21[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_22[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_23[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_24[0]  ||  
+  [Text] topmostSubform[0].Page4[0].f4_25[0]  ||  
+
+=== sf2809.pdf (95 actionable fields) ===
+  [Text]  Name. Name  ||  Enter enrollee's last name, first name, and middle initial.
+  [Text]  SS. SS  ||  Enter enrollee's social security number.
+  [Text]  DOB. DOB  ||  Enter enrollee's date of birth.  Enter a two digit month and day and a four digit year.
+  [Text]  address 1. address 1  ||  Enter enrollee's home mailing address including zip code.  Enter apartment number if appli
+  [Butt] Med B  ||  This is checkbox two of three.  Select this box if you, the enrollee, are covered by Medic
+  [Butt] Med D  ||  This is checkbox three of three.  Select this box if you, the enrollee, are covered by Med
+  [Text]   medical claim.  medical claim  ||  Enter the enrollee's Medicare Beneficiary Identifier.
+  [Text]  Policy number. Insurance Name  ||  Enter the name of the other insurance the enrollee has.
+  [Text]  Policy number. Policy number  ||  Enter the policy number for the other insurance the enrollee has.
+  [Text]  Preferred telephone number. Preferred telephone number  ||  Enter the preferred telephone number, including area code, for the enrollee.
+  [Butt] Sex1  ||  Select whether the enrollee is male or female.
+  [Butt] Married1  ||  Select yes if the enrolle is married, no if not.
+  [Butt] OtherInsurance1  ||  Select Yes and indicate in item 10 if the enrollee is covered by insurance other than Medi
+  [Text] 14. SS  ||  Enter social security number of the first family member.
+  [Text] 15. DOB  ||  Enter the date of birth for the first family member.  Enter a two digit month and day and 
+  [Text]  relation. relation  ||  Enter the relationship code for the first family member.
+  [Butt] Sex2  ||  Select whether the first family member is male or female.
+  [Text] 13. FM1 Name  ||  Enter first family member's last name, first name, and middle initial.
+  [Text] 18. address FM1  ||  Enter the address of the first family member, if different from the enrollee.
+  [Butt]  Med A. Med A  ||  This is check box one of three.  Select this box if the first family member is covered by 
+  [Butt]  Med A. Med B  ||  This is check box two of three.  Select this box if the first family member is covered by 
+  [Butt]  Med A. Med D  ||  This is check box three of three.  Select this box if the first family member is covered b
+  [Text] 20.  medicare claim  ||  Enter the Medicare Beneficiary Identifier for the first family member.
+  [Butt] OtherInsurance2  ||  Select Yes and indicate in item 22 if the first family member is covered by insurance othe
+  [Text] 24. FM! phone  ||  Enter the preferred telephone number, including area code, for the first family member.
+  [Text] 22. Insurance Name  ||  Enter the name of the other insurance the first family member has.
+  [Text] 22. Policy number  ||  Enter the policy number for the other insurance the first family member has.
+  [Text] 11 email address  ||  Enter the email address for the enrollee.
+  [Text] 27. DOB  ||  Enter date of birth for the second family member.  Enter a two digit month and day and a f
+  [Text] 29. relation  ||  Enter the relationship code for the second family member.
+  [Butt]  Med B. Med A  ||  This is check box one of three.  Select this box if the second family member is covered by
+  [Butt]  Med B. Med B  ||  This is check box two of three.  Select this box if the second family member is covered by
+  [Butt]  Med B.  Med D  ||  This is check box three of three.  Select this box if the second family member is covered 
+  [Text] 32.  medicare claim  ||  Enter the Medicare Beneficiary Identifier for the second family member.
+  [Butt] Sex3  ||  Select whether the second family member is male or female.
+  [Butt] OtherInsurance3  ||  Select Yes and indicate in item 34 if the second family member is covered by insurance oth
+  [Text] 23 email address  ||  Enter the email address for the first family member.
+  [Text] 36 FM2 phone  ||  Enter the preferred telephone number, including area code, for the second family member.
+  [Text] 34. Insurance Name  ||  Enter the name of the other insurance the second family member has.
+  [Text] 34. Policy number  ||  Enter the policy number for the other insurance the second family member has.
+  [Text] 25 FM2 Name  ||  Enter second family member's last name, first name, and middle initial.
+  [Text] 26 SSN FM2  ||  Enter social security number of the second family member.
+  [Text] 37 FM3 Name  ||  Enter third family member's last name, first name, and middle initial.
+  [Text] 38 SSn FM3  ||  Enter social security number of the third family member.
+  [Text] 41 relationship FM3  ||  Enter the relationship code for the third family member.
+  [Butt] Sex4  ||  Select whether the third family member is male or female.
+  [Text] 39. DOB  ||  Enter date of birth for the third family member.  Enter a two digit month and day and a fo
+  [Text] 30 address FM2  ||  Enter the address of the second family member, if different from the enrollee.
+  [Text] 42 address FM3  ||  Enter the address of the third family member, if different from the enrollee.
+  [Butt] OtherInsurance4  ||  Select Yes and indicate in item 46 if the third family member is covered by insurance othe
+  [Text] 44 claim FM3  ||  Enter the Medicare Beneficiary Identifier for the third family member.
+  [Text] 35 email address FM2  ||  Enter the email address for the second family member.
+  [Text] 46. Insurance Name  ||  Enter the name of the other insurance the third family member has.
+  [Text] 46. Policy number  ||  Enter the policy number for the other insurance the third family member has.
+  [Text] 47. email address  ||  Enter the email address for the third family member.
+  [Text] 48. Preferred telephone number  ||  Enter the preferred telephone number, including area code, for the third family member.
+  [Text] Enrollee name pg 15  ||  Enter the enrollee name.
+  [Text] Date of Birth page 15  ||  Enter the enrollee's date of birth.  Enter a two digit month and day and a four digit year
+  [Text] current plan  ||  Enter the current FEHB plan name.
+  [Text] enrollment code  ||  Enter the current FEHB enrollment code.
+  [Text] New Plan Name  ||  Enter the new FEHB plan name.
+  [Text] enrollment new  ||  Enter the new FEHB enrollment code.
+  [Text] event  ||  Enter the event code.
+  [Text] event date 1  ||  Enter the date of event.  Enter a two digit month and day and a four digit year.
+  [Butt] part e  ||  For employees only. Select this box if you do NOT want to enroll in the FEHB Program.
+  [Butt] part f  ||  Select this box to cancel your enrollment.
+  [Butt] part g  ||  For annuitants/former spouses only. Select this box if you want to suspend your enrollment
+  [Text] H.  event date 1  ||  Enter the date the enrollee digitally signed the form.  Enter a two digit month and day an
+  [Text] Part I remarks  ||  Agency or retirement system remarks.
+  [Text] Part I Date received  ||  To be completed by agency or retirement system. Enter the date the form was received.  Ent
+  [Text] Part I effective date  ||  To be completed by agency or retirement system. Enter the effective date of action. Enter 
+  [Text] Part I area code  ||  To be completed by agency or retirement system.  Enter the area code of the personnel tele
+  [Text] Part I telephone  ||  To be completed by agency or retirement system.  Enter the personnel telephone number.
+  [Text] Part I agency name  ||  To be completed by agency or retirement system.  Enter the name and address of the agency 
+  [Text] Part I authorizing official  ||  To be completed by agency or retirement system. Enter the name of authorizing official.
+  [Text] Part I payroll office no  ||  To be completed by agency or retirement system.  Enter the payroll office number.
+  [Text] Part I payroll office Contact  ||  To be completed by agency or retirement system. Enter the payroll office contact.
+  [Text] Part I number 9 area code  ||  To be completed by agency or retirement system.  Enter the area code for the Payroll telep
+  [Text] Part I telephone number  ||  To be completed by agency or retirement system.  Enter the payroll telephone number.
+  [Butt] Med A  ||  This is checkbox one of three.  Select this box if you, the enrollee, are covered by Medic
+  [Butt] Tricare A  ||  This is checkbox one of three.  Select this box if you, the enrollee, are covered by Trica
+  [Butt] FEHB A  ||  This is checkbox two of three.  Select this box if you, the enrollee, are covered by FEHB.
+  [Butt] Other A  ||  This is checkbox three of three.  Select this box if you, the enrollee, are covered by ano
+  [Butt] Tricare C  ||  This is checkbox one of three.  Select this box if the second family member is covered by 
+  [Butt] Other C  ||  This is checkbox three of three.  Select this box if the second family member is covered b
+  [Butt] FEHB C  ||  This is checkbox two of three.  Select this box if the second family member is covered by 
+  [Butt] Tricare B  ||  This is checkbox one of three.  Select this box if the first family member is covered by T
+  [Butt] Other B  ||  This is checkbox three of three.  Select this box if the first family member is covered by
+  [Butt] FEHB B  ||  This is checkbox two of three.  Select this box if the first family member is covered by F
+  [Butt] Tricare D  ||  This is checkbox one of three.  Select this box if the third family member is covered by T
+  [Butt] Other D  ||  This is checkbox three of three.  Select this box if the third family member is covered by
+  [Butt] FEHB D  ||  This is checkbox two of three.  Select this box if the third family member is covered by F
+  [Butt] 43A  ||  This is check box one of three.  Select this box if the third family member is covered by 
+  [Butt] 43 B  ||  This is check box two of three.  Select this box if the third family member is covered by 
+  [Butt] 43 D  ||  This is check box three of three.  Select this box if the third family member is covered b
+
+=== sf2818.pdf (26 actionable fields) ===
+  [Text] SSN  ||  Identifying Information.  Number 3.  Enter the employee's social security number.
+  [Text] employee name  ||  Identifying Information.  Number 1.  Enter the employee's name in last, first, middle form
+  [Text] Department  ||  Identifying Information.  Number 4.  Enter the employing department and, or agency.
+  [Text] claim number  ||  Identifying Information.  Number 6.  Enter the employee's compensation claim number, if ap
+  [Butt] Basic N  ||  Basic Life Insurance.  Number 7.  This is check box two of three.  Press the space bar to 
+  [Butt] Full  ||  Basic Life Insurance.  Number 7.  This is check box three of three.  Press the space bar t
+  [Butt] Basic Y  ||  Basic Life Insurance.  Number 7.  This is check box one of three.  Press the space bar to 
+  [Butt] 50%  ||  Basic Life Insurance.  Number 8.  This is check box two of three.  Press the space bar to 
+  [Butt] None  ||  Basic Life Insurance.  Number 8.  This is check box three of three.  Press the space bar t
+  [Butt] 75%  ||  Basic Life Insurance.  Number 8.  This is check box one of three.  Press the space bar to 
+  [Butt] Option A N  ||  Option, A, Standard Optional Insurance.  Number 9.  This is check box two of three.  Press
+  [Butt] No Option A  ||  Option, A, Standard Optional Insurance.  Number 9.  This is check box three of three.  Pre
+  [Butt] Option A Y  ||  Option, A, Standard Optional Insurance.  Number 9.  This is check box one of three.  Press
+  [Butt] Option B N  ||  Option B, Additional Optional Insurance.  Number 10. This is check box two of three.  Pres
+  [Butt] No Option B  ||  Option B, Additional Optional Insurance.  Number 10. This is check box three of three.  Pr
+  [Text] work address  ||  Identifying Information.  Number 5.  Enter the city, state and ZIP code of your work locat
+  [Butt] Option B Y  ||  Option B, Additional Optional Insurance.  Number 10. This is check box one of three.  Pres
+  [Butt] Option C N  ||  Option C, Family Optional Insurance.  Number 12. This is check box two of three.  Press th
+  [Butt] Option C Y  ||  Option C, Family Optional Insurance.  Number 12. This is check box one of three.  Press th
+  [Butt] No Option C  ||  Option C, Family Optional Insurance.  Number 12. This is check box three of three.  Press 
+  [Text] No reduction multiples  ||  Option B, Additional Optional Insurance.  Number 11.  Enter the number of NO REDUCTION mul
+  [Text] full reduction multiples  ||  Option B, Additional Optional Insurance.  Number 11.  Enter the number of FULL REDUCTION m
+  [Text] Opt C No reduction multiples  ||  Option C, Family Optional Insurance.  Number 13.  Enter the number of NO REDUCTION multipl
+  [Text] Option C full reduction multiples  ||  Option C, Family Optional Insurance.  Number 13.  Enter the number of FULL REDUCTION multi
+  [Text] DOB  ||  Identifying Information.  Number 2.  Enter the employee's date of birth.  Enter a two digi
+  [Text] signature date  ||  Signature.  Number 14.   Enter the date you signed the form.   Enter a two digit month and
+
+=== sf2823.pdf (55 actionable fields) ===
+  [Text] Bene 1.0  ||  First name, middle initial, and last name of the first beneficiary.
+  [Text] SSN 1.0  ||  Nine digit social security number for the first beneficiary.
+  [Text] address 1.0  ||  Address, including ZIP code, for the first beneficiary. 
+  [Text] Relationship 1.0  ||  Relationship to the first beneficiary.
+  [Text] amount 1.0  ||  Percent or fraction designated for the first beneficiary.
+  [Text] Total  ||  Total
+  [Text] C. Name  ||  Insured or Assignee's name.
+  [Text] C. Address line one  ||  Insured or Assignee's street address line one.
+  [Text] C. Address line two  ||  Insured or Assignee's street address line two, if applicable.
+  [Text] C. Address line three  ||  Insured or Assignee's city, state, and zip code.
+  [Butt] not assigned  ||  Select this box indicating you have not assigned the insurance.
+  [Butt] witnessed  ||  Select this box indicating the two people who witnessed your signature signed below.
+  [Butt] no beneficiary  ||  Select this box indicating you did not name either witness as a beneficiary.
+  [Text] Witness Address 1  ||  Address of Witness 1, including ZIP Code.
+  [Text] Witness Address 2  ||  Address of Witness 2, including ZIP code.
+  [Text] Name  ||  Name of the insured in last, first, middle format.
+  [Text] DOB  ||  Insured's date of birth.  Enter a two digit month and day and a four digit year.
+  [Text] SSN  ||  9 digit social security number of the insured.
+  [Text] Claim Number  ||  If the Insured is retired or receiving Federal Employees' Compensation, enter the CSA, CSI
+  [Text] Department  ||  Department or agency where the Insured works.
+  [Text] Bureau  ||  Bureau or division where the Insured works.
+  [Text] Location  ||  Location where the Insured works. Enter city, state and ZIP code.
+  [Sign] Signature of Insured/Assignee  ||  Digital Signature of Insured/Assignee
+  [Text] date signed  ||  Date the Insired/Assignee signed this form. Enter a two digit month and day and a four dig
+  [Text] Date of Receipt  ||  Date of receipt.  Enter a two digit month and day and a four digit year.
+  [Sign] Signature of authorized official  ||  Digital Signature of authorized official.
+  [Text] Receiving Agency  ||  Receiving Agency
+  [Text] Title  ||  Title of authorized official.
+  [Butt] Type of Insured  ||  Select whether you are an employee, a retiree, or a compensationer.
+  [Butt] I Am  ||  Select whether you are the insured or an assignee.
+  [Text] Bene 2.0  ||  First name, middle initial, and last name of the second beneficiary.
+  [Text] Bene 3.0  ||  First name, middle initial, and last name of the third beneficiary.
+  [Text] Bene 4.0  ||  First name, middle initial, and last name of the fourth beneficiary.
+  [Text] Bene 5.0  ||  First name, middle initial, and last name of the fifth beneficiary.
+  [Text] Bene 6.0  ||  First name, middle initial, and last name of the sixth beneficiary.
+  [Text] SSN 2.0  ||  Nine digit social security number for the second beneficiary.
+  [Text] SSN 3.0  ||  Nine digit social security number for the third beneficiary.
+  [Text] SSN 4.0  ||  Nine digit social security number for the fourth beneficiary.
+  [Text] SSN 5.0  ||  Nine digit social security number for the fifth beneficiary.
+  [Text] SSN 6.0  ||  Nine digit social security number for the sixth beneficiary.
+  [Text] address 2.0  ||  Address, including ZIP code, for the second beneficiary. 
+  [Text] address 3.0  ||  Address, including ZIP code, for the third beneficiary. 
+  [Text] address 4.0  ||  Address, including ZIP code, for the fourth beneficiary. 
+  [Text] address 5.0  ||  Address, including ZIP code, for the fifth beneficiary. 
+  [Text] address 6.0  ||  Address, including ZIP code, for the sixth beneficiary. 
+  [Text] Relationship 2.0  ||  Relationship to the second beneficiary.
+  [Text] Relationship 3.0  ||  Relationship to the third beneficiary.
+  [Text] Relationship 4.0  ||  Relationship to the fourth beneficiary.
+  [Text] Relationship 5.0  ||  Relationship to the fifth beneficiary.
+  [Text] Relationship 6.0  ||  Relationship to the sixth beneficiary.
+  [Text] amount 2.0  ||  Percent or fraction designated for the second beneficiary.
+  [Text] amount 3.0  ||  Percent or fraction designated for the third beneficiary.
+  [Text] amount 4.0  ||  Percent or fraction designated for the fourth beneficiary.
+  [Text] amount 5.0  ||  Percent or fraction designated for the fifth beneficiary.
+  [Text] amount 6.0  ||  Percent or fraction designated for the sixth beneficiary.
+
+=== sf3102.pdf (31 actionable fields) ===
+  [Text] Name  ||  Enter your name in last, first, middle format.
+  [Text] DOB  ||  Enter your date of birth.  Enter a two digit month and day, and a four digit year.
+  [Text] SSN  ||  Enter your social security number (###-##-####).
+  [Text] Claim Number  ||  If you are retired, enter your claim number.
+  [Text] Department  ||  Enter the department or agency in which you are presently employed or former department or
+  [Text] Location  ||  Enter the city, state, and ZIP code of the department or agency in which you are presently
+  [Text] Beneficiary 1.0.0  ||  Enter the first name, middle initial, and last name of your first beneficiary.
+  [Text] Beneficiary 1.0.1.0  ||  Enter the first name, middle initial, and last name of your second beneficiary.
+  [Text] Beneficiary 1.0.1.1.0  ||  Enter the first name, middle initial, and last name of your third beneficiary.
+  [Text] Address 1.0.0  ||  Enter the Address, including the ZIP code, of your first beneficiary. 
+  [Text] Address 1.0.1.0  ||  Enter the Address, including the ZIP code, of your second beneficiary. 
+  [Text] Address 1.0.1.1.0  ||  Enter the Address, including the ZIP code, of your third beneficiary. 
+  [Text] Relationship 1.0.0  ||  Enter your first beneficiary’s relationship to you.
+  [Text] Relationship 1.0.1.0  ||  Enter your second beneficiary’s relationship to you.
+  [Text] Relationship 1.0.1.1.0  ||  Enter your third beneficiary’s relationship to you.
+  [Text] Share 1.0.0  ||  Enter the share to be paid to your first beneficiary.
+  [Text] Share 1.0.1.0  ||  Enter the share to be paid to your second beneficiary.
+  [Text] Share 1.0.1.1.0  ||  Enter the share to be paid to your third beneficiary.
+  [Text] date of designation  ||  Enter the date of designation.  Enter a two digit month and day and a four digit year.
+  [Sign] Your Signature  ||  Digital signature.
+  [Text] date rec'd by agency  ||  Enter the date the form was received by the agency.  Enter a two digit month and day and a
+  [Sign] Agency Signature  ||  Agency Representative Digital signature.
+  [Text] date signed by agency certifier  ||  Enter the date you signed the form indicating you have reviewed this designation and certi
+  [Text] Return address  ||  Enter your return address.
+  [Choi] COPIES  ||  Select Part One - Original to print this copy and submit to your employing office if you a
+  [Sign] Witness Signature2  ||  Digital Signature of second Witness.
+  [Text] Witness address2  ||  Enter the second witness's address, including ZIP code.
+  [Sign] Witness Signature1  ||  Digital Signature of first Witness.
+  [Text] Witness address1  ||  Enter the first witness's address, including ZIP code.
+  [Butt] Type  ||  Select whether you are an employee, retired/an applicant for retirement, or a former emplo
+  [Butt] Retirement System  ||  Select whether your retirement system is CSRS or FERS.
+
+=== sf3102_2022_10_508 (1).pdf (31 actionable fields) ===
+  [Text] Name  ||  Enter your name in last, first, middle format.
+  [Text] DOB  ||  Enter your date of birth.  Enter a two digit month and day, and a four digit year.
+  [Text] SSN  ||  Enter your social security number (###-##-####).
+  [Text] Claim Number  ||  If you are retired, enter your claim number.
+  [Text] Department  ||  Enter the department or agency in which you are presently employed or former department or
+  [Text] Location  ||  Enter the city, state, and ZIP code of the department or agency in which you are presently
+  [Text] Beneficiary 1.0.0  ||  Enter the first name, middle initial, and last name of your first beneficiary.
+  [Text] Beneficiary 1.0.1.0  ||  Enter the first name, middle initial, and last name of your second beneficiary.
+  [Text] Beneficiary 1.0.1.1.0  ||  Enter the first name, middle initial, and last name of your third beneficiary.
+  [Text] Address 1.0.0  ||  Enter the Address, including the ZIP code, of your first beneficiary. 
+  [Text] Address 1.0.1.0  ||  Enter the Address, including the ZIP code, of your second beneficiary. 
+  [Text] Address 1.0.1.1.0  ||  Enter the Address, including the ZIP code, of your third beneficiary. 
+  [Text] Relationship 1.0.0  ||  Enter your first beneficiary’s relationship to you.
+  [Text] Relationship 1.0.1.0  ||  Enter your second beneficiary’s relationship to you.
+  [Text] Relationship 1.0.1.1.0  ||  Enter your third beneficiary’s relationship to you.
+  [Text] Share 1.0.0  ||  Enter the share to be paid to your first beneficiary.
+  [Text] Share 1.0.1.0  ||  Enter the share to be paid to your second beneficiary.
+  [Text] Share 1.0.1.1.0  ||  Enter the share to be paid to your third beneficiary.
+  [Text] date of designation  ||  Enter the date of designation.  Enter a two digit month and day and a four digit year.
+  [Sign] Your Signature  ||  Digital signature.
+  [Text] date rec'd by agency  ||  Enter the date the form was received by the agency.  Enter a two digit month and day and a
+  [Sign] Agency Signature  ||  Agency Representative Digital signature.
+  [Text] date signed by agency certifier  ||  Enter the date you signed the form indicating you have reviewed this designation and certi
+  [Text] Return address  ||  Enter your return address.
+  [Choi] COPIES  ||  Select Part One - Original to print this copy and submit to your employing office if you a
+  [Sign] Witness Signature2  ||  Digital Signature of second Witness.
+  [Text] Witness address2  ||  Enter the second witness's address, including ZIP code.
+  [Sign] Witness Signature1  ||  Digital Signature of first Witness.
+  [Text] Witness address1  ||  Enter the first witness's address, including ZIP code.
+  [Butt] Type  ||  Select whether you are an employee, retired/an applicant for retirement, or a former emplo
+  [Butt] Retirement System  ||  Select whether your retirement system is CSRS or FERS.
+
+=== sf3107.pdf (468 actionable fields) ===
+  [Text] Name  ||  Section A.  Identifying Information.  Number 1.  Enter your name in last, first, middle fo
+  [Text] Other Names  ||  Section A.  Identifying Information.  Number 2.  Enter all other names you have used.
+  [Text] Address  ||  Section A.  Identifying Information.  Number 3.  Enter your street number and name.
+  [Text] Address line 2  ||  Section A.  Identifying Information.  Number 3.  Enter your apartment or suite number.
+  [Text] Address line 3  ||  Section A.  Identifying Information.  Number 3.  Enter your city, state and ZIP code.
+  [Text] phone number  ||  Section A.  Identifying Information.  Number 4, A.  Enter your daytime telephone number af
+  [Text] time to call  ||  Section A.  Identifying Information.  Number 4B.  Enter the best time to reach you.
+  [Text] email  ||  Section A.  Identifying Information.  Number 4C.   Enter your home email address.
+  [Text] fax  ||  Section A.  Identifying Information.  Number 4D.  Enter your FAX number.
+  [Text] DOB  ||  Section A.  Identifying Information.  Number 5.  Enter your date of birth.  Enter a two di
+  [Text] SSN  ||  Section A.  Identifying Information.  Number 6.  Enter your Social Security Number.
+  [Text] dept  ||  Section B.  Federal Service.  Number 1.  Enter the department or agency from which you are
+  [Text] sep date  ||  Section B.  Federal Service.  Number 2.  Enter the date of final separation.  Enter a two 
+  [Text] Spouse's Name  ||  Section C.  Marital Information.  Number 1, A.  Enter your spouse's name.  Enter in last, 
+  [Text] Spouse's DOB  ||  Section C.  Marital Information.  Number 1B.  Enter your spouse's date of birth.  Enter a 
+  [Text] Spouse's SSN  ||  Section C.  Marital Information.  Number 1C.  Enter your spouse's Social Security Number.
+  [Text] Place of marriage  ||  Section C.  Marital Information.  Number 1D.  Enter the city and state where you were marr
+  [Text] marriage date  ||  Section C.  Marital Information.  Number 1E.  Enter the date of your marriage.  Enter a tw
+  [Text] 1f.  Other marriage  ||  Section C.  Marital Information.  Number 1F.  If you were not married by a clergyman or ju
+  [Text] title  ||  Section B.  Federal Service.  Number 3.  Enter the title of position from which you are re
+  [Butt] USA Y  ||  Section A.  Identifying Information.  Number 7  This is the YES check box.  Press the spac
+  [Butt] USA N  ||  Section A.  Identifying Information.  Number 7.  This is the NO check box.  Press the spac
+  [Butt] disability y  ||  Section A.  Identifying Information.  Number 8.  This is the YES check box.  Press the spa
+  [Butt] disability n  ||  Section A.  Identifying Information.  Number 8.  This is the NO check box.  Press the spac
+  [Butt] armed forces y  ||  Section B.  Federal Service.  Number 4.  This is the YES check box.  Press the space bar t
+  [Butt] armed forces n  ||  Section B.  Federal Service.  Number 4.  This is the NO check box.  Press the space bar to
+  [Butt] military retired pay y  ||  Section B.  Federal Service.  Number 5.  This is the YES check box.  Press the space bar t
+  [Butt] military retired pay n  ||  Section B.  Federal Service.  Number 5.  This is the NO check box.  Press the space bar to
+  [Butt] married y  ||  Section C.  Marital Information.  Number 1.  This is the YES check box.   Press the space 
+  [Butt] married n  ||  Section C.  Marital Information.  Number 1.  This is the NO check box.   Press the space b
+  [Butt] clergy y  ||  Section C.  Marital Information.  Number 1F.  This is check box one of two.  Press the spa
+  [Butt] clergy n  ||  Section C.  Marital Information.  Number 1F.  This is check box two of two.  Press the spa
+  [Butt] living former spouse y  ||  Section C.  Marital Information.  Number 2.  This is the YES check box.  Press the space b
+  [Butt] living former spouse n  ||  Section C.  Marital Information.  Number 2.  This is the NO check box.   Press the space b
+  [Text] dept2  ||  Section B.  Federal Service.  Number 1.  Enter the first line of the address of the depart
+  [Text] dept3  ||  Section B.  Federal Service.  Number 1.  Enter the city, state and zip code for the depart
+  [Text] Name Insurable  ||  Section D.  Annuity Election.  Number 4.  Enter the name of person with insurable interest
+  [Text] relationship  ||  Section D.  Annuity Election.  Number 4.  Enter the person with the insurable interest, re
+  [Text] DOB I I  ||  Section D.  Annuity Election.  Number 4.  Enter the date of birth of the person with an in
+  [Text] SSN I I  ||  Section D.  Annuity Election.  Number 4.  Enter the social security number of the person w
+  [Text] former spouse annuity (name) 1  ||  Section D.  Annuity Election.  Number 5.  Enter the name of your first former spouse for w
+  [Text] former spouse annuity (address) 1  ||  Section D.  Annuity Election.  Number 5.  Enter the address of your first former spouse fo
+  [Text] marriage date (Former 1)  ||  Section D.  Annuity Election.  Number 5.  Enter the date of marriage to your first former 
+  [Text] divorce date (Former 1)  ||  Section D.  Annuity Election.  Number 5.  Enter the date of divorce from your first former
+  [Text] DOB (Former 1)  ||  Section D.  Annuity Election.  Number 5.  Enter the date of birth of your FIRST former spo
+  [Text] SSN (Former 1)  ||  Section D.  Annuity Election.  Number 5.  Enter the social security number of your FIRST f
+  [Text] survivor annuity  (Former 1)  ||  Section D.  Annuity Election.  Number 5.  You have selected a reduced annuity in order to 
+  [Text] former spouse annuity (name) 2  ||  Section D.  Annuity Election.  Number 5.  Enter the name of your SECOND former spouse for 
+  [Text] former spouse annuity (address) 2  ||  Section D.  Annuity Election.  Number 5.  Enter the address of your SECOND former spouse f
+  [Text] marriage date (Former 2)  ||  Section D.  Annuity Election.  Number 5.  Enter the date of marriage to your SECOND former
+  [Text] divorce date (Former 2)  ||  Section D.  Annuity Election.  Number 5.  Enter the date of divorce from your SECOND forme
+  [Text] DOB (Former 2  ||  Enter the date of birth of your SECOND former spouse for whom you elect to provide a survi
+  [Text] SSN (Former 2)  ||  Section D.  Annuity Election.  Number 5.  Enter the social security number of your SECOND 
+  [Text] survivor annuity  (Former 2)  ||  Section D.  Annuity Election.  Number 5.  You have selected a reduced annuity in order to 
+  [Text] Total survivor annuity  ||  Section D.  Annuity Election.  Number 5.  Enter the total former survivor annuity.  This s
+  [Text] claim  ||  Section F.  Other Claim Information.  Number 2B.   If you have previously filed an applica
+  [Text] claim2  ||  Section F.  Other Claim Information.  Number 2B.   If you have previously filed an applica
+  [Text] dependent 1  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the fi
+  [Text] dependent 1 DOB  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the da
+  [Text] dependent 2  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the fi
+  [Text] dependent 2 DOB  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the da
+  [Text] dependent 3  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the fi
+  [Text] dependent 3 DOB  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the da
+  [Text] dependent 4  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the fi
+  [Text] dependent 4 DOB  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the da
+  [Text] dependent 5  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the fi
+  [Text] dependent 5 DOB  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the da
+  [Text] dependent 6  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the fi
+  [Text] dependent 6 DOB  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the da
+  [Text] dependent 7  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the fi
+  [Text] dependent 7 DOB  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the da
+  [Text] dependent 8  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the fi
+  [Text] dependent 8 DOB  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Enter the da
+  [Butt] FEHB Y  ||  Section E.  Insurance Information.  Number 1, A.  This is the YES check box.  Press the sp
+  [Butt] FEHB N  ||  Section E.  Insurance Information.  Number 1, A.  This is the NO check box.   Press the sp
+  [Butt] provide FEHB Y  ||  Section E.  Insurance Information.  Number 1B.  This is the YES check box.   Press the spa
+  [Butt] provide FEHB N  ||  Section E.  Insurance Information.  Number 1B.  This is the NO check box.  Press the space
+  [Butt] FEGLI Y  ||  Section E.  Insurance Information.  Number 2.  This is the YES check box.   Press the spac
+  [Butt] FEGLI N  ||  Section E.  Insurance Information.  Number 2.  This is the NO check box.   Press the space
+  [Butt] LTC N  ||  Section E.  Insurance Information.  Number 4.  This is the NO check box.   Press the space
+  [Butt] OWCP Y  ||  Section F.  Other Claim Information.  Number 1.  This is the YES check box.  Press the spa
+  [Butt] OWCP N  ||  Section F.  Other Claim Information.  Number 1.  This is the NO check box.   Press the spa
+  [Butt] filed y  ||  Section F.  Other Claim Information.  Number 2.  This is the YES check box.   Press the sp
+  [Butt] filed n  ||  Section F.  Other Claim Information.  Number 2.  This is the NO check box.   Press the spa
+  [Butt] Refund  ||  Section F.  Other Claim Information.  Number 2, A.   This is check box one of five.  Press
+  [Butt] deposit/redeposit  ||  Section F.  Other Claim Information.  Number 2, A.   This is check box two of five.  Press
+  [Butt] Retirement  ||  Section F.  Other Claim Information.  Number 2, A.  This is check box three of five.  Pres
+  [Butt] return  ||  Section F.  Other Claim Information.  Number 2, A.   This is check box four of five.  Pres
+  [Butt] VC  ||  Section F.  Other Claim Information.  Number 2, A.   This is check box five of five.  Pres
+  [Butt] diabled child 1  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Press the sp
+  [Butt] diabled child 2  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Press the sp
+  [Butt] diabled child 3  ||   Section G.  (Optional)  Information About Your Unmarried Dependent Children. Press the sp
+  [Butt] diabled child 4  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Press the sp
+  [Butt] diabled child 5  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Press the sp
+  [Butt] diabled child 6  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Press the sp
+  [Butt] diabled child 7  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Press the sp
+  [Butt] diabled child 8  ||  Section G.  (Optional)  Information About Your Unmarried Dependent Children.  Press the sp
+  [Butt] LTC Y  ||  Section E.  Insurance Information.  Number 4.  This is the YES check box.   Press the spac
+  [Butt] FEDVIP Y  ||  Section E.  Insurance Information.  Number 3.  This is the YES check box.   Press the spac
+  [Butt] FEDVIP N  ||  Section E.  Insurance Information.  Number 3.  This is the NO check box.   Press the space
+  [Butt] to checking  ||  Section H.  Payment Instructions.  Number 1.   This is check box one of three.  Press the 
+  [Butt] hardship  ||  Section H.  Payment Instructions.  Number 1.   This is check box two of three.  Press the 
+  [Butt] outside  ||  Section H.  Payment Instructions.  Number 1.   This is check box three of three.  Press th
+  [Butt] checking account  ||  Section H.  Payment Instructions.   Number 2C.   This is check box one of two.  Press the 
+  [Butt] savings account  ||  Section H.  Payment Instructions.  Number 2C.   This is check box two of two.  Press the s
+  [Butt] income Y  ||  Section H.  Payment Instructions.   Number 3,a,.   This is the YES check box.  Press the s
+  [Butt] income N  ||  Section H.  Payment Instructions.  Number 3,a,.  This is the NO check box.  Press the spac
+  [Butt] Rate Y  ||  Section H.  Payment Instructions.  Number 3B.   This is the YES check box.  Press the spac
+  [Butt] Rate N  ||  Section H.  Payment Instructions.  Number 3B.   This is the NO check box.  Press the space
+  [Butt] schedule A Y  ||  Applicant's Checklist.  Number 1.  Military Service.  If you answered,  yes, to Section B,
+  [Butt] schedule A N  ||  Applicant's Checklist.  Number 1.  Military Service.  If you answered,  yes, to Section B,
+  [Butt] schedule A NA  ||  Applicant's Checklist.  Number 1.  Military Service.  If you answered,  yes, to Section B,
+  [Butt] cert Y  ||  Applicant's Checklist.  Number 2.  Military Service.  If you completed Schedule A, Militar
+  [Butt] cert N  ||  Applicant's Checklist.  Number 2.  Military Service.  If you completed Schedule A, Militar
+  [Butt] cert NA  ||  Applicant's Checklist.  Number 2.  Military Service.  If you completed Schedule A, Militar
+  [Butt] schedule B Y  ||  Applicant's Checklist.  Military Retired Pay.  Number 3.  If you answered,  yes,  to Secti
+  [Butt] schedule B N  ||  Applicant's Checklist.  Military Retired Pay.  Number 3.  If you answered,  yes,  to Secti
+  [Butt] schedule B NA  ||  Applicant's Checklist.  Military Retired Pay.  Number 3.  If you answered,  yes,  to Secti
+  [Butt] notice Y  ||  Applicant's Checklist.  Number 4.  Military Retired Pay.  If you completed Schedule B and 
+  [Butt] notice N  ||  Applicant's Checklist.  Number 4.  Military Retired Pay.  If you completed Schedule B and 
+  [Butt] notice NA  ||  Applicant's Checklist.  Number 4.  Military Retired Pay.  If you completed Schedule B and 
+  [Butt] waiver Y  ||  Applicant's Checklist.  Number 5.  Military Retired Pay.  If you completed Schedule B and 
+  [Butt] waiver N  ||  Applicant's Checklist.  Number 5.  Military Retired Pay.  If you completed Schedule B and 
+  [Butt] waiver NA  ||  Applicant's Checklist.  Number 5.  Military Retired Pay.  If you completed Schedule B and 
+  [Butt] 3107-2 Y  ||  Applicant's Checklist.  Number 6.  Survivor Election.  If you are married and did not init
+  [Butt] 3107-2 N  ||  Applicant's Checklist.  Number 6.  Survivor Election.  If you are married and did not init
+  [Butt] 3107-2 NA  ||  Applicant's Checklist.  Number 6.  Survivor Election.  If you are married and did not init
+  [Butt] 2818 Y  ||  Applicant's Checklist.  Number 7.  Life Insurance.  If you answered, yes, to Section E, It
+  [Butt] 2818 N  ||  Applicant's Checklist.  Number 7.  Life Insurance.  If you answered, yes, to Section E, It
+  [Butt] 2818 NA  ||  Applicant's Checklist.  Number 7.  Life Insurance.  If you answered, yes, to Section E, It
+  [Butt] OWCP Yes  ||  Applicant's Checklist.  Number 8.  O W C P.  If you answered, yes,  to Section F, Item 1 (
+  [Butt] OWCP No  ||  Applicant's Checklist.  Number 8.  O W C P.  If you answered, yes,  to Section F, Item 1 (
+  [Butt] OWCP NA  ||  Applicant's Checklist.  Number 8.  O W C P.  If you answered, yes,  to Section F, Item 1 (
+  [Butt] W4 No  ||  Applicant's Checklist.  Number 9.  Tax.  If you want to elect a Federal Income Tax withhol
+  [Butt] W4 NA  ||  Applicant's Checklist.  Number 9.  Tax.  If you want to elect a Federal Income Tax withhol
+  [Butt] W4 Yes  ||  Applicant's Checklist.  Number 9.  Tax.  If you want to elect a Federal Income Tax withhol
+  [Butt] Orders No  ||  Applicant's Checklist.  Number 10.  Court or Administrative Order or Orders.  If you answe
+  [Butt] Orders Yes  ||  Applicant's Checklist.  Number 10.  Court or Administrative Order or Orders.  If you answe
+  [Butt] Orders NA  ||  Applicant's Checklist.  Number 10.  Court or Administrative Order or Orders.  If you answe
+  [Text] routing number  ||  Section H.  Payment Instructions.  Number 2, a,.   Enter the financial institution routing
+  [Text] checking/savings  ||  Section H.  Payment Instructions.  Number 2b.  Enter the checking or savings account numbe
+  [Text] FI telephone number  ||  Section H.  Payment Instructions.  Number 2D.   Enter the telephone number of your financi
+  [Text] financial inst name  ||  Section H.  Payment Instructions.  Number 2E.   Enter the name of the financial institutio
+  [Text] financial inst address  ||  Section H.  Payment Instructions.  Number 2E.   Enter the street number and name of the fi
+  [Text] financial inst line 2 address  ||  Section H.  Payment Instructions.  Number 2E.   Enter the city, state, and ZIP code of the
+  [Text] date signed I  ||  Section I.  Applicant's Certification.  Enter the date you signed the form certifying all 
+  [Text] schedule Name  ||  Schedules, A, B and C.  Enter your name in last, first, middle format.
+  [Text] schedule DOB  ||  Schedules, A, B and C.   Enter your date of birth.  Enter a two digit month and day and a 
+  [Text] schedule SSN  ||  Schedules, A, B and C.  Enter your Social Security Number.
+  [Text] Branch Service  ||  Schedule A.  Military Service Information.  1, A.  If you have performed active honorable 
+  [Text] serial number  ||  Schedule A.  Military Service Information.  1B.  Enter your serial number for your first t
+  [Text] active duty from  ||  Schedule A.  Military Service Information.  1C.  Enter the beginning date of active duty f
+  [Text] active duty to  ||  Schedule A.  Military Service Information.  1C.  Enter the ending date of active duty for 
+  [Text] grade  ||  Schedule A.  Military Service Information.  1D.  Enter your last grade or rank for your fi
+  [Text] Branch Service 2  ||  Schedule A.  Military Service Information.  1, A.  If you have performed active honorable 
+  [Text] serial number 2  ||  Schedule A.  Military Service Information.  1B.  Enter your serial number for your second 
+  [Text] active duty from 2  ||  Schedule A.  Military Service Information.  1C.  Enter the beginning date of active duty f
+  [Text] active duty to 2  ||  Schedule A.  Military Service Information.  1C.   Enter the ending date of active duty for
+  [Text] grade 2  ||  Schedule A.  Military Service Information.  1D.  Enter your last grade or rank for your se
+  [Text] Branch Service 3  ||  Schedule A.  Military Service Information.  1, A.  If you have performed active honorable 
+  [Text] serial number 3  ||  Schedule A.  Military Service Information.  1B.  Enter your serial number for your third t
+  [Text] active duty from 3  ||  Schedule A.  Military Service.  1C.  Enter the beginning date of active duty for your thir
+  [Text] active duty to 3  ||  Schedule A.  Military Service Information.  1C.   Enter the ending date of active duty for
+  [Text] grade 3  ||  Schedule A.  Military Service Information.  1D.  Enter your last grade or rank for your th
+  [Text] comp claim no  ||  Schedule C.  Federal Employees Compensation Information.  Number 1, A.  Line One.  Enter y
+  [Text] bene rec from  ||  Schedule C.  Federal Employees Compensation Information.  Number 1B.  Line One.  Enter the
+  [Text] bene rec to  ||  Schedule C.  Federal Employees Compensation Information.  Number 1B.  Line One.  Enter the
+  [Text] comp claim no 2  ||  Schedule C.  Federal Employees Compensation Information.  Number 1, A.  Line Two.  Enter y
+  [Text] bene rec from 2  ||  Schedule C.  Federal Employees Compensation Information.  Number 1B.  Line Two.  Enter the
+  [Text] bene rec to 2  ||  Schedule C.  Federal Employees Compensation Information.  Number 1B.  line two.  Enter the
+  [Text] comp claim no 3  ||  Schedule C.  Federal Employees Compensation Information.  Number 2, A.   If you are awaiti
+  [Text] comp claim no 4  ||  Schedule C.  Federal Employees Compensation Information.  Number 2B.  If you checked the c
+  [Text] claim denied date  ||  Schedule C.  Federal Employees Compensation Information.  Number 2B.  Enter the date your 
+  [Text] schedules cert date  ||  Certification for Schedules A, B and  C.  Enter the date you signed certifying all stateme
+  [Butt] deposit paid y  ||  Schedule A.  Military Service Information.  Number 2.  This is the YES check box.  Press t
+  [Butt] deposit paid n  ||  Schedule A.  Military Service Information.  Number 2.  This is the NO check box.  Press th
+  [Butt] retired/retainer y  ||  Schedule B.  Military Retired Pay.  Number 1, A.  This is the YES check box.  Press the sp
+  [Butt] retired/retainer n  ||  Schedule B.  Military Retired Pay.  Number 1, A.  This is the NO check box.   Press the sp
+  [Butt] reserve y  ||  Schedule B.  Military Retired Pay.  Number 1B.  This is the YES check box.   Press the spa
+  [Butt] reserve n  ||  Schedule B.  Military Retired Pay.  Number 1B.  This is the NO check box.   Press the spac
+  [Butt] retired pay y  ||  Schedule B.  Military Retired Pay.  Number 1C.  This is the YES check box.   Press the spa
+  [Butt] retired pay n  ||  Schedule B.  Military Retired Pay.  Number 1C.  This is the NO check box.  Press the space
+  [Butt] waiving retired y  ||  Schedule B.  Military Retired Pay.  Number 1D.  This is the YES check box.   Press the spa
+  [Butt] waiving retired n  ||  Schedule B.  Military Retired Pay.  Number 1D.  This is the NO check box.  Press the space
+  [Butt] injury y  ||  Schedule C.  Federal Employees Compensation Information.  Number 1.  This is the YES check
+  [Butt] injury n  ||  Schedule C.  Federal Employees Compensation Information.  Number 1.  This is the NO check 
+  [Butt] disability 1  ||  Schedule C.  Federal Employees Compensation Information.  Number 1C.  line one.  This is c
+  [Butt] scheduled award 2  ||  Schedule C.  Federal Employees Compensation Information.  Number 1C.  line two.  This is c
+  [Butt] disability 2  ||  Schedule C.  Federal Employees Compensation Information.  Number 1C.  Line two.  This is c
+  [Butt] not receiving  ||  Schedule C.  Federal Employees Compensation Information.  Number 2, A.  This is check box 
+  [Butt] claim denied  ||  Schedule C.  Federal Employees Compensation Information.  Number 2B.  This is check box tw
+  [Butt] notify yes  ||  Schedule C.  Federal Employees Compensation Information.  Number 3, A.  This is the YES ch
+  [Butt] notify no  ||  Schedule C.  Federal Employees Compensation Information.  Number 3, A.  This is the NO che
+  [Butt] collect yes  ||  Schedule C.  Federal Employees Compensation Information.  Number 3B.  This is the YES chec
+  [Butt] collect no  ||  Schedule C.  Federal Employees Compensation Information.  Number 3B.  This is the NO check
+  [Butt] scheduled award 1  ||  Schedule C.  Federal Employees Compensation Information.  Number 1C.    line one.  This is
+  [Butt] other 1  ||  Schedule C.  Federal Employees Compensation Information.  Number 1C.    line one.  This is
+  [Butt] other 2  ||  Schedule C.  Federal Employees Compensation Information.  Number 1C.    line two.  This is
+  [Text] Identification - name  ||  Certified Summary of Federal Service.  Section, A,.  Identification.  Number 1.  Enter the
+  [Text] Identification DOB  ||  Certified Summary of Federal Service.  Section, A,.  Identification.    Number 2.  Enter t
+  [Text] identification SSN  ||  Certified Summary of Federal Service.  Section, A,.  Identification.   Number 3.  Enter th
+  [Text] other names used  ||  Certified Summary of Federal Service.  Section, A,.  Identification.   Number 4.   Enter a
+  [Text] other birth dates used  ||  Certified Summary of Federal Service.  Section, A,.  Identification.    Number 5.  Enter a
+  [Text] other birth dates used 2  ||  Certified Summary of Federal Service.  Section, A,.  Identification.   Number 5.  If the e
+  [Text] military serial number 4  ||  Certified Summary of Federal Service.  Section, A,.  Identification.    Number 6.  Enter t
+  [Text] SCD  ||  Certified Summary of Federal Service.  Section, A,.  Identification.   Number 7.  Enter th
+  [Text] effective date  ||  Certified Summary of Federal Service.  Section, A,.  Identification.    Number 8.  If the 
+  [Text] Fed Ag or Mil Ser Br  ||  Certified Summary of Federal Service.    Section B.  Verified Service History Documented i
+  [Text] From - Dates of Service  ||  Certified Summary of Federal Service.    Section B.  Verified Service History Documented i
+  [Text] To - Dates of Service  ||  Certified Summary of Federal Service.   Section B.  Verified Service History Documented in
+  [Text] Retirement Systems  ||  Certified Summary of Federal Service.    Section B.  Verified Service History Documented i
+  [Text] Remarks  ||  Certified Summary of Federal Service.   Section B.  Verified Service History Documented in
+  [Text] Fed Ag or Mil Ser Br 2  ||  Certified Summary of Federal Service.    Section B.  Verified Service History Documented i
+  [Text] From - Dates of Service 2  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] To - Dates of Service 2  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] Retirement Systems 2  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] Remarks 2  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] Fed Ag or Mil Ser Br 3  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] From - Dates of Service 3  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] To - Dates of Service 3  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] Retirement Systems 3  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] Remarks 3  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] Fed Ag or Mil Ser Br 4  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] From - Dates of Service 4  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] To - Dates of Service 4  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] Retirement Systems 4  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] Remarks 4  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] Fed Ag or Mil Ser Br 5  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] From - Dates of Service 5  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] To - Dates of Service 5  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] Retirement Systems 5  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Text] Remarks 5  ||  Certified Summary of Federal Service.  Section B.  Verified Service History Documented in 
+  [Butt] transfer n  ||  Certified Summary of Federal Service.  Section, A,.  Identification.  Number 8,a,.  This i
+  [Butt] transfer y  ||  Certified Summary of Federal Service.  Section, A,.  Identification.  Number 8,a,.  This i
+  [Butt] part csrs y  ||  Certified Summary of Federal Service.  Section, A,.   Identification.  Number 8b.  This is
+  [Butt] part csrs n  ||  Certified Summary of Federal Service.  Section, A,.   Identification.  Number 8b.  This is
+  [Butt] military retired pay received y  ||  Certified Summary of Federal Service.  Section, A,.  Identification.  Number 9, A,.  This 
+  [Butt] military retired pay received n  ||  Certified Summary of Federal Service.  Section, A,.  Identification.  Number 9, A,.  This 
+  [Butt] waived military retired pay y  ||  Certified Summary of Federal Service.  Section, A,.  Identification.  Number 9B.  This is 
+  [Butt] waived military retired pay n  ||  Certified Summary of Federal Service.  Section, A,.   Identification.  Number 9B.  This is
+  [Text] sec d name address  ||  Certified Summary of Federal Service.  Section D.  Agency Certification.  Enter the agency
+  [Text] sec d official title  ||  Certified Summary of Federal Service.  Section D.  Agency Certification.   Enter your offi
+  [Text] Section D date  ||  Certified Summary of Federal Service.  Section D.  Agency Certification.   Enter the date 
+  [Text] Section E cert date  ||  Certified Summary of Federal Service.  Section E.  Employee's Certification.  Enter the da
+  [Butt] service complete  ||  Certified Summary of Federal Service.  Section E.  Employee's Certification.   This is che
+  [Butt] additional service  ||  Certified Summary of Federal Service.  Section E.  Employee's Certification.   This is che
+  [Text] consent DOB  ||  Spouse's Consent to Survivor Election.  Part 1.  To Be Completed by the Retiring Employee.
+  [Text] consent SSN  ||  Spouse's Consent to Survivor Election.  Part 1.  To Be Completed by the Retiring Employee.
+  [Butt] insurable  ||  Spouse's Consent to Survivor Election.  Part 1.  To Be Completed by the Retiring Employee.
+  [Butt] partial  ||  Spouse's Consent to Survivor Election.  Part 1.  To Be Completed by the Retiring Employee.
+  [Butt] no regular  ||  Spouse's Consent to Survivor Election.  Part 1.  To Be Completed by the Retiring Employee.
+  [Butt] maximum  ||  Spouse's Consent to Survivor Election.  Part 1.  To Be Completed by the Retiring Employee.
+  [Butt] partial survivor 1  ||  Spouse's Consent to Survivor Election.  Part 1.  To Be Completed by the Retiring Employee.
+  [Butt] partial survivor 2  ||  Spouse's Consent to Survivor Election.  Part 1.  To Be Completed by the Retiring Employee.
+  [Text] consent Name  ||  Spouse's Consent to Survivor Election.  Part 1.  To Be Completed by the Retiring Employee.
+  [Text] former spouse 2  ||  Spouse's Consent to Survivor Election.  Part 1.  To Be Completed by the Retiring Employee.
+  [Text] former spouse 1  ||  Spouse's Consent to Survivor Election.  Part 1.  To Be Completed by the Retiring Employee.
+  [Text] former spouse 3  ||  Spouse's Consent to Survivor Election.  Part 1.  To Be Completed by the Retiring Employee.
+  [Text] employing office checklist name  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.    Employing Office Che
+  [Text] employing office checklist DOB  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Text] employing office checklist  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Text] employing office checklist item 5  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Text] pay plan  ||  Section B, Federal Service.  Number 3,a,.  Enter your pay plan and occupational series.
+  [Text] enrollment code  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Text] number 7 reason  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Text] number 8 reason  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Text] 9f  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Text] agency checklist 12  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Text] PO email address  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Text] Chief personnel officer address  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Text] PO line two address  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Text] PO Cert  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Text] SON  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Text] contact  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Text] PO tele  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Text] PO fax  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Butt] immediate voluntary  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] age reduction  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] early  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] involuntary  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] disability  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 25 yrs law  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 20 yrs law  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 25 yrs ATC  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 20 yrs ATC  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] special provisions other  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] continue hb yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] continue hb no  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,. Employing Office Checkl
+  [Butt] continue life yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] continue life no  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] no optional  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] option A  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] option B  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] option b 1  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] option b 2  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] option b 3  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] option b 4  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] option b 5  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] option C  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] option c 1  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] option c 2  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] option c 3  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] option c 4  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] option c 5  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 3107 attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,. Employing Office Checkl
+  [Butt] 3107 n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] all docs attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] all docs n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,. Employing Office Checkl
+  [Butt] 3107-2 attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 3107-2 n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 3107-1 attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Butt] 3107-1 n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,. Employing Office Checkl
+  [Butt] discontinued docs attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] discontinued docs n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] estimate n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 3106 attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 3106 n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] post-1956 counsel yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] post-1956 counsel no  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] w-4 attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] w-4 n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] FEHB docs attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] FEHB docs n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] FEHB court order n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 2809 attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 2809 n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 2809 OWCP  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 2810 attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 2810 n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,. Employing Office Checkl
+  [Butt] 2810 OWCP  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 2821 attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 2821 n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 2818 attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 2818 n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 54 attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 54 n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 2817 attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 2817 n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 3102 n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] doc specified yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] doc specified no  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] estimate attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] DD 214 n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] DD 214 attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] waiver n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] waiver attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] Sch A B C attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] Sch A B C n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] FEHB court order attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] enhanced n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] enhanced attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] OWCP award attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] OWCP award n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 3102 attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 76-10 attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] 76-10 n/a  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Butt] comply yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] comply no  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] sick leave yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] sick leave no  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] part CSRS no  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] part CSRS yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] SL yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] SL no  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] last day yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] last day no  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] HB posted yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] HB posted no  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] preliminary 3100 yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] preliminary 3100 no  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] PO Cert yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] PO Cert no  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] MSD yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] MSD no  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] 3100/2806 yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] 3100/2806 no  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] PT yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] PT no  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] hours posted yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] hours posted no  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] postal yes  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] postal no  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Text] forwarded to  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Text] SF 3103 number  ||  Agency Checklist of Immediate Retirement Procedures.   Section B, Payroll Office Checklist
+  [Text] SF 3103 date  ||  Agency Checklist of Immediate Retirement Procedures.   Section B, Payroll Office Checklist
+  [Butt] separations attached  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] separations no  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Text] Section B. 12 Remarks  ||  Agency Checklist of Immediate Retirement Procedures.   Section B.  Payroll Office Checklis
+  [Text] payroll tele  ||  Agency Checklist of Immediate Retirement Procedures.   Section B.  Payroll Office Checklis
+  [Text] payroll date signed  ||  Agency Checklist of Immediate Retirement Procedures.   Section B, Payroll Office Checklist
+  [Text] payroll fax  ||  Agency Checklist of Immediate Retirement Procedures.   Section B.  Payroll Office Checklis
+  [Text] payroll office number  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Text] payroll email address  ||  Agency Checklist of Immediate Retirement Procedures.  Section B, Payroll Office Checklist.
+  [Butt] CLEAR  ||  This is the CLEAR button.  Press the enter key to CLEAR the form.   End of Form.
+  [Text] 6. pay plan  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.  Employing Office Check
+  [Text] no disability documentation explanation  ||  Agency Checklist of Immediate Retirement Procedures.  Section, A,.   Employing Office Chec
+  [Text] Nature of Action  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Total earned 9  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Effective Date  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic Salary Rate  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Salary basis  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] LWOP  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary From Date  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary To Date  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Total earned  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Nature of Action 2  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Effective Date 2  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic Salary Rate 2  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Salary basis 2  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] LWOP 2  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary From Date 2  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary To Date 2  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Total earned 2  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Nature of Action 3  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Effective Date 3  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic Salary Rate 3  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Salary basis 3  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] LWOP 3  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary From Date 3  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary To Date 3  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Total earned 3  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Nature of Action 4  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Effective Date 4  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic Salary Rate 4  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Salary basis 4  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] LWOP 4  ||  Certified Summary of Federal Service.   Section C.  Detail of Civilian Service Not Subject
+  [Text] Basic salary From Date 4  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary To Date 4  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Total earned 4  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Nature of Action 5  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Effective Date 5  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic Salary Rate 5  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Salary basis 5  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] LWOP 5  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary From Date 5  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary To Date 5  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Total earned 5  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Nature of Action 6  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Effective Date 6  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic Salary Rate 6  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Salary basis 6  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] LWOP 6  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary From Date 6  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary To Date 6  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Total earned 6  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Nature of Action 7  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Total earned 7  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Effective Date 7  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic Salary Rate 7  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Salary basis 7  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] LWOP 7  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary From Date 7  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary To Date 7  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Nature of Action 8  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Total earned 8  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Effective Date 8  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic Salary Rate 8  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Salary basis 8  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] LWOP 8  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary From Date 8  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary To Date 8  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Nature of Action 9  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Effective Date 9  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic Salary Rate 9  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Salary basis 9  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] LWOP 9  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary From Date 9  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+  [Text] Basic salary To Date 9  ||  Certified Summary of Federal Service.  Section C.  Detail of Civilian Service Not Subject 
+
+=== sf3108.pdf (232 actionable fields) ===
+  [Text] name  ||  Part, A,.  To be completed by the Applicant.  Number 1.  Enter your last, first and middle
+  [Text] other names  ||  Part, A,.  To be Completed by the Applicant.  Number 2.  Enter other names you have used.
+  [Text] birthdate  ||  Part, A,.  To be Completed by the Applicant.  Number 3.  Enter your birthdate.  Enter a tw
+  [Text] Applicant's Address1  ||  Part, A,.  To be Completed by the Applicant.  Number 4.  Enter your street number and name
+  [Text] Applicant's Address2  ||  Part, A,.  To be Completed by the Applicant.  Number 4.  Enter your City, State and ZIP Co
+  [Text] Last employed agency name  ||  Part, A,.  To be completed by the Applicant.  Number 5.  Enter the department or agency in
+  [Text] Applicant's SSN  ||  Part, A,. To Be completed by the Applicant.  Number 6.  Enter your social security number.
+  [Text] Last employed agency location  ||  Part A.  To be Completed by the Applicant.  Number 7.  Enter City and State of Agency wher
+  [Text] claim number(s)  ||  Part, A,.  To be completed by the Applicant.  Number 9B.  Enter your claim number or numbe
+  [Text] agency name 1.0  ||  Part, A,.  To be completed by Applicant.  Number 10.   Enter the department or agency, inc
+  [Text] agency name 1.1  ||  Part, A,.  To be completed by Applicant.  Number 10.   Enter the department or agency, inc
+  [Text] agency name 1.2  ||  Part, A,.  To be completed by Applicant.  Number 10.   Enter the department or agency, inc
+  [Text] agency name 1.3  ||  Part, A,.  To be completed by Applicant.  Number 10.   Enter the department or agency, inc
+  [Text] agency name 1.4  ||  Part, A,. To be completed by Applicant.  Number 10.   Enter the department or agency, incl
+  [Text] agency location 1.0  ||  Part, A,. To be completed by Applicant.  Number 10.  Enter the location (city and state) w
+  [Text] agency location 1.1  ||  Part, A,.  To be completed by Applicant.  Number 10.  Enter the location (city and state) 
+  [Text] agency location 1.2  ||  Part, A,.  To be completed by Applicant.  Number 10.  Enter the location (city and state) 
+  [Text] agency location 1.3  ||  Part, A,. To be completed by Applicant.  Number 10.  Enter the location (city and state) w
+  [Text] agency location 1.4  ||  Part, A,.  To be completed by Applicant.  Number 10.  Enter the location (city and state) 
+  [Text] Job position 1.0  ||  Part, A,.  To be completed by applicant.  Number 10.  Enter the title of position for your
+  [Text] Job position 1.1  ||  Part, A,.  To be completed by applicant.  Number 10.  Enter the title of position for your
+  [Text] Job position 1.2  ||  Part, A,. To be completed by applicant.  Number 10.  Enter the title of position for your 
+  [Text] Job position 1.3  ||  Part, A,.  To be completed by applicant.  Number 10.  Enter the title of position for your
+  [Text] Job position 1.4  ||  Part, A,.  To be completed by applicant.  Number 10.  Enter the title of position for your
+  [Text] Period of Service Beginning Date 1.0  ||  Part, A,.  To be completed by applicant.  Number 10.  Enter the beginning date of your fir
+  [Text] Period of Service Beginning Date 1.1  ||  Part, A,.  To be completed by applicant.  Number 10.  Enter the beginning date of your sec
+  [Text] Period of Service Beginning Date 1.2  ||  Part, A,.  To be completed by applicant.  Number 10.  Enter the beginning date of your thi
+  [Text] Period of Service Beginning Date 1.3  ||  Part, A,.  To be completed by applicant.  Number 10.  Enter the beginning date of your fou
+  [Text] Period of Service Beginning Date 1.4  ||  Part, A,.  To be completed by applicant.  Number 10.  Enter the beginning date of your fif
+  [Text] Period of Service Ending Date 1.0  ||  Part, A,.  To be completed by applicant.  Number 10.  Enter the ending date of your first 
+  [Text] Period of Service Ending Date 1.1  ||  Part, A,.  To be completed by applicant.  Number 10.  Enter the ending date of your second
+  [Text] Period of Service Ending Date 1.2  ||  Part, A,. To be completed by applicant.  Number 10.  Enter the ending date of your third p
+  [Text] Period of Service Ending Date 1.3  ||  Part, A,.  To be completed by applicant.  Number 10.  Enter the ending date of your fourth
+  [Text] Period of Service Ending Date 1.4  ||  Part, A,.  To be completed by applicant.  Number 10.  Enter the ending date of your fifth 
+  [Text] separation date  ||  Part, A,. To be completed by applicant.  Number 12.  If you answered no in item 11, give t
+  [Text] area code  ||  Part, A,.  To be completed by the applicant.  Number 14.  Enter your area code for the num
+  [Text] telephone number  ||  Part, A,.  To be completed by the applicant.  Number 14.  Enter the telephone number where
+  [Text] date signed  ||  Part, A,. To be completed by the applicant.  Number 16.  Enter the date you signed the for
+  [Butt] filed yes  ||  Part, A,.  To be completed by the applicant.    Number 9.  This is the yes check box.  Pre
+  [Butt] filed no  ||  Part, A,.   Number 9.  This is the no check box.  Press the space bar to select this box i
+  [Butt] service  ||  Part, A,.   Number 9, A.  This is check box one of four.  Press the space bar to select th
+  [Butt] refund  ||  Part, A,.   Number 9, A.  This is check box two of four.  Press the space bar to select th
+  [Butt] return  ||  Part, A,.   Number 9, A.  This is check box three of four.  Press the space bar to select 
+  [Butt] retirement  ||  Part, A,.   Number 9, A.  This is check box four of four.  Press the space bar to select t
+  [Butt] 10. CS  ||  Part, A,.  Number 10.  This is check box one of two.  Press the space bar to select this b
+  [Butt] 10. MS  ||  Part, A,.   Number 10.  This is check box two of two.  Press the space bar to select this 
+  [Butt] not withheld 1  ||  Part, A,.   Number 10.  This is check box one of three.  Press the space bar to select thi
+  [Butt] withheld/refunded 1  ||  Part, A,.   Number 10.  This is check box two of three.  Press the space bar to select thi
+  [Butt] withheld not refunded 1  ||  Part, A,.  Number 10.  This is check box three of three.  Press the space bar to select th
+  [Butt] period of service.0  ||  Part, A,.   Number 10.  If you want to pay for your first period of service, press the spa
+  [Butt] period of service.1  ||  Part, A,.   Number 10.  If you want to pay for your second period of service, press the sp
+  [Butt] period of service.2  ||  Part, A,.   Number 10.  If you want to pay for your third period of service, press the spa
+  [Butt] period of service.3  ||  Part, A,.  Number 10.  If you want to pay for your fourth period of service, press the spa
+  [Butt] period of service.4  ||  Part, A,.  Number 10.  If you want to pay for your fifth period of service, press the spac
+  [Butt] not withheld 2  ||  Part, A,.   Number 10.  This is check box one of three.  Press the space bar to select thi
+  [Butt] withheld/refunded 2  ||  Part, A,.   Number 10.  This is check box two of three.  Press the space bar to select thi
+  [Butt] withheld not refunded 2  ||  Part, A,.   Number 10.  This is check box three of three.  Press the space bar to select t
+  [Butt] not withheld 3  ||  Part, A,.  Number 10.  This is check box one of three.  Press the space bar to select this
+  [Butt] withheld/refunded 3  ||  Part, A,.   Number 10.  This is check box two of three.  Press the space bar to select thi
+  [Butt] withheld not refunded 3  ||  Part, A,.   Number 10.  This is check box three of three.  Press the space bar to select t
+  [Butt] not withheld 4  ||  Part, A,.   Number 10.  This is check box one of three.  Press the space bar to select thi
+  [Butt] withheld/refunded 4  ||  Part, A,.   Number 10.  This is check box two of three.  Press the space bar to select thi
+  [Butt] withheld not refunded 4  ||  Part, A,.   Number 10.  This is check box three of three.  Press the space bar to select t
+  [Butt] not withheld 5  ||  Part, A,.   Number 10.  This is check box one of three.  Press the space bar to select thi
+  [Butt] withheld/refunded 5  ||  Part, A,.   Number 10.  This is check box two of three.  Press the space bar to select thi
+  [Butt] withheld not refunded 5  ||  Part, A,.   Number 10.  This is check box three of three.  Press the space bar to select t
+  [Butt] deductions Y  ||  Part, A,.   To be completed by applicant.  Number 11.  This is the yes checkbox.  Press th
+  [Butt] deductions N  ||  Part, A,.   To be completed by applicant.  Number 11.  This is the no checkbox.  Press the
+  [Butt] transfer N  ||  Part B.  To be completed by the employing agency.   Number 1.  This is the no check box.  
+  [Butt] transfer Y  ||  Part B.  To be completed by the employing agency.  Number 1.  This is the Yes, check box. 
+  [Text] Effective Date of Federal Employees Retirement System Election  ||  Part B.  To be completed by the employing agency.  Number 1.  If the employee elected to t
+  [Text] agency.0  ||  Part B.  To be completed by the Employing agency.  Number 2.  From verified service docume
+  [Text] agency.1  ||  Part B.  To be completed by the Employing agency.  Number 2.  From verified service docume
+  [Text] agency.2  ||  Part B.  To be completed by the Employing agency.  Number 2.  From verified service docume
+  [Text] agency.3  ||  Part B.  To be completed by the Employing agency.  Number 2.  From verified service docume
+  [Text] retirement system.0  ||  Part B.  To be completed by the employing agency.  From verified service documented in off
+  [Text] retirement system.1  ||  Part B.  To be completed by the employing agency.  From verified service documented in off
+  [Text] retirement system.3  ||  Part B.  To be completed by the employing agency.  From verified service documented in off
+  [Text] retirement system.2  ||  Part B.  To be completed by the employing agency.  From verified service documented in off
+  [Text] beginning period of service.0  ||  Part B.  To be completed by the employing agency.  Number 2.  From service verified in the
+  [Text] beginning period of service.1  ||  Part B.  To be completed by the employing agency.  Number 2.  From service verified in the
+  [Text] beginning period of service.2  ||  Part B.  To be completed by the employing agency.  Number 2.  From service verified in the
+  [Text] beginning period of service.3  ||  Part B.  To be completed by the employing agency.  Number 2.  From service verified in the
+  [Text] ending period of service.0  ||  Part B.  To be completed by the employing agency.  Number 2.  From service verified in the
+  [Text] ending period of service.1  ||  Part B.  To be completed by the employing agency.  Number 2.  From service verified in the
+  [Text] ending period of service.2  ||  Part B.  To be completed by the employing agency.  Number 2.  From service verified in the
+  [Text] ending period of service.3  ||  Part B.  To be completed by the employing agency.  Number 2.  From service verified in the
+  [Text] Nature of Action1.0  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Nature of Action1.1  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Nature of Action1.2  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Nature of Action1.3  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Nature of Action1.4  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Nature of Action1.5  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Nature of Action1.6  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Nature of Action1.7  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Nature of Action1.8  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Effective Date of Action1.0  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Effective Date of Action1.1  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Effective Date of Action1.2  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Effective Date of Action1.3  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Effective Date of Action1.4  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Effective Date of Action1.5  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Effective Date of Action1.6  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Effective Date of Action1.7  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Effective Date of Action1.8  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Basic Salary Rate1.0  ||  Part B.  To be completed by the employiing agency.  Number 3, Civilian Service Not Under F
+  [Text] Basic Salary Rate1.1  ||  Part B.  To be completed by the employiing agency.  Number 3, Civilian Service Not Under F
+  [Text] Basic Salary Rate1.2  ||  Part B.  To be completed by the employiing agency.  Number 3, Civilian Service Not Under F
+  [Text] Basic Salary Rate1.3  ||  Part B.  To be completed by the employiing agency.  Number 3, Civilian Service Not Under F
+  [Text] Basic Salary Rate1.4  ||  Part B.  To be completed by the employiing agency.  Number 3, Civilian Service Not Under F
+  [Text] Basic Salary Rate1.5  ||  Part B.  To be completed by the employiing agency.  Number 3, Civilian Service Not Under F
+  [Text] Basic Salary Rate1.6  ||  Part B.  To be completed by the employiing agency.  Number 3, Civilian Service Not Under F
+  [Text] Basic Salary Rate1.7  ||  Part B.  To be completed by the employiing agency.  Number 3, Civilian Service Not Under F
+  [Text] Basic Salary Rate1.8  ||  Part B.  To be completed by the employiing agency.  Number 3, Civilian Service Not Under F
+  [Text] Salary Basis1.0  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service not Under FERS o
+  [Text] Salary Basis1.1  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service not Under FERS o
+  [Text] Salary Basis1.2  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service not Under FERS o
+  [Text] Salary Basis1.3  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service not Under FERS o
+  [Text] Salary Basis1.4  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service not Under FERS o
+  [Text] Salary Basis1.5  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service not Under FERS o
+  [Text] Salary Basis1.6  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service not Under FERS o
+  [Text] Salary Basis1.7  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service not Under FERS o
+  [Text] Salary Basis1.8  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service not Under FERS o
+  [Text] Leave Without Pay1.0  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Leave Without Pay1.1  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Leave Without Pay1.2  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Leave Without Pay1.3  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Leave Without Pay1.4  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Leave Without Pay1.5  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Leave Without Pay1.6  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Leave Without Pay1.7  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] Leave Without Pay1.8  ||  Part B.  To be completed by employing agency.  Number 3, Civilian Service Not Under FERS o
+  [Text] BS Beginning1.0  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Beginning1.1  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Beginning1.2  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Beginning1.3  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Beginning1.4  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Beginning1.5  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Beginning1.6  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Beginning1.7  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Beginning1.8  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Ending1.0  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Ending1.1  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Ending1.2  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Ending1.3  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Ending1.4  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Ending1.5  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Ending1.6  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Ending1.7  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] BS Ending1.8  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Salary Total1.0  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Salary Total1.1  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Salary Total1.2  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Salary Total1.3  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Salary Total1.4  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Salary Total1.5  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Salary Total1.6  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Salary Total1.7  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Salary Total1.8  ||  Part B.  To be completed by the employing agency.  Number 3, Civilian Service Not Under FE
+  [Text] Comments  ||  Part B.  To be completed by employing agency.  Number 3.  Enter your comments.
+  [Text] agency address  ||  Part B.  To be completed by the employing agency.  Certification.  Enter the agency addres
+  [Text] Signature Date  ||  Part B.  To be completed by the employing agency.  Certification.  Enter the date of certi
+  [Text] Official Title  ||  Part B.  To be completed by the employing agency.  Certification.  Enter the official titl
+  [Text] Agency Area Code  ||  Part B.  To be completed by the employiing agency.  Certification.  Enter the area code fo
+  [Text] Agency's Telephone Number  ||  Part B.  To be completed by the employing agency. Certification.  Enter the telephone numb
+  [Text] Agency FAX Area Code  ||  Part B.  To be completed by the employing agency. Certification.   Enter the area code of 
+  [Text] Agency's FAX Number  ||  Part B.  To be completed by the employing agency. Certification.   Enter the certifier's f
+  [Text] name employee's  ||  Application to pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] birthdate employee's  ||  Application To Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] SSN Employee's  ||  Application To Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Branch of Military.0.0  ||  Application To Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Branch of Military.1.0.0  ||  Application To Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Branch of Military.1.0.1  ||  Application To Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Branch of Military.1.0.2  ||  Application To Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Branch of Military.1.0.3.0  ||  Application To Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Branch of Military.1.0.3.1  ||  Application To Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Military service beginning.0.0  ||  Application to Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Military service beginning.1.0.0  ||  Application to Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Military service beginning.1.0.1  ||  Application to Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Military service beginning.1.0.2  ||  Application to Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Military service beginning.1.0.3.0  ||  Application to Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Military service beginning.1.0.3.1  ||  Application to Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Military service ending.0.0  ||  Application to Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Military service ending.1.0.0  ||  Application to Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Military service ending.1.0.1  ||  Application to Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Military service ending.1.0.2  ||  Application to Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Military service ending.1.0.3.0  ||  Application to Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Military service ending.1.0.3.1  ||  Application to Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] IAD.0  ||  Application to Pay Military Deposit.  Number One.  Information About Employee's Military S
+  [Text] IAD.1  ||  Application to Pay Military Deposit.  Number One.  Information About Employee's Military S
+  [Text] IAD.2  ||  Application to Pay Military Deposit.  Number One.  Information About Employee's Military S
+  [Text] IAD.3  ||  Application to Pay Military Deposit.  Number One.  Information About Employee's Military S
+  [Text] IAD.4  ||  Application to Pay Military Deposit.  Number One.  Information About Employee's Military S
+  [Text] IAD.5  ||  Application to Pay Military Deposit.  Number One.  Information About Employee's Military S
+  [Text] military application agency official signature date  ||  Application to Pay Military Deposit.  Number One.  Information About Employee's Military S
+  [Text] employee's Area Code2  ||  Application to Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Signature Date employee  ||  Application to Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Butt] CSRS.0  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] CSRS.1  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] CSRS.2  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] CSRS.3  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] CSRS.4  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] CSRS.5  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] FERS.0  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] FERS.1  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] FERS.2  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] FERS.3  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] FERS.4  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] FERS.5  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] ADC yes.0  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] ADC yes.1  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] ADC yes.2  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] ADC yes.3  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] ADC yes.4  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] ADC yes.5  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] ADC no.0  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] ADC no.1  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] ADC no.2  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] ADC no.3  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] ADC no.4  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] ADC no.5  ||  Application to Pay Military Deposit.  1.  Information About Employee's Military Service.  
+  [Butt] Print Military Application  ||  This is the print button.  Press the enter key to print the form.
+  [Butt] Save Military Application  ||  This is the save button.  Press the enter key to save the form.  You must have the full ve
+  [Butt] Clear Military Application  ||  This is the clear button.  Press the enter key to clear your entries on the Application to
+  [Butt] Print (agency)  ||  This is the print button.  Press the enter key to print the form.
+  [Butt] Save (agency)  ||  This is the save button.  Press the enter key to save the form.  You must have the full ve
+  [Butt] Clear Agency  ||  This is the clear button.  Press the enter key to clear the agency portion of the S F 31 0
+  [Text] Applicant's Job position  ||  Part, A,.  To be completed by the Applicant.  Number 8.  Enter your title of position.
+  [Text] Email Address  ||  Part, A,.  To be completed by the Applicant.  Number 15.   Enter your email address.
+  [Text] employees Telephone Number2  ||  Application To Pay Military Deposit.  2.  Employee's acknowledgement of Understanding of M
+  [Text] email address 2  ||  Application to Pay Military Deposit For Military Service Performed After December 31, 1956
+  [Text] Agency cert email address  ||  Part B.  To be completed by the employing agency.    Certification.   To be completed by t

@@ -1,0 +1,22 @@
+{
+  "licensed": true,
+  "tenant_id": "00000000-0000-0000-0000-000000000000",
+  "customer_name": "FedSafeRetirement",
+  "seat_id": "11111111-1111-1111-1111-111111111111",
+  "session_token": "SHORT_LIVED_SIGNED_TOKEN_PLACEHOLDER",
+  "expires_at_utc": "2026-05-15T13:00:00Z",
+  "features": {
+    "copilot_drawer": true,
+    "letter_ai_templates": true,
+    "ai_rules": true,
+    "dom_write_actions": false,
+    "admin_tools": false,
+    "debug_panel": true,
+    "telemetry": true
+  },
+  "limits": {
+    "daily_ai_calls": 100,
+    "max_templates": 250
+  },
+  "messages": []
+}

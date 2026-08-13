@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="index,follow" />
+  <title>Privacy Policy — FedSafe Retirement Copilot</title>
+  <style>
+    :root { --ink:#0f172a; --muted:#475569; --line:#e2e8f0; --accent:#4f46e5; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:#f8fafc; color:var(--ink);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      line-height:1.6; }
+    .wrap { max-width:820px; margin:0 auto; padding:48px 22px 80px; }
+    header { border-bottom:1px solid var(--line); padding-bottom:20px; margin-bottom:28px; }
+    h1 { font-size:26px; margin:0 0 6px; }
+    h2 { font-size:17px; margin:30px 0 8px; }
+    .sub { color:var(--muted); font-size:13px; }
+    p, li { color:#1e293b; font-size:15px; }
+    ul { padding-left:20px; }
+    a { color:var(--accent); }
+    code { background:#eef2ff; padding:1px 6px; border-radius:5px; font-size:13px; }
+    .note { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-top:24px; font-size:14px; color:var(--muted); }
+    footer { margin-top:40px; padding-top:18px; border-top:1px solid var(--line); color:var(--muted); font-size:13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>FedSafe Retirement Copilot — Privacy Policy</h1>
+      <div class="sub">Effective date: June 24, 2026 &nbsp;·&nbsp; Last updated: June 24, 2026</div>
+    </header>
+
+    <p>FedSafe Retirement Copilot ("the extension") is a Google Chrome extension used by
+      authorized FedSafe Retirement agents inside the Act!&nbsp;CRM web application
+      (<code>*.act.com</code>). It reads the fields of the Act! contact record the agent is
+      currently viewing in order to display contact information, auto-calculate derived
+      federal-retirement values (for example, age from date of birth and years of service),
+      and validate FEGLI codes — all within the Act! page. This policy explains what data the
+      extension accesses, how it is used, and how it is protected.</p>
+
+    <h2>1. Information the extension accesses</h2>
+    <ul>
+      <li><strong>Act! contact field data</strong> shown on the current contact page (e.g., name,
+        contact details, date of birth, and federal-retirement fields) — accessed so the
+        extension can display, validate, and compute values for that record.</li>
+      <li><strong>Act! database name / contact identifier</strong> from the current page, used to
+        request the correct record and to cache the field layout for that database.</li>
+      <li><strong>Field-layout metadata</strong> (field names and types) retrieved from the Act!
+        Web API to map the form fields.</li>
+    </ul>
+    <p>The extension operates only on Act!&nbsp;CRM pages. It does not access, read, or inject into
+      any other websites, and it does not track your browsing activity.</p>
+
+    <h2>2. How information is used</h2>
+    <ul>
+      <li>To render the Copilot panel and show the current contact's information.</li>
+      <li>To compute derived fields (such as age and years of service) and write them back into
+        the corresponding Act! fields.</li>
+      <li>To validate FEGLI codes against an approved reference list.</li>
+    </ul>
+    <p>Information is used solely to provide this in-CRM functionality for the authorized agent
+      viewing their own organization's records. It is not used for advertising or profiling.</p>
+
+    <h2>3. Backend service &amp; data transmission</h2>
+    <p>The extension communicates over HTTPS with our backend at
+      <code>https://fedsafe-retirement.vercel.app</code>, which acts as a secure server-side proxy
+      to the Act!&nbsp;Web API. Act! API credentials are held only on the server and are never
+      stored in or exposed to the extension. The backend is used to retrieve contact data, field
+      metadata, and FEGLI reference codes.</p>
+
+    <h2>4. Local storage</h2>
+    <p>The extension uses Chrome's <code>storage.local</code> to cache a per-database field map
+      (field names and types) so it does not re-scan the page on every load, and to remember
+      user interface preferences and auto-fill rules. <strong>It does not store contact personal
+      information, financial details, or Act! passwords in browser storage.</strong></p>
+
+    <h2>5. Data we do not collect or do</h2>
+    <ul>
+      <li>We do not sell user or contact data.</li>
+      <li>We do not use data for personalized, retargeted, or interest-based advertising.</li>
+      <li>We do not collect data from sites other than Act!&nbsp;CRM.</li>
+      <li>We do not execute remotely-hosted code; all extension logic ships in the package.</li>
+    </ul>
+
+    <h2>6. Service providers</h2>
+    <p>Contact data is processed within the infrastructure that supports the FedSafe Retirement
+      platform — including Act!/Swiftpage (the CRM of record), Vercel (backend hosting), and
+      Supabase (backend data services) — each acting as a processor for the purposes described
+      above. Data is transmitted over encrypted (HTTPS) connections.</p>
+
+    <h2>7. Data retention</h2>
+    <p>The field-map cache and preferences remain in your browser's local storage until you clear
+      it, use the in-panel "Remap" action, or remove the extension. Contact records themselves
+      live in Act!&nbsp;CRM and are governed by your organization's Act! data policies.</p>
+
+    <h2>8. Your choices</h2>
+    <p>You can remove the extension at any time from <code>chrome://extensions</code>, which deletes
+      its local storage. Access to contact data is controlled by your Act!&nbsp;CRM login and your
+      organization's permissions.</p>
+
+    <h2>9. Human access</h2>
+    <p>Personnel access customer data only when necessary for support, security, or legal
+      compliance, or with the customer's consent.</p>
+
+    <h2>10. Changes to this policy</h2>
+    <p>We may update this policy as the extension evolves. Material changes will be reflected by
+      updating the "Last updated" date above.</p>
+
+    <h2>11. Contact</h2>
+    <p>Questions about this policy or your data: <a href="mailto:support@fedsaferetirement.com">support@fedsaferetirement.com</a>.</p>
+
+    <footer>
+      © 2026 FedSafe Retirement. This Privacy Policy applies to the FedSafe Retirement Copilot
+      Chrome extension.
+    </footer>
+  </div>
+</body>
+</html>

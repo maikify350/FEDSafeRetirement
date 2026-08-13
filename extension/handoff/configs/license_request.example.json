@@ -1,0 +1,14 @@
+{
+  "extension_id": "abcdefghijklmnopabcdefghijklmnop",
+  "extension_version": "0.2.0",
+  "channel": "beta",
+  "install_id": "3f3b28ab-4ad7-45af-b019-0d0bbf8e36a6",
+  "user_email": "pilot.user@fedsaferetirement.com",
+  "platform": "act",
+  "page_origin": "https://app.act.com",
+  "act_database_id": "ACT-DB-ID-PLACEHOLDER",
+  "act_database_name": "FedSafeRetirement",
+  "tenant_hint": "fedsafe",
+  "browser": "Chrome",
+  "timestamp_utc": "2026-05-15T12:00:00Z"
+}

@@ -1,0 +1,24 @@
+{
+  "tenant_key": "fedsafe",
+  "tenant_name": "FedSafeRetirement",
+  "channel": "beta",
+  "platform": "act",
+  "minimum_extension_version": "0.2.0",
+  "global_kill_switch": false,
+  "tenant_kill_switch": false,
+  "read_only_mode": true,
+  "features": {
+    "copilot_drawer": true,
+    "letter_ai_templates": true,
+    "ai_rules": true,
+    "dom_write_actions": false,
+    "admin_tools": false,
+    "debug_panel": true,
+    "telemetry": true
+  },
+  "audit": {
+    "log_license_checks": true,
+    "log_feature_usage": true,
+    "log_page_content": false
+  }
+}
