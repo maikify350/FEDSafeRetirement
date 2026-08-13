@@ -255,6 +255,7 @@ return () => window.clearTimeout(t)
         strokeColor: '#dc2626',
         strokeOpacity: 0.5,
         strokeWeight: 1.5,
+        // @ts-ignore -- strokePattern is valid but missing from @types/google.maps
         strokePattern: [{ icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, scale: 4 }, offset: '0', repeat: '20px' }],
       })
     }
@@ -773,3 +774,4 @@ return (
     </RadiusMaximizedContext.Provider>
   )
 }
+
