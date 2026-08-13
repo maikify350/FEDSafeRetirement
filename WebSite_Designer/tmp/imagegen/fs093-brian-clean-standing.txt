@@ -1,0 +1,12 @@
+Use case: photorealistic-natural
+Asset type: seminar alternate for the FedSafe review microsite
+Primary request: Create a premium photorealistic seminar image using Brian Westrich's headshot as the identity reference and the FedSafe shield mark as the exact branding reference. Show Brian standing at the front of a retirement seminar, facing a seated audience, with a conversational side-turned posture and one hand gesturing toward attendees. He should wear a lighter blue polo shirt and khaki pants.
+Input images: Image 1 is Brian's identity reference. Image 2 is the exact FedSafe shield reference and must not be altered in color, shape, proportions, or design.
+Scene/background: bright seminar or training room, no podium, no projected logo, no extra signs, relaxed professional setting, seated attendees visible from behind and in profile
+Subject: Brian Westrich, flattering build, warm and confident expression, lighter blue polo shirt, khaki pants, one small exact FedSafe shield logo embroidered on the left chest only
+Style/medium: premium editorial photorealism
+Composition/framing: wide horizontal 16:9, Brian standing in front of the room and facing the crowd, slightly angled for pose variety, seminar energy, not one-on-one consultation
+Lighting/mood: warm clean conference lighting, approachable, reassuring, polished
+Color palette: lighter blue, khaki, beige, soft gray, warm neutrals
+Constraints: preserve Brian likeness; audience clothing must be relaxed business casual, not mostly dark suits; include middle-aged women in the audience; only one logo should appear in the whole image and it must be the exact FedSafe shield on his shirt; no duplicate logo, no background logo, no screen logo, no podium logo, no watermark
+Avoid: second logo, overlapping logo, distorted logo, logo with wrong colors, black shirt, black pants, oversized branding, stock stiffness, consultation framing

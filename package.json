@@ -1,0 +1,18 @@
+{
+  "name": "fedsafe-retirement-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build:website": "npm --prefix WebSite run build",
+    "preview:website": "npm --prefix WebSite run preview",
+    "dev:website": "npm --prefix WebSite run dev",
+    "build:designer": "npm --prefix WebSite_Designer run build",
+    "typecheck:designer": "npm --prefix WebSite_Designer run typecheck",
+    "dev:designer": "npm --prefix WebSite_Designer run dev",
+    "render:social": "npm --prefix SocialMedia/June28WebinarReel run render",
+    "preview:social": "npm --prefix SocialMedia/June28WebinarReel run preview"
+  }
+}

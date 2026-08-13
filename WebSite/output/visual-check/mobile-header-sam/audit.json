@@ -1,0 +1,354 @@
+[
+  {
+    "page": "/",
+    "width": 390,
+    "issues": [],
+    "metrics": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "logo": {
+        "left": 18,
+        "top": 12,
+        "right": 53.578125,
+        "bottom": 52,
+        "width": 35.578125,
+        "height": 40
+      },
+      "sam": {
+        "left": 60.578125,
+        "top": 2,
+        "right": 95.984375,
+        "bottom": 47,
+        "width": 35.40625,
+        "height": 45
+      },
+      "phone": {
+        "left": 196.1875,
+        "top": 18,
+        "right": 289.1875,
+        "bottom": 46,
+        "width": 93,
+        "height": 28
+      },
+      "menu": {
+        "left": 328.796875,
+        "top": 32,
+        "right": 361.1875,
+        "bottom": 32,
+        "width": 32.390625,
+        "height": 0
+      },
+      "samVisible": true,
+      "brokenImages": 0
+    }
+  },
+  {
+    "page": "/benefits-analysis/",
+    "width": 390,
+    "issues": [],
+    "metrics": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "logo": {
+        "left": 18,
+        "top": 12,
+        "right": 53.578125,
+        "bottom": 52,
+        "width": 35.578125,
+        "height": 40
+      },
+      "sam": {
+        "left": 60.578125,
+        "top": 2,
+        "right": 95.984375,
+        "bottom": 47,
+        "width": 35.40625,
+        "height": 45
+      },
+      "phone": {
+        "left": 196.1875,
+        "top": 18,
+        "right": 289.1875,
+        "bottom": 46,
+        "width": 93,
+        "height": 28
+      },
+      "menu": {
+        "left": 328.796875,
+        "top": 32,
+        "right": 361.1875,
+        "bottom": 32,
+        "width": 32.390625,
+        "height": 0
+      },
+      "samVisible": true,
+      "brokenImages": 0
+    }
+  },
+  {
+    "page": "/main-contact/",
+    "width": 390,
+    "issues": [],
+    "metrics": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "logo": {
+        "left": 18,
+        "top": 9,
+        "right": 58.921875,
+        "bottom": 55,
+        "width": 40.921875,
+        "height": 46
+      },
+      "sam": {
+        "left": 65.921875,
+        "top": 2,
+        "right": 101.328125,
+        "bottom": 47,
+        "width": 35.40625,
+        "height": 45
+      },
+      "phone": {
+        "left": 196.1875,
+        "top": 18,
+        "right": 289.1875,
+        "bottom": 46,
+        "width": 93,
+        "height": 28
+      },
+      "menu": {
+        "left": 328.796875,
+        "top": 32,
+        "right": 361.1875,
+        "bottom": 32,
+        "width": 32.390625,
+        "height": 0
+      },
+      "samVisible": true,
+      "brokenImages": 0
+    }
+  },
+  {
+    "page": "/terms-of-service/",
+    "width": 390,
+    "issues": [],
+    "metrics": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "logo": {
+        "left": 18,
+        "top": 12,
+        "right": 53.578125,
+        "bottom": 52,
+        "width": 35.578125,
+        "height": 40
+      },
+      "sam": {
+        "left": 60.578125,
+        "top": 2,
+        "right": 95.984375,
+        "bottom": 47,
+        "width": 35.40625,
+        "height": 45
+      },
+      "phone": {
+        "left": 196.1875,
+        "top": 18,
+        "right": 289.1875,
+        "bottom": 46,
+        "width": 93,
+        "height": 28
+      },
+      "menu": {
+        "left": 328.796875,
+        "top": 32,
+        "right": 361.1875,
+        "bottom": 32,
+        "width": 32.390625,
+        "height": 0
+      },
+      "samVisible": true,
+      "brokenImages": 0
+    }
+  },
+  {
+    "page": "/",
+    "width": 360,
+    "issues": [],
+    "metrics": {
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "logo": {
+        "left": 18,
+        "top": 12,
+        "right": 53.578125,
+        "bottom": 52,
+        "width": 35.578125,
+        "height": 40
+      },
+      "sam": {
+        "left": 60.578125,
+        "top": 2,
+        "right": 95.984375,
+        "bottom": 47,
+        "width": 35.40625,
+        "height": 45
+      },
+      "phone": {
+        "left": 169.796875,
+        "top": 18,
+        "right": 262.796875,
+        "bottom": 46,
+        "width": 93,
+        "height": 28
+      },
+      "menu": {
+        "left": 302.40625,
+        "top": 32,
+        "right": 334.796875,
+        "bottom": 32,
+        "width": 32.390625,
+        "height": 0
+      },
+      "samVisible": true,
+      "brokenImages": 0
+    }
+  },
+  {
+    "page": "/benefits-analysis/",
+    "width": 360,
+    "issues": [],
+    "metrics": {
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "logo": {
+        "left": 18,
+        "top": 12,
+        "right": 53.578125,
+        "bottom": 52,
+        "width": 35.578125,
+        "height": 40
+      },
+      "sam": {
+        "left": 60.578125,
+        "top": 2,
+        "right": 95.984375,
+        "bottom": 47,
+        "width": 35.40625,
+        "height": 45
+      },
+      "phone": {
+        "left": 169.796875,
+        "top": 18,
+        "right": 262.796875,
+        "bottom": 46,
+        "width": 93,
+        "height": 28
+      },
+      "menu": {
+        "left": 302.40625,
+        "top": 32,
+        "right": 334.796875,
+        "bottom": 32,
+        "width": 32.390625,
+        "height": 0
+      },
+      "samVisible": true,
+      "brokenImages": 0
+    }
+  },
+  {
+    "page": "/main-contact/",
+    "width": 360,
+    "issues": [],
+    "metrics": {
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "logo": {
+        "left": 18,
+        "top": 9,
+        "right": 58.921875,
+        "bottom": 55,
+        "width": 40.921875,
+        "height": 46
+      },
+      "sam": {
+        "left": 65.921875,
+        "top": 2,
+        "right": 101.328125,
+        "bottom": 47,
+        "width": 35.40625,
+        "height": 45
+      },
+      "phone": {
+        "left": 169.796875,
+        "top": 18,
+        "right": 262.796875,
+        "bottom": 46,
+        "width": 93,
+        "height": 28
+      },
+      "menu": {
+        "left": 302.40625,
+        "top": 32,
+        "right": 334.796875,
+        "bottom": 32,
+        "width": 32.390625,
+        "height": 0
+      },
+      "samVisible": true,
+      "brokenImages": 0
+    }
+  },
+  {
+    "page": "/terms-of-service/",
+    "width": 360,
+    "issues": [],
+    "metrics": {
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "logo": {
+        "left": 18,
+        "top": 12,
+        "right": 53.578125,
+        "bottom": 52,
+        "width": 35.578125,
+        "height": 40
+      },
+      "sam": {
+        "left": 60.578125,
+        "top": 2,
+        "right": 95.984375,
+        "bottom": 47,
+        "width": 35.40625,
+        "height": 45
+      },
+      "phone": {
+        "left": 169.796875,
+        "top": 18,
+        "right": 262.796875,
+        "bottom": 46,
+        "width": 93,
+        "height": 28
+      },
+      "menu": {
+        "left": 302.40625,
+        "top": 32,
+        "right": 334.796875,
+        "bottom": 32,
+        "width": 32.390625,
+        "height": 0
+      },
+      "samVisible": true,
+      "brokenImages": 0
+    }
+  }
+]

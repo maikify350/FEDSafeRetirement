@@ -1,0 +1,11 @@
+Use case: photorealistic-natural
+Asset type: seminar alternate for a retirement-planning microsite
+Primary request: Create a premium photorealistic seminar image using the provided partner headshot as the identity reference and the provided FedSafe logo as the shirt and podium branding reference. Show Ben Bailey standing at the front of the room behind a polished presentation podium with a large FedSafe shield-style sign mounted on the front. He is facing a seated audience and clearly presenting to them, not standing in the back of the room. The audience should be seated in rows and include more middle-aged women than before, with a balanced professional crowd of near-retirement federal employees.
+Scene/background: tasteful seminar room or conference room, audience seated and listening, presenter at the front facing them
+Subject: Ben Bailey in a casual branded collared shirt, approachable and confident, presenting retirement-planning material
+Style/medium: premium editorial photorealism
+Composition/framing: wide horizontal 16:9 scene, presenter and podium in the foreground/front of room, seated audience visible from the side or from behind, clear sense he is addressing them
+Lighting/mood: warm clean conference lighting, credible, premium, confident
+Color palette: navy, gold, white, professional neutrals
+Constraints: preserve Ben Bailey likeness from the headshot, keep the outfit casual not a suit, include visible FedSafe branding on the shirt and on the podium shield sign, presenter must be in front of the seated audience, avoid repeated stock pose energy, avoid placing him at the back of the room, no watermark
+Avoid: suit jacket, empty room, one-on-one consultation, audience standing, unreadable branding, cheesy stock-photo expressions

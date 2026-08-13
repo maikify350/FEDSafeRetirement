@@ -1,0 +1,17 @@
+/.agents
+/.vercel
+/Assets
+/backups
+/Current
+/dist
+/Docs
+/New - Copy
+/New_20260407_230930
+/New_backup_pre_bundle
+/node_modules
+/output
+/tmp
+
+*.pdf
+*.xlsx
+*.log

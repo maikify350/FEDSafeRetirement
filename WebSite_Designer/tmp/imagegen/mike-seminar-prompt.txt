@@ -1,0 +1,13 @@
+Use case: photorealistic-natural
+Asset type: seminar marketing image
+Primary request: Transform the provided Mike Zaino reference headshot into a premium photorealistic FedSafe Retirement seminar scene. Use image 1 as the identity reference for Mike Zaino and preserve his facial likeness. Use image 2 as the FedSafe logo reference and place a realistic embroidered version of that logo on the chest of his shirt.
+Input images: Image 1: Mike Zaino headshot reference; Image 2: FedSafe logo reference
+Scene/backdrop: high-end conference room or workshop venue with audience tables and a presentation screen at the front
+Subject: Mike Zaino wearing a branded casual quarter-zip or polo, walking across the front of the room while speaking with relaxed authority, one hand holding a small clicker and the other gesturing naturally
+Style/medium: premium editorial event photography
+Composition/framing: wider horizontal shot that shows motion and room energy, with an engaged audience that includes several middle-aged women and mixed federal-professional attendees
+Lighting/mood: warm, credible, polished, reassuring
+Color palette: FedSafe navy and blue, warm neutrals, soft gold accent notes
+Materials/textures: embroidered logo shirt, realistic stage lighting, seminar tables, paper folders, upholstered chairs
+Constraints: preserve Mike Zaino likeness; no suit jacket; no tie; no static podium pose; distinct motion from the other presenter scenes
+Avoid: synchronized audience poses, cheesy motivational-speaker energy, logo distortion, cloned attendees

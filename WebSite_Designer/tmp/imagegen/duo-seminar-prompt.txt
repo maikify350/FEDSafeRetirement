@@ -1,0 +1,13 @@
+Use case: photorealistic-natural
+Asset type: seminar marketing image
+Primary request: Transform the provided Brian Westrich and Daniel French reference headshots into a premium photorealistic FedSafe Retirement co-presented seminar scene. Use image 1 as the identity reference for Brian Westrich, image 2 as the identity reference for Daniel French, and image 3 as the FedSafe logo reference for their shirts.
+Input images: Image 1: Brian Westrich headshot reference; Image 2: Daniel French headshot reference; Image 3: FedSafe logo reference
+Scene/backdrop: polished seminar room with a large presentation screen, attendee tables, and active note-taking
+Subject: two FedSafe partners at the front of the room in business-casual branded shirts, one speaking while the other listens and prepares to add context, each in a different natural pose
+Style/medium: premium editorial event photography
+Composition/framing: wide horizontal seminar shot with both presenters visible and a female-inclusive audience in the foreground and middle rows
+Lighting/mood: collaborative, trustworthy, educational, polished
+Color palette: navy, white, soft gold accents, realistic conference-room neutrals
+Materials/textures: embroidered FedSafe logo shirts, seminar tables, notebooks, coffee cups, projection-screen glow
+Constraints: preserve the likenesses of Brian and Daniel; no suits; no tie; no repeated synchronized pose; audience should include several middle-aged women and feel natural
+Avoid: mirrored poses, cloned attendees, stiff stage posture, distorted faces or logos

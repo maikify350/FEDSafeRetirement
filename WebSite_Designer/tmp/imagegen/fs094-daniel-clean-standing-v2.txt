@@ -1,0 +1,10 @@
+Use case: photorealistic-natural
+Asset type: seminar alternate for the FedSafe review microsite
+Primary request: Create a premium photorealistic seminar image using Daniel French's headshot as the identity reference and the FedSafe shield mark as the exact branding reference. Show Daniel standing at the front of a seminar room and addressing a seated audience. He should wear a light blue button-down shirt and khaki pants.
+Input images: Image 1 is Daniel's identity reference. Image 2 is the exact FedSafe shield reference.
+Scene/background: clean seminar room, seated attendees, relaxed business-casual setting, no podium, no projected logo
+Subject: Daniel French, calm expert expression, light blue button-down shirt, khaki pants, one small exact FedSafe shield logo on the left chest only
+Style/medium: premium editorial photorealism
+Composition/framing: wide horizontal 16:9, Daniel standing at the front and facing the audience, one natural explanatory gesture
+Constraints: preserve Daniel likeness; keep audience relaxed and professional; only one small exact shield logo on the shirt; no other logos in the room; no watermark
+Avoid: duplicate logos, logo changes, black shirt, black pants, stiff stock pose, one-on-one consultation

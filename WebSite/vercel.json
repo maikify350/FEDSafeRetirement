@@ -1,0 +1,32 @@
+{
+  "buildCommand": "node vercel-build.mjs",
+  "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "destination": "https://fedsaferetirement.com/:path*",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "fedsaferetirement.net" }]
+    },
+    {
+      "source": "/:path*",
+      "destination": "https://fedsaferetirement.com/:path*",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "www.fedsaferetirement.net" }]
+    },
+    {
+      "source": "/:path*",
+      "destination": "https://fedsaferetirement.com/:path*",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "fedsaferetirement.org" }]
+    },
+    {
+      "source": "/:path*",
+      "destination": "https://fedsaferetirement.com/:path*",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "www.fedsaferetirement.org" }]
+    }
+  ],
+  "cleanUrls": true,
+  "trailingSlash": true
+}

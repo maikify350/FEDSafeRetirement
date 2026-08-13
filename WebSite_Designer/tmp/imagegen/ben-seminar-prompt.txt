@@ -1,0 +1,13 @@
+Use case: photorealistic-natural
+Asset type: seminar marketing image
+Primary request: Transform the provided Ben Bailey reference headshot into a premium photorealistic FedSafe Retirement seminar scene. Use image 1 as the identity reference for Ben Bailey and preserve his facial likeness. Use image 2 as the FedSafe logo reference and place a realistic embroidered version of that logo on the chest of his shirt.
+Input images: Image 1: Ben Bailey headshot reference; Image 2: FedSafe logo reference
+Scene/backdrop: polished hotel conference room or agency training room with rows of seated attendees and a projection screen in the background
+Subject: Ben Bailey speaking naturally to the audience, body turned slightly to one side, one hand open in mid-explanation and the other relaxed, not standing stiffly at a podium
+Style/medium: premium editorial event photography
+Composition/framing: medium-wide horizontal seminar shot, presenter in foreground, visible audience with several middle-aged women in the first rows taking notes or listening attentively
+Lighting/mood: bright, warm, credible, welcoming professional seminar atmosphere
+Color palette: FedSafe navy, soft white, subtle gold accents, natural skin tones
+Materials/textures: embroidered FedSafe logo on a navy polo or quarter-zip shirt, realistic conference chairs, paper notebooks, projector glow
+Constraints: preserve Ben Bailey likeness; business-casual branded shirt only; no suit jacket; no tie; no folded arms; no repetitive seminar pose; realistic audience diversity with more middle-aged women visible
+Avoid: cloned audience faces, distorted logo, podium-only composition, stock-photo smiles, stiff motivational-speaker pose, duplicate hands

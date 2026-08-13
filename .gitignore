@@ -1,59 +1,24 @@
-# Dependencies
-node_modules/
-.pnp
-.pnp.js
-
-# Build
-.next/
-out/
-build/
-dist/
-
-# Environment
+# Secrets
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
+!.env.*.example
 
-# Debug logs
+# Node
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# Build artifacts
+dist/
+out/
+.next/
+.vercel/
+coverage/
 
-# OS
+# OS/editor noise
 .DS_Store
 Thumbs.db
-desktop.ini
-
-# Vercel
-.vercel
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
-# Data files (large — do not commit)
-DataSeed/*.xlsx
-DataSeed/*.csv
-
-# Gemini agent state (do not commit)
-.gemini/
-
-.vercel
-
-# Throwaway / local artifacts (do not commit)
-.playwright-mcp/
-App/scratch/
-scratch/
-*.zip
-# Upstream source reference mirrors (cloned locally, not part of this repo)
-reference/
+*.log

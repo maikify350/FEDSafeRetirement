@@ -1,0 +1,6 @@
+Use case: precise-object-edit
+Asset type: seminar alternate for the FedSafe review microsite
+Primary request: Replace only the shirt logo with the exact FedSafe shield mark from the reference image. Keep the logo small and realistic, like subtle embroidery on the left chest. Keep everything else in the image unchanged.
+Input images: Image 1 is the seminar image to edit. Image 2 is the exact FedSafe shield reference.
+Constraints: change only the chest logo; keep Brian Westrich's face, body, shirt, audience, pose, background, and lighting unchanged; only one logo should appear; no watermark
+Avoid: changed face, changed shirt color, changed pose, second logo, distorted shield, wrong text, oversized logo

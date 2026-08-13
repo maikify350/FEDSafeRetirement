@@ -1,0 +1,12 @@
+{
+  "before": {
+    "files": 18,
+    "totalKB": "766.3"
+  },
+  "after": {
+    "files": 2,
+    "totalKB": "755.1"
+  },
+  "savedKB": "11.1",
+  "savedPercent": "1"
+}

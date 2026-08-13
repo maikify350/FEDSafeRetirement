@@ -1,0 +1,99 @@
+name: Monorepo CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      website: ${{ steps.filter.outputs.website }}
+      designer: ${{ steps.filter.outputs.designer }}
+      social: ${{ steps.filter.outputs.social }}
+      workflow: ${{ steps.filter.outputs.workflow }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            website:
+              - 'WebSite/**'
+            designer:
+              - 'WebSite_Designer/**'
+            social:
+              - 'SocialMedia/June28WebinarReel/**'
+            workflow:
+              - '.github/workflows/**'
+              - 'package.json'
+
+  website-build:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.website == 'true' || needs.detect-changes.outputs.workflow == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: WebSite/package-lock.json
+      - name: Install website dependencies
+        run: npm ci
+        working-directory: WebSite
+      - name: Build website
+        run: npm run build
+        working-directory: WebSite
+
+  designer-typecheck-build:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.designer == 'true' || needs.detect-changes.outputs.workflow == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: WebSite_Designer/package-lock.json
+      - name: Install designer dependencies
+        run: npm ci
+        working-directory: WebSite_Designer
+      - name: Typecheck designer
+        run: npm run typecheck
+        working-directory: WebSite_Designer
+      - name: Build designer
+        run: npm run build
+        working-directory: WebSite_Designer
+
+  social-smoke:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.social == 'true' || needs.detect-changes.outputs.workflow == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: SocialMedia/June28WebinarReel/package-lock.json
+      - name: Install social dependencies
+        run: npm ci
+        working-directory: SocialMedia/June28WebinarReel
+      - name: Render smoke frame
+        run: npm run still
+        working-directory: SocialMedia/June28WebinarReel
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2

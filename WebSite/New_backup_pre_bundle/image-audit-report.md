@@ -1,0 +1,92 @@
+# Image Dimension Audit
+
+Total images: 84
+
+## All Images (sorted by size, largest first)
+
+| Size (KB) | Dimensions | File |
+|-----------|-----------|------|
+| 380.6 | 1342x1878 | fegli-analysis\Screen_Shot.jpg |
+| 375.3 | 1342x1937 | social-security-analysis\Screen_Shot.jpg |
+| 314.4 | 1600x1000 | assets\images\FedSafe-Image-6_aHR0cHM6.webp |
+| 283.6 | 2048x1365 | assets\images\shutterstock_2021907254-2048x1365_aHR0cHM6.webp |
+| 247.7 | 1600x900 | assets\images\FedSafe-Retired-Airforce_aHR0cHM6.webp |
+| 221.3 | 1600x900 | assets\images\FedSafe-Retired-Mail-Carrier_aHR0cHM6.webp |
+| 198.6 | 1536x864 | assets\images\FedSafe-Retired-Mail-Carrier-1536x864_aHR0cHM6.webp |
+| 193.3 | 1200x1200 | assets\images\Retired-Vet-FedSafe_aHR0cHM6.webp |
+| 173.8 | 1536x1024 | assets\images\shutterstock_2021907254-1536x1024_aHR0cHM6.webp |
+| 173.2 | 1600x900 | assets\images\FedSafe-Image-4_aHR0cHM6.webp |
+| 157.6 | 1641x1028 | assets\logos\Double-Logo_aHR0cHM6.webp |
+| 142.4 | 1536x864 | assets\images\FedSafe-Image-4-1536x864_aHR0cHM6.webp |
+| 140.1 | 1200x596 | assets\images\fegli_aHR0cHM6.webp |
+| 137.4 | 1600x900 | assets\images\Retiree-Sitting-Down_aHR0cHM6.webp |
+| 135.8 | 1600x900 | assets\images\FedSafe-Gallery-4_aHR0cHM6.webp |
+| 132.7 | 1024x1024 | assets\images\Retired-Vet-FedSafe-1024x1024_aHR0cHM6.webp |
+| 126.7 | 1200x1200 | assets\images\Retired-TSA_aHR0cHM6.webp |
+| 114.9 | 1600x900 | assets\images\FedSafe-Retirement-Military-Employees_aHR0cHM6.webp |
+| 107.4 | 1024x576 | assets\images\FedSafe-Retired-Airforce-1024x576_aHR0cHM6.webp |
+| 106.1 | 1024x576 | assets\images\FedSafe-Retired-Mail-Carrier-1024x576_aHR0cHM6.webp |
+| 103.5 | 2048x1365 | assets\images\shutterstock_1072103564-2048x1365_aHR0cHM6.webp |
+| 101.5 | 1600x900 | assets\images\FedSafe-Who-We-Are_aHR0cHM6.webp |
+| 86.2 | 800x800 | assets\images\Retired-Vet-FedSafe-800x800_aHR0cHM6.webp |
+| 85.7 | 1600x900 | assets\images\FedSafe-Audit-Report_aHR0cHM6.webp |
+| 83.0 | 1536x864 | assets\images\FedSafe-Who-We-Are-1536x864_aHR0cHM6.webp |
+| 82.3 | 1024x509 | assets\images\fegli-1024x509_aHR0cHM6.webp |
+| 80.4 | 768x768 | assets\images\Retired-Vet-FedSafe-768x768_aHR0cHM6.webp |
+| 79.9 | 1024x683 | assets\images\shutterstock_2021907254-1024x683_aHR0cHM6.webp |
+| 77.4 | 1024x576 | assets\images\FedSafe-Image-4-1024x576_aHR0cHM6.webp |
+| 73.2 | 641x815 | assets\logos\FedSafe-New-Badge_aHR0cHM6.webp |
+| 71.6 | ?x? | C:\WIP\FEDSafeRetirement\WebSite\New\assets\fonts\icomoon.svg |
+| 67.8 | 1536x1024 | assets\images\shutterstock_1072103564-1536x1024_aHR0cHM6.webp |
+| 66.6 | 768x432 | assets\images\FedSafe-Retired-Mail-Carrier-768x432_aHR0cHM6.webp |
+| 53.5 | 1280x800 | assets\images\FedSafe-Mail-Carrier-Benefits_aHR0cHM6.webp |
+| 52.2 | 2048x2048 | assets\logos\logo-2048x2048_aHR0cHM6.webp |
+| 49.8 | 768x381 | assets\images\fegli-768x381_aHR0cHM6.webp |
+| 48.9 | 1600x900 | assets\images\FedSafe-Homepage-New-Hero_aHR0cHM6.webp |
+| 47.7 | 768x432 | assets\images\FedSafe-Image-4-768x432_aHR0cHM6.webp |
+| 47.4 | 1600x900 | assets\images\Shaking-Veteran-Hand_aHR0cHM6.webp |
+| 46.0 | 1024x576 | assets\images\FedSafe-Who-We-Are-1024x576_aHR0cHM6.webp |
+| 44.7 | 1600x900 | assets\images\FedSafe-Image-18_aHR0cHM6.webp |
+| 44.3 | 768x512 | assets\images\shutterstock_2021907254-768x512_aHR0cHM6.webp |
+| 39.7 | 1024x683 | assets\images\shutterstock_1072103564-1024x683_aHR0cHM6.webp |
+| 38.5 | 1536x1536 | assets\logos\logo-1536x1536_aHR0cHM6.webp |
+| 33.4 | 600x800 | assets\images\Mike-Zaino-Bio-Photo-copy_aHR0cHM6.webp |
+| 33.2 | 450x284 | assets\logos\FSR-Logo-with-Tagline-copy-2_aHR0cHM6.webp |
+| 30.8 | 768x432 | assets\images\FedSafe-Who-We-Are-768x432_aHR0cHM6.webp |
+| 29.4 | 533x599 | assets\logos\Fedsafe-Logo-Only_aHR0cHM6.webp |
+| 27.7 | 1024x576 | assets\images\FedSafe-Homepage-New-Hero-1024x576_aHR0cHM6.webp |
+| 27.7 | 649x444 | benefits-analysis\Screen_Shot.png |
+| 27.6 | 768x512 | assets\images\shutterstock_1072103564-768x512_aHR0cHM6.webp |
+| 26.1 | 1024x1024 | assets\logos\logo-1024x1024_aHR0cHM6.webp |
+| 25.4 | 600x800 | assets\images\Daniel_French_GrayBG-copy_aHR0cHM6.webp |
+| 23.8 | 600x800 | assets\images\Brian_Westrich_GrayBG-copy_aHR0cHM6.webp |
+| 22.6 | 600x800 | assets\images\Ben_Bailey_GrayBG-copy_aHR0cHM6.webp |
+| 20.2 | 350x350 | assets\images\Retired-Vet-FedSafe-350x350_aHR0cHM6.webp |
+| 19.7 | 768x768 | assets\logos\logo-768x768_aHR0cHM6.webp |
+| 19.6 | 1024x576 | assets\images\FedSafe-Image-18-1024x576_aHR0cHM6.webp |
+| 16.1 | 300x300 | assets\images\Retired-Vet-FedSafe-300x300_aHR0cHM6.webp |
+| 13.6 | 1253x112 | Header_Menu.png |
+| 13.4 | 300x169 | assets\images\FedSafe-Retired-Mail-Carrier-300x169_aHR0cHM6.webp |
+| 11.6 | 270x270 | assets\logos\cropped-logo-scaled-1-270x270.jpg |
+| 10.9 | 300x149 | assets\images\fegli-300x149_aHR0cHM6.webp |
+| 10.2 | 600x600 | assets\images\3_aHR0cHM6.webp |
+| 9.8 | 600x600 | assets\images\2_aHR0cHM6.webp |
+| 9.4 | 300x200 | assets\images\shutterstock_2021907254-300x200_aHR0cHM6.webp |
+| 9.1 | 300x169 | assets\images\FedSafe-Image-4-300x169_aHR0cHM6.webp |
+| 8.7 | 300x200 | assets\images\shutterstock_1072103564-300x200_aHR0cHM6.webp |
+| 7.8 | 300x169 | assets\images\FedSafe-Who-We-Are-300x169_aHR0cHM6.webp |
+| 7.7 | 300x300 | assets\logos\logo-300x300_aHR0cHM6.webp |
+| 7.5 | ?x? | C:\WIP\FEDSafeRetirement\WebSite\New\assets\images\astra_aHR0cHM6.svg |
+| 6.1 | 600x600 | assets\images\1_aHR0cHM6.webp |
+| 5.6 | 150x150 | assets\images\Retired-Vet-FedSafe-150x150_aHR0cHM6.webp |
+| 5.1 | 140x140 | assets\images\Retired-Vet-FedSafe-140x140_aHR0cHM6.webp |
+| 4.5 | 192x192 | assets\logos\cropped-logo-scaled-1-192x192_aHR0cHM6.webp |
+| 4.1 | 180x180 | assets\logos\cropped-logo-scaled-1-180x180_aHR0cHM6.webp |
+| 3.3 | 150x150 | assets\logos\logo-150x150_aHR0cHM6.webp |
+| 3.1 | 100x100 | assets\images\Retired-Vet-FedSafe-100x100_aHR0cHM6.webp |
+| 1.3 | 120x26 | assets\images\5-Stars-Black_aHR0cHM6.webp |
+| 1.3 | 120x26 | assets\images\5-Stars-White_aHR0cHM6.webp |
+| 0.7 | 512x512 | assets\logos\logo-icon_aHR0cHM6.svg |
+| 0.4 | 16x16 | assets\images\spinner.svg |
+| 0.4 | 32x32 | assets\logos\cropped-logo-scaled-1-32x32_aHR0cHM6.webp |
+| 0.3 | 16x16 | assets\images\Help.svg |

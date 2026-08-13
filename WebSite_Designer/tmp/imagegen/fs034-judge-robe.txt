@@ -1,0 +1,11 @@
+Use case: photorealistic-natural
+Asset type: federal roles image for the FedSafe review microsite
+Primary request: Create a premium photorealistic image of a federal judge in his late 50s or early 60s seated in chambers wearing a traditional black judicial robe while reviewing retirement planning paperwork.
+Scene/background: refined judge's chambers with elegant wood furnishings, law books, soft daylight, calm and thoughtful atmosphere
+Subject: experienced federal judge, credible and dignified expression, seated naturally, robe clearly visible
+Style/medium: premium editorial photorealism
+Composition/framing: wide horizontal 16:9, seated judge in chambers, paperwork visible but unreadable
+Lighting/mood: soft daylight, calm, dignified, credible
+Color palette: black robe, warm wood tones, neutral paper tones, soft daylight
+Constraints: no visible court seals, no readable documents, no sensational courtroom drama, no watermark
+Avoid: duplicate person, courtroom confrontation, cheesy stock-photo expressions, visible logos, exaggerated props
