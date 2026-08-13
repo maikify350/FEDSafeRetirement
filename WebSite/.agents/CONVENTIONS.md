@@ -37,6 +37,21 @@ npm run preview
 3. Verify with `npm run preview`.
 4. Commit only intentional changes.
 
+## ⚠️ MANDATORY: Cross-Browser Testing
+
+**ALL UI changes MUST be tested in BOTH browsers before committing:**
+
+| Browser | Why |
+|---|---|
+| **Google Chrome** | Primary baseline |
+| **Microsoft Edge** | Required — the Salient WordPress theme has high-specificity CSS that overrides custom styles differently in Edge |
+
+**Rules:**
+- Never mark a UI task complete after testing in only one browser.
+- For any CSS targeting form inputs, use `!important` overrides scoped to `#fsr-checklist-form` (or the relevant container ID) to defeat theme-level resets that behave differently in Edge.
+- Use the browser subagent to capture screenshots in both browsers when visual verification is needed.
+- The `:has()` pseudo-selector requires Edge 105+; always verify it works in both browsers.
+
 ## Documentation Priority
 
 - First: source code + build scripts
