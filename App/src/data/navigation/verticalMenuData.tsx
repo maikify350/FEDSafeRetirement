@@ -99,6 +99,11 @@ const verticalMenuData = (): VerticalMenuDataType[] => [
     icon: 'tabler-school',
   },
   {
+    label: 'Videos',
+    href: '/videos',
+    icon: 'tabler-video',
+  },
+  {
     isSection: true,
     label: 'ACCOUNT'
   },

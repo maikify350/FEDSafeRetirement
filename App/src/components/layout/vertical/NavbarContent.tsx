@@ -3,6 +3,10 @@
 // Third-party Imports
 import classnames from 'classnames'
 
+import Link from 'next/link'
+import IconButton from '@mui/material/IconButton'
+import Tooltip from '@mui/material/Tooltip'
+
 // Component Imports
 import NavToggle from './NavToggle'
 import ModeDropdown from '@components/layout/shared/ModeDropdown'
@@ -18,7 +22,12 @@ const NavbarContent = () => {
         <NavToggle />
         <ModeDropdown />
       </div>
-      <div className='flex items-center'>
+      <div className='flex items-center gap-2'>
+        <Tooltip title='Media Gallery'>
+          <IconButton component={Link} href='/gallery' size='small' className='text-textPrimary hover:bg-actionHover'>
+            <i className='tabler-photo text-[22px]' />
+          </IconButton>
+        </Tooltip>
         <UserDropdown />
       </div>
     </div>

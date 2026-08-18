@@ -3,6 +3,10 @@
 // Third-party Imports
 import classnames from 'classnames'
 
+import Link from 'next/link'
+import IconButton from '@mui/material/IconButton'
+import Tooltip from '@mui/material/Tooltip'
+
 // Component Imports
 import NavToggle from './NavToggle'
 import Logo from '@components/layout/shared/Logo'
@@ -28,7 +32,12 @@ const NavbarContent = () => {
         {/* Hide Logo on Smaller screens */}
         {!isBreakpointReached && <Logo />}
       </div>
-      <div className='flex items-center'>
+      <div className='flex items-center gap-2'>
+        <Tooltip title='Media Gallery'>
+          <IconButton component={Link} href='/gallery' size='small' className='text-textPrimary hover:bg-actionHover'>
+            <i className='tabler-photo text-[22px]' />
+          </IconButton>
+        </Tooltip>
         <ModeDropdown />
         <UserDropdown />
       </div>
