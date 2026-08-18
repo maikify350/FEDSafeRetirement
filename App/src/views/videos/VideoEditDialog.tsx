@@ -99,17 +99,18 @@ export interface VideoRecord {
 }
 
 export const ELEVENLABS_VOICES = [
-  { id: 'GGRMgbKfr7QscdcrvWga', name: 'Kai', gender: 'm', desc: 'Authoritative, dynamic male' },
-  { id: 'dtVZnErhiiosqofxDzSH', name: 'Havoc', gender: 'm', desc: 'Deep, bold, energetic male' },
-  { id: 'a1m16HA3i1rljUsxpKfn', name: 'Aurora', gender: 'f', desc: 'Warm, clear, confident female' },
-  { id: 'UXrpoYalpW5MpGiFHq3z', name: 'Brock', gender: 'm', desc: 'Friendly, trustworthy male' },
-  { id: '747pEiZ56cpB4qEKk969', name: 'Shanni', gender: 'f', desc: 'Polished, professional female' },
-  { id: 'dXtC3XhB9GtPusIpNtQx', name: 'Hale', gender: 'm', desc: 'Direct, crisp narrator male' },
-  { id: 'JSWO6cw2AyFE324d5kEr', name: 'Carolyn', gender: 'f', desc: 'Natural, engaging female' },
-  { id: 'Gfpl8Yo74Is0W6cPUWWT', name: 'Max', gender: 'm', desc: 'Strong, conversational male' },
-  { id: '56AoDkrOh6qfVPDXZ7Pt', name: 'Cassidy', gender: 'f', desc: 'Approachable, warm female' },
-  { id: 'zQzvQBubVkDWYuqJYMFn', name: 'Billy', gender: 'm', desc: 'Upbeat, authentic male' },
-  { id: 'g6xIsTj2HwM6VR4iXFCw', name: 'Jessica', gender: 'f', desc: 'Expressive, clear female' },
+  { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam', gender: 'm', desc: 'Dominant, firm executive male' },
+  { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah', gender: 'f', desc: 'Mature, reassuring, confident female' },
+  { id: 'JBFqnCBsd6RMkjVDRZzb', name: 'George', gender: 'm', desc: 'Warm, captivating storyteller male' },
+  { id: 'Xb7hH8MSUJpSbSDYk0k2', name: 'Alice', gender: 'f', desc: 'Clear, engaging educator female' },
+  { id: 'nPczCjzI2devNBz1zQrb', name: 'Brian', gender: 'm', desc: 'Deep, authoritative, seasoned male' },
+  { id: 'hpp4J3VqNfWAUOO0d1Us', name: 'Bella', gender: 'f', desc: 'Professional, bright, warm female' },
+  { id: 'IKne3meq5aSn9XLyUdCD', name: 'Charlie', gender: 'm', desc: 'Deep, energetic, confident male' },
+  { id: 'pFZP5JQG7iQjIQuC4Bku', name: 'Lily', gender: 'f', desc: 'Confident, engaging female' },
+  { id: 'CwhRBWXzGAHq8TQ4Fs17', name: 'Roger', gender: 'm', desc: 'Laid-back, casual, resonant male' },
+  { id: 'cgSgspJ2msm6clMCkdW9', name: 'Jessica', gender: 'f', desc: 'Playful, bright, warm female' },
+  { id: 'onwK4e9ZLuTAKqWW03F9', name: 'Daniel', gender: 'm', desc: 'Formal, trustworthy narrator male' },
+  { id: 'rPMkKgdwgIwqv4fXgR6N', name: 'Tyler', gender: 'm', desc: 'Clear US YouTube Creator voice' },
 ]
 
 export const OPENAI_VOICES = [
@@ -209,7 +210,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   const [ctaText, setCtaText] = useState('')
   const [ctaOnEveryFrame, setCtaOnEveryFrame] = useState(false)
   const [ttsEngine, setTtsEngine] = useState<'elevenlabs' | 'openai' | 'qwen-openrouter'>('elevenlabs')
-  const [voiceId, setVoiceId] = useState('GGRMgbKfr7QscdcrvWga')
+  const [voiceId, setVoiceId] = useState('pNInz6obpgDQGcFmaJgB')
   const [tempo, setTempo] = useState<number>(1.00)
   const [status, setStatus] = useState<'draft' | 'generating' | 'ready' | 'failed'>('draft')
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
@@ -260,7 +261,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         setCtaText(video.cta_text || '')
         setCtaOnEveryFrame(Boolean(video.cta_on_every_frame))
         setTtsEngine(video.tts_engine || 'elevenlabs')
-        setVoiceId(video.voice_id || 'GGRMgbKfr7QscdcrvWga')
+        setVoiceId(video.voice_id || 'pNInz6obpgDQGcFmaJgB')
         setTempo(Number(video.tempo) || 1.00)
         setStatus(video.status || 'draft')
         setThumbnailUrl(video.thumbnail_url || null)
@@ -279,7 +280,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         setCtaText('Call (774) 273-8473 | FedSafeRetirement.com')
         setCtaOnEveryFrame(false)
         setTtsEngine('elevenlabs')
-        setVoiceId('GGRMgbKfr7QscdcrvWga')
+        setVoiceId('pNInz6obpgDQGcFmaJgB')
         setTempo(1.00)
         setStatus('draft')
         setThumbnailUrl(null)
@@ -1513,7 +1514,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                         clickable
                         color={ttsEngine === 'elevenlabs' ? 'info' : 'default'}
                         variant={ttsEngine === 'elevenlabs' ? 'filled' : 'outlined'}
-                        onClick={() => { setTtsEngine('elevenlabs'); setVoiceId('GGRMgbKfr7QscdcrvWga'); setDirty(true) }}
+                        onClick={() => { setTtsEngine('elevenlabs'); setVoiceId('pNInz6obpgDQGcFmaJgB'); setDirty(true) }}
                         sx={{ height: 22, fontSize: 10 }}
                       />
                       <Chip
@@ -1531,7 +1532,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                         clickable
                         color={ttsEngine === 'qwen-openrouter' ? 'info' : 'default'}
                         variant={ttsEngine === 'qwen-openrouter' ? 'filled' : 'outlined'}
-                        onClick={() => { setTtsEngine('qwen-openrouter'); setVoiceId('GGRMgbKfr7QscdcrvWga'); setDirty(true) }}
+                        onClick={() => { setTtsEngine('qwen-openrouter'); setVoiceId('pNInz6obpgDQGcFmaJgB'); setDirty(true) }}
                         sx={{ height: 22, fontSize: 10 }}
                       />
                     </Box>

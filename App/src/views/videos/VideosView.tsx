@@ -313,7 +313,7 @@ export default function VideosView() {
         const v = row.original
         const isPlaying = playingVoiceId === v.id
 
-        const femaleVoices = ['Aurora', 'Shanni', 'Carolyn', 'Cassidy', 'Jessica', 'Nova', 'Shimmer']
+        const femaleVoices = ['Sarah', 'Alice', 'Bella', 'Lily', 'Jessica', 'Laura', 'Matilda', 'Amelia', 'Elena', 'Hope', 'Natasha', 'Nova', 'Shimmer']
         const isFemale = femaleVoices.includes(v.voice_name)
 
         return (
@@ -321,7 +321,7 @@ export default function VideosView() {
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Typography className='text-sm font-medium'>
-                  {v.voice_name || 'Kai'}
+                  {v.voice_name || 'Adam'}
                 </Typography>
                 <Chip
                   label={isFemale ? 'F' : 'M'}
