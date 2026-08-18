@@ -22,3 +22,14 @@ coverage/
 .DS_Store
 Thumbs.db
 *.log
+
+# Large local archives and binary dumps
+.git-archives/
+_ARCHIVE_*/
+*.pack
+*.idx
+.claude/
+.playwright-mcp/
+*.pdf
+
+.vercel/

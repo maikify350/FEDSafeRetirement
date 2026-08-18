@@ -1,0 +1,11 @@
+*.pdf
+*.log
+scraper/
+lead.json
+semgrep_results.json
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+node_modules/
+.git/
+.vercel/
+_seed_states.sql

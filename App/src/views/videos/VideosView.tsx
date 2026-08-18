@@ -38,9 +38,10 @@ export default function VideosView() {
   const [loading, setLoading] = useState(false)
 
   // Dialog states
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [selectedVideo, setSelectedVideo] = useState<VideoRecord | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [editVideo, setEditVideo] = useState<VideoRecord | null>(null)
   const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null)
+  const [previewVideoRecord, setPreviewVideoRecord] = useState<VideoRecord | null>(null)
 
   // Audio preview playback state
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null)
@@ -400,13 +401,42 @@ export default function VideosView() {
     {
       id: 'actions',
       header: 'Actions',
-      size: 90,
+      size: 145,
       enableSorting: false,
       cell: ({ row }: any) => {
         const v = row.original
 
         return (
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
+          <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+            <Tooltip title='Watch Video Screen Preview'>
+              <IconButton
+                size='small'
+                color='info'
+                onClick={() => {
+                  setPreviewVideoRecord(v)
+                  setPreviewVideoUrl(v.video_url || '/images/03_Video_Postal_Retirement_Reel.mp4')
+                }}
+                sx={{
+                  bgcolor: 'rgba(0, 186, 255, 0.08)',
+                  '&:hover': { bgcolor: 'rgba(0, 186, 255, 0.2)' },
+                }}
+              >
+                <i className='tabler-eye text-[18px]' />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title='Clone / Duplicate Video'>
+              <IconButton
+                size='small'
+                color='secondary'
+                onClick={(e) => handleCloneVideo(v, e)}
+                sx={{
+                  bgcolor: 'rgba(115, 103, 240, 0.08)',
+                  '&:hover': { bgcolor: 'rgba(115, 103, 240, 0.2)' },
+                }}
+              >
+                <i className='tabler-copy text-[18px]' />
+              </IconButton>
+            </Tooltip>
             <Tooltip title='Edit Video'>
               <IconButton size='small' color='primary' onClick={() => setEditVideo(v)}>
                 <i className='tabler-edit text-[18px]' />
@@ -523,30 +553,150 @@ export default function VideosView() {
         onClose={() => setDeleteTarget(null)}
       />
 
-      {/* Video Preview Player Dialog */}
+      {/* Video Screen Preview Player Large Modal Panel */}
       <Dialog
         open={Boolean(previewVideoUrl)}
-        onClose={() => setPreviewVideoUrl(null)}
-        maxWidth='xs'
+        onClose={() => {
+          setPreviewVideoUrl(null)
+          setPreviewVideoRecord(null)
+        }}
+        maxWidth='md'
         fullWidth
-        PaperProps={{ sx: { bgcolor: 'black', borderRadius: 2, overflow: 'hidden' } }}
+        PaperProps={{
+          sx: {
+            bgcolor: '#090d16',
+            color: 'white',
+            borderRadius: 2.5,
+            overflow: 'hidden',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.7)',
+          }
+        }}
       >
-        <Box sx={{ position: 'relative', width: '100%', bgcolor: 'black', display: 'flex', flexDirection: 'column' }}>
+        {/* Header */}
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          p: 2,
+          px: 3,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: 'rgba(15, 23, 42, 0.8)',
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+            <i className='tabler-player-play text-[22px] text-primary' />
+            <Box>
+              <Typography variant='subtitle1' fontWeight={700} sx={{ color: 'white', lineHeight: 1.2 }}>
+                {previewVideoRecord?.title || 'Video Screen Preview'}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.25 }}>
+                <Chip
+                  label={previewVideoRecord?.format === 'long' ? '16:9 Landscape' : '9:16 Vertical Short'}
+                  size='small'
+                  color='primary'
+                  sx={{ height: 18, fontSize: 10, fontWeight: 700 }}
+                />
+                <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.6)' }}>
+                  {previewVideoRecord?.duration_sec}s Duration · Voice: {previewVideoRecord?.voice_name || 'Kai'}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
           <IconButton
             size='small'
-            onClick={() => setPreviewVideoUrl(null)}
-            sx={{ position: 'absolute', top: 8, right: 8, color: 'white', bgcolor: 'rgba(0,0,0,0.6)', zIndex: 10 }}
+            onClick={() => { setPreviewVideoUrl(null); setPreviewVideoRecord(null) }}
+            sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}
           >
-            <i className='tabler-x text-[16px]' />
+            <i className='tabler-x text-[18px]' />
           </IconButton>
+        </Box>
+
+        {/* Video Player Display Container */}
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          p: 2.5,
+          bgcolor: '#030712',
+          minHeight: 460,
+        }}>
           {previewVideoUrl && (
             <video
               src={previewVideoUrl}
               controls
               autoPlay
-              style={{ width: '100%', maxHeight: '80vh', objectFit: 'contain' }}
+              style={{
+                maxWidth: '100%',
+                maxHeight: '68vh',
+                borderRadius: 12,
+                boxShadow: '0 12px 40px rgba(0,0,0,0.8)',
+                outline: 'none',
+              }}
             />
           )}
+        </Box>
+
+        {/* Footer / Script snippet & Action Controls */}
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          p: 2,
+          px: 3,
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: 'rgba(15, 23, 42, 0.8)',
+          flexWrap: 'wrap',
+          gap: 1.5,
+        }}>
+          <Box sx={{ maxWidth: '65%', minWidth: 260 }}>
+            {previewVideoRecord?.cta_text && (
+              <Typography variant='caption' display='block' sx={{ color: 'primary.light', fontWeight: 600, mb: 0.25 }}>
+                CTA: {previewVideoRecord.cta_text}
+              </Typography>
+            )}
+            {previewVideoRecord?.script && (
+              <Typography
+                variant='caption'
+                sx={{
+                  color: 'rgba(255,255,255,0.7)',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 1,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                "{previewVideoRecord.script}"
+              </Typography>
+            )}
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Button
+              size='small'
+              variant='outlined'
+              color='inherit'
+              startIcon={<i className='tabler-copy' />}
+              onClick={() => previewVideoUrl && navigator.clipboard.writeText(previewVideoUrl)}
+              sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}
+            >
+              Copy URL
+            </Button>
+            <Button
+              size='small'
+              variant='contained'
+              color='primary'
+              startIcon={<i className='tabler-edit' />}
+              onClick={() => {
+                const target = previewVideoRecord
+                setPreviewVideoUrl(null)
+                setPreviewVideoRecord(null)
+                if (target) setEditVideo(target)
+              }}
+            >
+              Edit Video
+            </Button>
+          </Box>
         </Box>
       </Dialog>
     </>

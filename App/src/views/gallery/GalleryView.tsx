@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 
 import Box from '@mui/material/Box'
-import Grid from '@mui/material/Grid'
 import Card from '@mui/material/Card'
 import CardMedia from '@mui/material/CardMedia'
 import CardContent from '@mui/material/CardContent'
@@ -179,10 +178,16 @@ export default function GalleryView() {
           <strong>MANDATORY CREATIVE POLICY (Mike Zaino Rule):</strong> All brand logos below are rendered with <strong>pure alpha transparency and cropped to minimum borders</strong> so no white box appears when placed over dark mode, video footage, or colored backgrounds. <strong>Do NOT alter colors or design. Scale sizes proportionally only.</strong>
         </Typography>
 
-        <Grid container spacing={2} sx={{ mt: 0.5 }}>
+        <Box sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
+          gap: 2,
+          mt: 0.5,
+        }}>
           {OFFICIAL_BRAND_LOGOS.map(logo => (
-            <Grid item xs={12} sm={6} md={6} lg={3} key={logo.id}>
-              <Card sx={{
+            <Card
+              key={logo.id}
+              sx={{
                 display: 'flex',
                 flexDirection: 'column',
                 p: 1.5,
@@ -192,75 +197,75 @@ export default function GalleryView() {
                 borderRadius: 1.5,
                 height: '100%',
                 justifyContent: 'space-between',
-              }}>
-                <Box>
-                  {/* Checkered Transparency Box */}
-                  <Box sx={{
-                    height: 110,
-                    borderRadius: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    p: 1,
-                    mb: 1.5,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    backgroundImage: 'linear-gradient(45deg, #1e293b 25%, transparent 25%), linear-gradient(-45deg, #1e293b 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1e293b 75%), linear-gradient(-45deg, transparent 75%, #1e293b 75%)',
-                    backgroundSize: '16px 16px',
-                    backgroundPosition: '0 0, 0 8px, 8px -8px, -8px 0px',
-                    backgroundColor: '#0f172a',
-                  }}>
-                    <img
-                      src={logo.publicUrl}
-                      alt={logo.label}
-                      style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-                    />
-                  </Box>
+              }}
+            >
+              <Box>
+                {/* Checkered Transparency Box */}
+                <Box sx={{
+                  height: 110,
+                  borderRadius: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  p: 1,
+                  mb: 1.5,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  backgroundImage: 'linear-gradient(45deg, #1e293b 25%, transparent 25%), linear-gradient(-45deg, #1e293b 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1e293b 75%), linear-gradient(-45deg, transparent 75%, #1e293b 75%)',
+                  backgroundSize: '16px 16px',
+                  backgroundPosition: '0 0, 0 8px, 8px -8px, -8px 0px',
+                  backgroundColor: '#0f172a',
+                }}>
+                  <img
+                    src={logo.publicUrl}
+                    alt={logo.label}
+                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                  />
+                </Box>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant='subtitle2' fontWeight={700} noWrap title={logo.name}>
-                      {logo.label}
-                    </Typography>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', gap: 0.5, mb: 1, flexWrap: 'wrap' }}>
-                    <Chip label='100% Transparent' size='small' color='success' variant='outlined' sx={{ height: 18, fontSize: 9, fontWeight: 700 }} />
-                    <Chip label={logo.dimensions} size='small' variant='outlined' sx={{ height: 18, fontSize: 9 }} />
-                  </Box>
-
-                  <Typography variant='caption' color='text.secondary' display='block' sx={{ fontSize: 11, mb: 1.5 }}>
-                    {logo.description}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography variant='subtitle2' fontWeight={700} noWrap title={logo.name}>
+                    {logo.label}
                   </Typography>
                 </Box>
 
-                <Box sx={{ display: 'flex', gap: 1, mt: 'auto' }}>
-                  <Button
-                    size='small'
-                    variant='outlined'
-                    fullWidth
-                    startIcon={<i className={copiedUrl === logo.publicUrl ? 'tabler-check' : 'tabler-copy'} />}
-                    onClick={() => handleCopyUrl(logo.publicUrl)}
-                    sx={{ fontSize: 11, py: 0.25 }}
-                  >
-                    {copiedUrl === logo.publicUrl ? 'Copied!' : 'Copy Path'}
-                  </Button>
-                  <Button
-                    size='small'
-                    variant='text'
-                    component='a'
-                    href={logo.publicUrl}
-                    target='_blank'
-                    download
-                    startIcon={<i className='tabler-download' />}
-                    sx={{ fontSize: 11, py: 0.25 }}
-                  >
-                    PNG
-                  </Button>
+                <Box sx={{ display: 'flex', gap: 0.5, mb: 1, flexWrap: 'wrap' }}>
+                  <Chip label='100% Transparent' size='small' color='success' variant='outlined' sx={{ height: 18, fontSize: 9, fontWeight: 700 }} />
+                  <Chip label={logo.dimensions} size='small' variant='outlined' sx={{ height: 18, fontSize: 9 }} />
                 </Box>
-              </Card>
-            </Grid>
+
+                <Typography variant='caption' color='text.secondary' display='block' sx={{ fontSize: 11, mb: 1.5 }}>
+                  {logo.description}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', gap: 1, mt: 'auto' }}>
+                <Button
+                  size='small'
+                  variant='outlined'
+                  fullWidth
+                  startIcon={<i className={copiedUrl === logo.publicUrl ? 'tabler-check' : 'tabler-copy'} />}
+                  onClick={() => handleCopyUrl(logo.publicUrl)}
+                  sx={{ fontSize: 11, py: 0.25 }}
+                >
+                  {copiedUrl === logo.publicUrl ? 'Copied!' : 'Copy Path'}
+                </Button>
+                <Button
+                  size='small'
+                  variant='text'
+                  component='a'
+                  href={logo.publicUrl}
+                  target='_blank'
+                  download
+                  startIcon={<i className='tabler-download' />}
+                  sx={{ fontSize: 11, py: 0.25 }}
+                >
+                  PNG
+                </Button>
+              </Box>
+            </Card>
           ))}
-        </Grid>
+        </Box>
       </Alert>
 
       {/* Filter Tabs & Search */}
@@ -324,10 +329,15 @@ export default function GalleryView() {
           </Button>
         </Box>
       ) : (
-        <Grid container spacing={2.5}>
+        <Box sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' },
+          gap: 2.5,
+        }}>
           {filteredItems.map(item => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
-              <Card sx={{
+            <Card
+              key={item.id}
+              sx={{
                 borderRadius: 2,
                 overflow: 'hidden',
                 border: '1px solid',
@@ -340,7 +350,8 @@ export default function GalleryView() {
                   transform: 'translateY(-2px)',
                   boxShadow: 3,
                 },
-              }}>
+              }}
+            >
                 {/* Media Preview Box */}
                 <Box
                   sx={{

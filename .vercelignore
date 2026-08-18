@@ -1,31 +1,21 @@
-# Ignore everything outside App/ — Vercel root is set to App/
+# Ignore everything outside App
+WebSite_Designer/
+SocialMedia/
+.git-archives/
+WebSite/
+WebSite_working_state/
+_ARCHIVE_20260606/
+docs/
 web/
-DataSeed/
-Docs/
-Fegli_MCP/
-extension/
-echo-win/
-reference/
-
-# Large binary/archive files
+ChatBot/
+GHL_Leads/
+Marketing/
+Seminar_Flyers/
+*.mp4
+*.mp3
+*.pdf
 *.zip
-*.zip.dat
-
-# Python scripts
-*.py
-
-# Git
+*.tar
+*.gz
+node_modules/
 .git/
-.gitignore
-
-# Node modules (both dirs)
-App/node_modules/
-web/node_modules/
-
-# Build outputs
-App/.next/
-web/.next/
-
-# Local env files
-App/.env.local
-web/.env.local

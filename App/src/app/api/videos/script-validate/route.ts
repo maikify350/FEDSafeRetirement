@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const sentences = script.split(/(?<=[.?!])\s+/).filter(Boolean)
     const segmentDuration = duration / Math.max(1, sentences.length)
 
-    const generatedHyperframes = sentences.map((sentence, idx) => {
+    const generatedHyperframes = sentences.map((sentence: string, idx: number) => {
       const start = Number((idx * segmentDuration).toFixed(1))
       const end = Number(((idx + 1) * segmentDuration).toFixed(1))
 

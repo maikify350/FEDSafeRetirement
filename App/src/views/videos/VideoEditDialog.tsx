@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 
 import Box from '@mui/material/Box'
-import Grid from '@mui/material/Grid'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
@@ -746,6 +745,54 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
     }
   }
 
+  const handleSaveAsCopy = async () => {
+    setSaving(true)
+    setError('')
+
+    const copyTitle = `${title.trim() || 'Untitled Video'} (Copy)`
+    const payload = {
+      title: copyTitle,
+      format,
+      generation_mode: generationMode,
+      video_model: videoModel,
+      duration_sec: durationSec,
+      script,
+      ai_directive: aiDirective,
+      cta_text: ctaText,
+      cta_on_every_frame: ctaOnEveryFrame,
+      tts_engine: ttsEngine,
+      voice_id: selectedVoice.id,
+      voice_name: selectedVoice.name,
+      tempo,
+      status: 'draft',
+      thumbnail_url: thumbnailUrl,
+      hyperframes,
+      continuity_references: continuityReferences,
+      media_assets: mediaAssets,
+      version_no: 1,
+    }
+
+    try {
+      const res = await fetch('/api/videos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Clone failed')
+
+      setTitle(copyTitle)
+      setShowSuccess(true)
+      setDirty(false)
+      onSaved(data)
+    } catch (err: any) {
+      setError(err.message || 'Clone failed')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <>
       <EntityEditDialog
@@ -826,6 +873,23 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
               {regenerating ? 'Generating…' : dirty ? 'Re-Generate Asset' : 'Generate Asset'}
             </Button>
 
+            {/* Clone / Save As Copy */}
+            {isEditing && (
+              <Tooltip title='Clone this video as a new record'>
+                <Button
+                  size='small'
+                  variant='outlined'
+                  color='inherit'
+                  startIcon={<i className='tabler-copy' />}
+                  onClick={handleSaveAsCopy}
+                  disabled={saving || regenerating}
+                  sx={{ fontSize: 11 }}
+                >
+                  Save as Copy
+                </Button>
+              </Tooltip>
+            )}
+
             <Button
               size='small'
               variant='outlined'
@@ -845,83 +909,72 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 0.5 }}>
           {/* Row 1: Title, Format & Duration */}
-          <Grid container spacing={2} alignItems='center'>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label='Video Title *'
-                placeholder='e.g. FERS Supplement MRA + 30 Explainer'
-                value={title}
-                onChange={e => { setTitle(e.target.value); setDirty(true) }}
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '2fr auto auto' },
+            gap: 2,
+            alignItems: 'center',
+          }}>
+            <TextField
+              fullWidth
+              label='Video Title *'
+              placeholder='e.g. FERS Supplement MRA + 30 Explainer'
+              value={title}
+              onChange={e => { setTitle(e.target.value); setDirty(true) }}
+              size='small'
+            />
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <Chip
+                label='9:16 Short'
+                clickable
                 size='small'
+                color={format === 'short' ? 'primary' : 'default'}
+                variant={format === 'short' ? 'filled' : 'outlined'}
+                onClick={() => { setFormat('short'); setDirty(true) }}
               />
-            </Grid>
-            <Grid item xs={6} sm={4} md={2.5}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                <Chip
-                  label='9:16 Short'
-                  clickable
-                  size='small'
-                  color={format === 'short' ? 'primary' : 'default'}
-                  variant={format === 'short' ? 'filled' : 'outlined'}
-                  onClick={() => { setFormat('short'); setDirty(true) }}
-                />
-                <Chip
-                  label='16:9 Long'
-                  clickable
-                  size='small'
-                  color={format === 'long' ? 'primary' : 'default'}
-                  variant={format === 'long' ? 'filled' : 'outlined'}
-                  onClick={() => { setFormat('long'); setDirty(true) }}
-                />
-              </Box>
-            </Grid>
-            <Grid item xs={6} sm={4} md={1.5}>
+              <Chip
+                label='16:9 Long'
+                clickable
+                size='small'
+                color={format === 'long' ? 'primary' : 'default'}
+                variant={format === 'long' ? 'filled' : 'outlined'}
+                onClick={() => { setFormat('long'); setDirty(true) }}
+              />
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TextField
-                fullWidth
                 label='Duration'
                 type='number'
                 size='small'
                 value={durationSec}
-                onChange={e => { setDurationSec(Number(e.target.value) || 40); setDirty(true) }}
-                inputProps={{ min: 5, max: 600, step: 5 }}
-                InputProps={{ endAdornment: <Typography variant='caption'>s</Typography> }}
+                onChange={e => { setDurationSec(Math.max(5, Math.min(300, Number(e.target.value) || 30))); setDirty(true) }}
+                InputProps={{
+                  endAdornment: <InputAdornment position='end'>sec</InputAdornment>,
+                  inputProps: { min: 5, max: 300, step: 5 }
+                }}
+                sx={{ width: 120 }}
               />
-            </Grid>
-            <Grid item xs={12} sm={4} md={2}>
-              <FormControl fullWidth size='small'>
-                <InputLabel id='status-label'>Status</InputLabel>
-                <Select
-                  labelId='status-label'
-                  value={status}
-                  label='Status'
-                  onChange={e => { setStatus(e.target.value as any); setDirty(true) }}
-                >
-                  <MenuItem value='draft'>Draft</MenuItem>
-                  <MenuItem value='generating'>Generating</MenuItem>
-                  <MenuItem value='ready'>Ready</MenuItem>
-                  <MenuItem value='failed'>Failed</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
 
-          {/* Row 2: Generation Mode & Model Engine Bar */}
+          {/* Row 2: Generation Mode (Static vs Motion) & Video Model Selection */}
           <Box sx={{
-            p: 1.5,
-            borderRadius: 1.5,
-            bgcolor: 'action.hover',
-            border: '1px solid',
-            borderColor: 'divider',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             flexWrap: 'wrap',
-            gap: 2,
+            gap: 1.5,
+            p: 1.25,
+            bgcolor: 'action.hover',
+            borderRadius: 1.5,
+            border: '1px solid',
+            borderColor: 'divider',
           }}>
-            {/* Mode: Motion vs Static */}
+            {/* Mode Switcher */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ minWidth: 45 }}>
+              <Typography variant='caption' fontWeight={700} color='text.secondary'>
                 MODE:
               </Typography>
               <Chip
@@ -981,10 +1034,13 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
 
           {/* TAB 1: Script, Voice & Social Thumbnail */}
           {tab === 'script' && (
-            <Grid container spacing={2.5}>
+            <Box sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '1.4fr 1fr' },
+              gap: 2.5,
+            }}>
               {/* Left Column: Script, AI Directive, CTA */}
-              <Grid item xs={12} md={7}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {/* Script Box */}
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1072,20 +1128,19 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                     />
                   </Box>
                 </Box>
-              </Grid>
+              </Box>
 
               {/* Right Column: Thumbnail & Voice Engine */}
-              <Grid item xs={12} md={5}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {/* Social Thumbnail Cover */}
-                  <Box sx={{
-                    p: 1.5,
-                    borderRadius: 1.5,
-                    bgcolor: 'background.paper',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    display: 'flex',
-                    flexDirection: 'column',
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {/* Social Thumbnail Cover */}
+                <Box sx={{
+                  p: 1.5,
+                  borderRadius: 1.5,
+                  bgcolor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  display: 'flex',
+                  flexDirection: 'column',
                     gap: 1,
                   }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1328,8 +1383,8 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                     )}
                   </Box>
                 </Box>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           )}
 
           {/* TAB 2: Hyperframes Synchronization Timeline */}
