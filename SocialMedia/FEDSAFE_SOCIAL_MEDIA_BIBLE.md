@@ -66,3 +66,17 @@ Every video reel, carousel card, graphic, and advertisement MUST include:
 - **TTS Engine:** ElevenLabs (Standard Voices: *Kai*, *Havoc*, *Aurora*, *Brock*, *Adam*).
 - **Audio Mix:** Clear, normalized voiceover track with subtle, low-volume background soundtrack (reduced -65% to -80% volume).
 - **Speech Tempo:** Default `1.00x` to `1.15x` for optimal clarity and professional pacing.
+
+---
+
+## 7. Predecessor Directives & Strategic Plan Archives
+
+All foundation documents provided in the Google Drive suite are fully preserved and accounted for across the repository:
+
+1. **`01_FedSafe_Social_Plan_for_Mike.md`** ([`SocialMedia/GoogleDrive_Export/01_FedSafe_Social_Plan_for_Mike.md`](file:///c:/WIP/FEDSafeRetirement/SocialMedia/GoogleDrive_Export/01_FedSafe_Social_Plan_for_Mike.md)):
+   - Detailed Facebook cover banner specs, 5.0 Google review ratings, and agency B2B contracting vendor presentation.
+2. **`02_Social_Media_Strategy.md`** ([`SocialMedia/GoogleDrive_Export/02_Social_Media_Strategy.md`](file:///c:/WIP/FEDSafeRetirement/SocialMedia/GoogleDrive_Export/02_Social_Media_Strategy.md)):
+   - Complete 575-line master social strategy with monthly content calendars, platform distributions, and formal Partner Profiles for **Ben Bailey (RFC®, FRC℠)** and **Mike Zaino (RFC®, FRC℠)**.
+3. **`MIKE_DIRECTIVES_RULEBOOK.md`** ([`SocialMedia/MIKE_DIRECTIVES_RULEBOOK.md`](file:///c:/WIP/FEDSafeRetirement/SocialMedia/MIKE_DIRECTIVES_RULEBOOK.md)):
+   - Original creative guardrails prohibiting fear-mongering and demanding mandatory SAM.gov badge placement.
+
