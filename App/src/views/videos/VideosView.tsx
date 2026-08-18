@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 
 import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import IconButton from '@mui/material/IconButton'
@@ -10,12 +11,14 @@ import Tooltip from '@mui/material/Tooltip'
 import CircularProgress from '@mui/material/CircularProgress'
 import Avatar from '@mui/material/Avatar'
 import AvatarGroup from '@mui/material/AvatarGroup'
+import Dialog from '@mui/material/Dialog'
 import { createColumnHelper } from '@tanstack/react-table'
 
 import EntityListView from '@/components/EntityListView'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { downloadBlob, downloadJson } from '@/utils/exportDownload'
 import VideoEditDialog, { type VideoRecord } from './VideoEditDialog'
+import VoiceCloneStudioDialog from './VoiceCloneStudioDialog'
 
 const columnHelper = createColumnHelper<VideoRecord>()
 
@@ -36,12 +39,14 @@ import { DEFAULT_PREGENERATED_VIDEOS } from '@/data/defaultVideos'
 export default function VideosView() {
   const [videos, setVideos] = useState<VideoRecord[]>(DEFAULT_PREGENERATED_VIDEOS)
   const [loading, setLoading] = useState(false)
+  const [search, setSearch] = useState('')
 
   // Dialog states
   const [createOpen, setCreateOpen] = useState(false)
   const [editVideo, setEditVideo] = useState<VideoRecord | null>(null)
   const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null)
   const [previewVideoRecord, setPreviewVideoRecord] = useState<VideoRecord | null>(null)
+  const [voiceCloneOpen, setVoiceCloneOpen] = useState(false)
 
   // Audio preview playback state
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null)
@@ -127,6 +132,56 @@ export default function VideosView() {
     } finally {
       setDeleting(false)
       setDeleteTarget(null)
+    }
+  }
+
+  const handleCloneVideo = async (video: VideoRecord, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const clonedTitle = `${video.title || 'Untitled'} (Copy)`
+    const payload = {
+      ...video,
+      title: clonedTitle,
+      status: 'draft',
+      version_no: 1,
+    }
+    delete (payload as any).id
+    delete (payload as any).cre_dt
+    delete (payload as any).mod_dt
+
+    try {
+      const res = await fetch('/api/videos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (res.ok) {
+        const newVideo = await res.json()
+        setVideos(prev => [newVideo, ...prev])
+        setEditVideo(newVideo)
+      } else {
+        const clientClone: VideoRecord = {
+          ...video,
+          id: `video_${Date.now()}`,
+          title: clonedTitle,
+          status: 'draft',
+          version_no: 1,
+          cre_dt: new Date().toISOString(),
+        }
+        setVideos(prev => [clientClone, ...prev])
+        setEditVideo(clientClone)
+      }
+    } catch {
+      const clientClone: VideoRecord = {
+        ...video,
+        id: `video_${Date.now()}`,
+        title: clonedTitle,
+        status: 'draft',
+        version_no: 1,
+        cre_dt: new Date().toISOString(),
+      }
+      setVideos(prev => [clientClone, ...prev])
+      setEditVideo(clientClone)
     }
   }
 
@@ -492,7 +547,17 @@ export default function VideosView() {
         onSearchChange={setSearch}
         searchPlaceholder='Search videos by title, script, directive...'
         toolbarActions={
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Button
+              size='small'
+              variant='contained'
+              color='secondary'
+              startIcon={<i className='tabler-microphone' />}
+              onClick={() => setVoiceCloneOpen(true)}
+              sx={{ fontWeight: 700 }}
+            >
+              🎙️ Record Mike's Voice
+            </Button>
             <Button
               size='small'
               variant='outlined'
@@ -699,6 +764,16 @@ export default function VideosView() {
           </Box>
         </Box>
       </Dialog>
+
+      {/* Voice Clone Studio & Teleprompter Modal */}
+      <VoiceCloneStudioDialog
+        open={voiceCloneOpen}
+        onClose={() => setVoiceCloneOpen(false)}
+        onVoiceCloned={() => {
+          setVoiceCloneOpen(false)
+          fetchVideos()
+        }}
+      />
     </>
   )
 }

@@ -4,19 +4,19 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 
+export const dynamic = 'force-dynamic'
 export const maxDuration = 60 // seconds — needed for embed → vector search → GPT chain
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
-
-// Server-side only: prefer OPENAI_API_KEY; fall back to the (deprecated)
-// NEXT_PUBLIC_* name during rollout so the running deploy doesn't break.
-const openai = new OpenAI({
-  apiKey: (process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY)!,
-})
+function getClients() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
+  )
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY || 'placeholder',
+  })
+  return { supabase, openai }
+}
 
 const QUIZ_TOPICS = [
   'FEGLI Basic Life Insurance coverage and calculations',
@@ -44,6 +44,7 @@ export interface QuizQuestion {
 
 export async function POST(req: NextRequest) {
   try {
+    const { supabase, openai } = getClients()
     const { topic: requestedTopic } = await req.json().catch(() => ({}))
 
     // Pick a random topic if none supplied

@@ -4,18 +4,19 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 
+export const dynamic = 'force-dynamic'
 export const maxDuration = 60 // seconds — needed for embed → vector search → GPT stream chain
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
-// Server-side only: prefer OPENAI_API_KEY; fall back to the (deprecated)
-// NEXT_PUBLIC_* name during rollout so the running deploy doesn't break.
-const openai = new OpenAI({
-  apiKey: (process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY)!,
-})
+function getClients() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
+  )
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY || 'placeholder',
+  })
+  return { supabase, openai }
+}
 
 const SYSTEM_PROMPT = `You are FEDSafe AI, an expert Federal Retirement Planning Assistant for FEDSafe Retirement.
 You specialize in FEGLI (Federal Employees' Group Life Insurance), FERS, CSRS, OPM regulations, survivor benefits, 
@@ -27,6 +28,7 @@ Always be professional, clear, and helpful. Format answers with bullet points or
 
 export async function POST(req: NextRequest) {
   try {
+    const { supabase, openai } = getClients()
     const { messages } = await req.json()
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {

@@ -6,12 +6,13 @@
  */
 
 import OpenAI from 'openai'
-
 import type { EchoCall } from './client'
 
-const openai = new OpenAI({
-  apiKey: (process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY)!,
-})
+function getOpenAIClient() {
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY || 'dummy-build-key',
+  })
+}
 
 export interface ParsedRegistration {
   firstName:               string | null
@@ -109,6 +110,7 @@ Rules:
 - Return ONLY the JSON object, no explanation`
 
   try {
+    const openai = getOpenAIClient()
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       max_tokens: 512,

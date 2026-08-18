@@ -21,6 +21,7 @@ import { coerceDob, normalizeRetirementYear, computeAge } from '@/lib/echowin/no
 
 // echowin's API ignores the `after` filter and a single call can take several
 // seconds (OpenAI parse + recording download), so give the catch-up run room.
+export const dynamic = 'force-dynamic'
 export const maxDuration = 300
 
 const SYNC_STATE_KEY = 'echowin_last_sync'

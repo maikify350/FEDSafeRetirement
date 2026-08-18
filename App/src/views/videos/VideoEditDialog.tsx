@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 
 import Box from '@mui/material/Box'
 import TextField from '@mui/material/TextField'
+import InputAdornment from '@mui/material/InputAdornment'
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import Switch from '@mui/material/Switch'
@@ -1049,7 +1050,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                         Narration Script
                       </Typography>
                       <Typography variant='caption' color='text.secondary'>
-                        {fmtDur} @ {tempo.toFixed(2)}× · {words.toLocaleString()} words · ~${estimatedCost}
+                        {fmtDur} @ {tempo.toFixed(2)}× · {words.toLocaleString()} words · ~${costPerRun}
                       </Typography>
                     </Box>
                     <TextField
@@ -1383,7 +1384,6 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                   </Box>
                 </Box>
               </Box>
-            </Box>
           )}
 
           {/* TAB 2: Hyperframes Synchronization Timeline */}
@@ -1541,72 +1541,74 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                   </Button>
                 </Box>
               ) : (
-                <Grid container spacing={2}>
+                <Box sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+                  gap: 2,
+                }}>
                   {continuityReferences.map((ref, idx) => (
-                    <Grid item xs={12} sm={6} md={4} key={ref.id || idx}>
-                      <Card sx={{ border: '1px solid', borderColor: 'divider', p: 1.5 }}>
-                        <Box sx={{ display: 'flex', gap: 1.5 }}>
-                          <CardMedia
-                            component='img'
-                            image={ref.url}
-                            alt={ref.name}
-                            sx={{ width: 70, height: 70, borderRadius: 1, objectFit: 'cover' }}
-                          />
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <Typography variant='caption' fontWeight={700} noWrap title={ref.name}>
-                                {ref.name}
-                              </Typography>
-                              <IconButton size='small' color='error' onClick={() => handleRemoveContinuity(idx)}>
-                                <i className='tabler-trash text-[14px]' />
-                              </IconButton>
-                            </Box>
-
-                            <FormControl fullWidth size='small' sx={{ mt: 1 }}>
-                              <Select
-                                value={ref.role}
-                                onChange={e => {
-                                  setContinuityReferences(prev => {
-                                    const copy = [...prev]
-                                    copy[idx] = { ...copy[idx], role: e.target.value as any }
-                                    return copy
-                                  })
-                                  setDirty(true)
-                                }}
-                                sx={{ height: 26, fontSize: 11 }}
-                              >
-                                <MenuItem value='character'>Character / Face</MenuItem>
-                                <MenuItem value='environment'>Environment / Setting</MenuItem>
-                                <MenuItem value='brand'>Brand / Logo</MenuItem>
-                                <MenuItem value='style'>Style / Lighting</MenuItem>
-                              </Select>
-                            </FormControl>
+                    <Card key={ref.id || idx} sx={{ border: '1px solid', borderColor: 'divider', p: 1.5 }}>
+                      <Box sx={{ display: 'flex', gap: 1.5 }}>
+                        <CardMedia
+                          component='img'
+                          image={ref.url}
+                          alt={ref.name}
+                          sx={{ width: 70, height: 70, borderRadius: 1, objectFit: 'cover' }}
+                        />
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Typography variant='caption' fontWeight={700} noWrap title={ref.name}>
+                              {ref.name}
+                            </Typography>
+                            <IconButton size='small' color='error' onClick={() => handleRemoveContinuity(idx)}>
+                              <i className='tabler-trash text-[14px]' />
+                            </IconButton>
                           </Box>
+
+                          <FormControl fullWidth size='small' sx={{ mt: 1 }}>
+                            <Select
+                              value={ref.role}
+                              onChange={e => {
+                                setContinuityReferences(prev => {
+                                  const copy = [...prev]
+                                  copy[idx] = { ...copy[idx], role: e.target.value as any }
+                                  return copy
+                                })
+                                setDirty(true)
+                              }}
+                              sx={{ height: 26, fontSize: 11 }}
+                            >
+                              <MenuItem value='character'>Character / Face</MenuItem>
+                              <MenuItem value='environment'>Environment / Setting</MenuItem>
+                              <MenuItem value='brand'>Brand / Logo</MenuItem>
+                              <MenuItem value='style'>Style / Lighting</MenuItem>
+                            </Select>
+                          </FormControl>
                         </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                          <Typography variant='caption' color='text.secondary' sx={{ minWidth: 40, fontSize: 10 }}>
-                            Weight: {ref.weight || 0.8}
-                          </Typography>
-                          <Slider
-                            size='small'
-                            value={ref.weight || 0.8}
-                            min={0.1}
-                            max={1.0}
-                            step={0.05}
-                            onChange={(_, val) => {
-                              setContinuityReferences(prev => {
-                                const copy = [...prev]
-                                copy[idx] = { ...copy[idx], weight: val as number }
-                                return copy
-                              })
-                              setDirty(true)
-                            }}
-                          />
-                        </Box>
-                      </Card>
-                    </Grid>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                        <Typography variant='caption' color='text.secondary' sx={{ minWidth: 40, fontSize: 10 }}>
+                          Weight: {ref.weight || 0.8}
+                        </Typography>
+                        <Slider
+                          size='small'
+                          value={ref.weight || 0.8}
+                          min={0.1}
+                          max={1.0}
+                          step={0.05}
+                          onChange={(_, val) => {
+                            setContinuityReferences(prev => {
+                              const copy = [...prev]
+                              copy[idx] = { ...copy[idx], weight: val as number }
+                              return copy
+                            })
+                            setDirty(true)
+                          }}
+                        />
+                      </Box>
+                    </Card>
                   ))}
-                </Grid>
+                </Box>
               )}
             </Box>
           )}
@@ -1802,40 +1804,43 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
               No assets found in gallery bucket.
             </Typography>
           ) : (
-            <Grid container spacing={2}>
+            <Box sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' },
+              gap: 2,
+            }}>
               {galleryItems.map(item => (
-                <Grid item xs={6} sm={4} md={3} key={item.id}>
-                  <Card
-                    sx={{
-                      cursor: 'pointer',
-                      border: '2px solid transparent',
-                      '&:hover': { borderColor: 'primary.main', transform: 'scale(1.02)' },
-                      transition: 'all 0.15s ease',
-                    }}
-                    onClick={() => handleSelectGalleryItem(item)}
-                  >
-                    {item.type === 'video' ? (
-                      <Box sx={{ height: 110, bgcolor: 'black', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <i className='tabler-video text-white text-[32px]' />
-                      </Box>
-                    ) : (
-                      <CardMedia
-                        component='img'
-                        height='110'
-                        image={item.publicUrl}
-                        alt={item.name}
-                        sx={{ height: 110, objectFit: 'cover' }}
-                      />
-                    )}
-                    <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
-                      <Typography variant='caption' noWrap fontWeight={600} display='block'>
-                        {item.name}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
+                <Card
+                  key={item.id}
+                  sx={{
+                    cursor: 'pointer',
+                    border: '2px solid transparent',
+                    '&:hover': { borderColor: 'primary.main', transform: 'scale(1.02)' },
+                    transition: 'all 0.15s ease',
+                  }}
+                  onClick={() => handleSelectGalleryItem(item)}
+                >
+                  {item.type === 'video' ? (
+                    <Box sx={{ height: 110, bgcolor: 'black', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className='tabler-video text-white text-[32px]' />
+                    </Box>
+                  ) : (
+                    <CardMedia
+                      component='img'
+                      height='110'
+                      image={item.publicUrl}
+                      alt={item.name}
+                      sx={{ height: 110, objectFit: 'cover' }}
+                    />
+                  )}
+                  <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
+                    <Typography variant='caption' noWrap fontWeight={600} display='block'>
+                      {item.name}
+                    </Typography>
+                  </CardContent>
+                </Card>
               ))}
-            </Grid>
+            </Box>
           )}
         </DialogContent>
         <DialogActions>

@@ -5,7 +5,13 @@
   "scripts": {
     "preview": "remotion studio",
     "still": "remotion still src/index.tsx WebinarReel out/preview.png --frame=90",
-    "render": "remotion render src/index.tsx WebinarReel out/fedsafe-june28-webinar-reel.mp4 --codec=h264 --pixel-format=yuv420p"
+    "render": "remotion render src/index.tsx WebinarReel out/fedsafe-june28-webinar-reel.mp4 --codec=h264 --pixel-format=yuv420p",
+    "render:who": "remotion render src/index.tsx WhoWeAreVideo out/fedsafe-who-we-are.mp4 --codec=h264 --pixel-format=yuv420p",
+    "render:dyk": "remotion render src/index.tsx DidYouKnowReel out/fedsafe-did-you-know.mp4 --codec=h264 --pixel-format=yuv420p",
+    "render:spotlight": "remotion render src/index.tsx PartnerSpotlightReel out/fedsafe-partner-spotlight.mp4 --codec=h264 --pixel-format=yuv420p",
+    "render:postal": "remotion render src/index.tsx PostalRetirementReel out/fedsafe-postal-retirement-reel.mp4 --codec=h264 --pixel-format=yuv420p",
+    "render:fegli": "remotion render src/index.tsx FegliShockReel out/fedsafe-fegli-shock-reel.mp4 --codec=h264 --pixel-format=yuv420p",
+    "render:all": "npm run render && npm run render:who && npm run render:dyk && npm run render:spotlight && npm run render:postal && npm run render:fegli"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.379",
