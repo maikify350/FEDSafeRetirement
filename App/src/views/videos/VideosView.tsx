@@ -19,6 +19,7 @@ import ConfirmDialog from '@/components/ConfirmDialog'
 import { downloadBlob, downloadJson } from '@/utils/exportDownload'
 import VideoEditDialog, { type VideoRecord } from './VideoEditDialog'
 import VoiceCloneStudioDialog from './VoiceCloneStudioDialog'
+import ProTimelineStudioDialog from './ProTimelineStudioDialog'
 
 const columnHelper = createColumnHelper<VideoRecord>()
 
@@ -38,6 +39,7 @@ import { DEFAULT_PREGENERATED_VIDEOS } from '@/data/defaultVideos'
 
 export default function VideosView() {
   const [videos, setVideos] = useState<VideoRecord[]>(DEFAULT_PREGENERATED_VIDEOS)
+  const [studioTargetVideo, setStudioTargetVideo] = useState<VideoRecord | null>(null)
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
 
@@ -507,6 +509,19 @@ export default function VideosView() {
                 <i className='tabler-eye text-[18px]' />
               </IconButton>
             </Tooltip>
+            <Tooltip title='Launch Pro Timeline Studio (Preview)'>
+              <IconButton
+                size='small'
+                color='primary'
+                onClick={() => setStudioTargetVideo(v)}
+                sx={{
+                  bgcolor: 'rgba(99, 102, 241, 0.08)',
+                  '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.22)' },
+                }}
+              >
+                <i className='tabler-movie text-[18px]' />
+              </IconButton>
+            </Tooltip>
             <Tooltip title='Clone / Duplicate Video'>
               <IconButton
                 size='small'
@@ -801,6 +816,19 @@ export default function VideosView() {
           setVoiceCloneOpen(false)
           fetchVideos()
         }}
+      />
+
+      {/* Pro Timeline Studio Modal */}
+      <ProTimelineStudioDialog
+        open={Boolean(studioTargetVideo)}
+        onClose={() => setStudioTargetVideo(null)}
+        video={studioTargetVideo}
+        hyperframes={[]}
+        script={studioTargetVideo?.script || ''}
+        durationSec={studioTargetVideo?.duration_sec || 40}
+        tempo={studioTargetVideo?.tempo || 1.0}
+        voiceName={studioTargetVideo?.voice_name || 'Adam'}
+        audioUrl={null}
       />
     </>
   )

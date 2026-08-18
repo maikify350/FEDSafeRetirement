@@ -38,6 +38,7 @@ import TableRow from '@mui/material/TableRow'
 import Paper from '@mui/material/Paper'
 
 import EntityEditDialog from '@/components/EntityEditDialog'
+import ProTimelineStudioDialog from './ProTimelineStudioDialog'
 
 export interface MediaAsset {
   id: string
@@ -212,6 +213,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   const [ttsEngine, setTtsEngine] = useState<'elevenlabs' | 'openai' | 'qwen-openrouter'>('elevenlabs')
   const [voiceId, setVoiceId] = useState('pNInz6obpgDQGcFmaJgB')
   const [tempo, setTempo] = useState<number>(1.00)
+  const currentVoiceName = ELEVENLABS_VOICES.find(v => v.id === voiceId)?.name || 'Adam'
   const [status, setStatus] = useState<'draft' | 'generating' | 'ready' | 'failed'>('draft')
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
   
@@ -237,6 +239,9 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
 
   // Template Menu anchor
   const [templateMenuAnchor, setTemplateMenuAnchor] = useState<null | HTMLElement>(null)
+
+  // Pro Timeline Studio state
+  const [timelineStudioOpen, setTimelineStudioOpen] = useState(false)
 
   // Gallery Picker dialog state
   const [galleryOpen, setGalleryOpen] = useState(false)
@@ -1660,24 +1665,124 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
                 <Box>
-                  <Typography variant='subtitle2' fontWeight={700}>
+                  <Typography variant='subtitle2' fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <i className='tabler-timeline text-[18px] text-primary' />
                     Hyperframe Narrative Synchronization Timeline
                   </Typography>
                   <Typography variant='caption' color='text.secondary'>
                     Synchronize spoken narrative phrases with visual scene transitions and camera movements.
                   </Typography>
                 </Box>
-                <Button
-                  size='small'
-                  variant='contained'
-                  color='info'
-                  startIcon={syncingHyperframes ? <CircularProgress size={14} color='inherit' /> : <i className='tabler-wand' />}
-                  onClick={handleAutoGenerateHyperframes}
-                  disabled={syncingHyperframes}
-                >
-                  {syncingHyperframes ? 'Syncing…' : 'Auto-Sync from Script'}
-                </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Button
+                    size='small'
+                    variant='outlined'
+                    color='info'
+                    startIcon={syncingHyperframes ? <CircularProgress size={14} color='inherit' /> : <i className='tabler-wand' />}
+                    onClick={handleAutoGenerateHyperframes}
+                    disabled={syncingHyperframes}
+                  >
+                    {syncingHyperframes ? 'Syncing…' : 'Auto-Sync from Script'}
+                  </Button>
+                  <Button
+                    size='small'
+                    variant='contained'
+                    color='primary'
+                    startIcon={<i className='tabler-movie' />}
+                    onClick={() => setTimelineStudioOpen(true)}
+                    sx={{
+                      background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+                      boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)',
+                      fontWeight: 700,
+                    }}
+                  >
+                    Launch Pro Timeline Studio
+                  </Button>
+                </Box>
               </Box>
+
+              {/* Multi-Track Visual Timeline Mini-Strip */}
+              {hyperframes.length > 0 && (
+                <Box sx={{
+                  p: 1.5,
+                  borderRadius: 2,
+                  bgcolor: '#0a0d14',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  color: '#fff',
+                }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant='caption' sx={{ color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', fontSize: 10 }}>
+                      Multi-Track Synchronizer Preview ({hyperframes.length} Hyperframe Segments · {durationSec}s Total)
+                    </Typography>
+                    <Chip
+                      label='Click segment to inspect'
+                      size='small'
+                      sx={{ height: 16, fontSize: 8, bgcolor: 'rgba(255,255,255,0.06)', color: '#94a3b8' }}
+                    />
+                  </Box>
+
+                  {/* Track 1: Audio waveform strip */}
+                  <Box sx={{
+                    height: 24,
+                    bgcolor: '#131b2e',
+                    borderRadius: 1,
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    px: 1,
+                    mb: 0.75,
+                  }}>
+                    <Typography sx={{ fontSize: 9, fontWeight: 700, color: '#fcd34d' }}>
+                      🎙️ Audio Track · Voice: {currentVoiceName} ({tempo.toFixed(2)}×)
+                    </Typography>
+                  </Box>
+
+                  {/* Track 2: Spoken text blocks */}
+                  <Box sx={{
+                    height: 36,
+                    bgcolor: '#0f1422',
+                    borderRadius: 1,
+                    border: '1px solid rgba(192, 132, 252, 0.25)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    mb: 0.75,
+                  }}>
+                    {hyperframes.map((hf, idx) => {
+                      const total = Math.max(1, durationSec || 40)
+                      const left = (hf.timestamp_start / total) * 100
+                      const width = ((hf.timestamp_end - hf.timestamp_start) / total) * 100
+
+                      return (
+                        <Box
+                          key={hf.id || idx}
+                          onClick={() => setTimelineStudioOpen(true)}
+                          sx={{
+                            position: 'absolute',
+                            left: `${left}%`,
+                            width: `${width}%`,
+                            top: 2,
+                            bottom: 2,
+                            bgcolor: 'rgba(168, 85, 247, 0.25)',
+                            border: '1px solid rgba(168, 85, 247, 0.5)',
+                            borderRadius: 0.5,
+                            p: 0.25,
+                            px: 0.5,
+                            overflow: 'hidden',
+                            cursor: 'pointer',
+                            '&:hover': { bgcolor: 'rgba(168, 85, 247, 0.45)' },
+                          }}
+                        >
+                          <Typography noWrap sx={{ fontSize: 8, fontWeight: 700, color: '#e9d5ff' }}>
+                            #{hf.order} {hf.text_segment}
+                          </Typography>
+                        </Box>
+                      )
+                    })}
+                  </Box>
+                </Box>
+              )}
 
               {hyperframes.length === 0 ? (
                 <Box sx={{
@@ -2116,6 +2221,20 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
           <Button onClick={() => setGalleryOpen(false)}>Cancel</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Pro Timeline Studio (Read-Only) Dialog */}
+      <ProTimelineStudioDialog
+        open={timelineStudioOpen}
+        onClose={() => setTimelineStudioOpen(false)}
+        video={video}
+        hyperframes={hyperframes}
+        script={script}
+        durationSec={durationSec}
+        tempo={tempo}
+        voiceName={currentVoiceName}
+        audioUrl={generatedAudioUrl}
+        ctaText={ctaText}
+      />
     </>
   )
 }
