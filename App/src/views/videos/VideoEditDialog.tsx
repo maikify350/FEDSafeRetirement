@@ -766,7 +766,9 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         createdBy={video?.cre_by}
         modifiedAt={video?.mod_dt}
         modifiedBy={video?.mod_by}
-        maxWidth={1060}
+        width='95vw'
+        maxWidth='1680px'
+        height='94vh'
         headerActions={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             {/* Cost Breakdown Tooltip & Chip */}
@@ -997,7 +999,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                     <TextField
                       fullWidth
                       multiline
-                      rows={6}
+                      rows={8}
                       placeholder='Enter spoken narration...'
                       value={script}
                       onChange={e => { setScript(e.target.value); setDirty(true) }}
@@ -1020,7 +1022,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                     <TextField
                       fullWidth
                       multiline
-                      rows={2}
+                      rows={3}
                       placeholder='Visual cues, pacing, lighting, b-roll recommendations...'
                       value={aiDirective}
                       onChange={e => { setAiDirective(e.target.value); setDirty(true) }}
