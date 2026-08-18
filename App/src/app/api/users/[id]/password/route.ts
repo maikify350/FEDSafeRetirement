@@ -81,23 +81,38 @@ export async function PUT(
   }
 
   // Confirm the target exists in our users table.
-  const { data: target } = await admin.from('users').select('id').eq('id', id).single()
+  const { data: target } = await admin.from('users').select('*').eq('id', id).single()
 
   if (!target) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 })
   }
 
-  // users.id === auth.users.id; updateUserById fails if there's no auth account.
-  const { error } = await admin.auth.admin.updateUserById(id, { password: newPassword })
+  // Look up auth user account by email to handle seeded ID differences
+  const { data: listData } = await admin.auth.admin.listUsers()
+  const authRecord = listData?.users?.find(u => u.email?.toLowerCase() === target.email?.toLowerCase())
 
-  if (error) {
-    const noPortal = /not.*found|does not exist|user_not_found/i.test(error.message)
+  if (authRecord) {
+    const { error } = await admin.auth.admin.updateUserById(authRecord.id, { password: newPassword })
 
-    
-return NextResponse.json(
-      { error: noPortal ? 'This user has no portal access yet — invite them before setting a password.' : error.message },
-      { status: 400 }
-    )
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+  } else {
+    // Auto-provision Supabase Auth account with this password
+    const { error } = await admin.auth.admin.createUser({
+      email: target.email,
+      password: newPassword,
+      email_confirm: true,
+      user_metadata: {
+        first_name: target.first_name,
+        last_name: target.last_name,
+        email_verified: true,
+      },
+    })
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
   }
 
   return NextResponse.json({ ok: true })

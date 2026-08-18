@@ -76,6 +76,9 @@ export default function UsersView() {
   const [deleting, setDeleting]           = useState(false)
   const [deleteError, setDeleteError]     = useState('')
 
+  // Invite modal state
+  const [inviteTarget, setInviteTarget]   = useState<{ user: User; link: string | null; loading: boolean; error: string; copied: boolean } | null>(null)
+
   const fetchUsers = useCallback(async () => {
     setLoading(true)
 
@@ -88,6 +91,28 @@ export default function UsersView() {
   }, [])
 
   useEffect(() => { fetchUsers() }, [fetchUsers])
+
+  const handleOpenInvite = async (user: User, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setInviteTarget({ user, link: null, loading: true, error: '', copied: false })
+
+    try {
+      const res = await fetch(`/api/users/${user.id}/invite`, { method: 'POST' })
+      const data = await res.json()
+
+      if (!res.ok) throw new Error(data.error || 'Failed to generate invitation link')
+
+      setInviteTarget({
+        user,
+        link: data.action_link,
+        loading: false,
+        error: '',
+        copied: false,
+      })
+    } catch (err: any) {
+      setInviteTarget(prev => prev ? { ...prev, loading: false, error: err.message || 'Invitation failed' } : null)
+    }
+  }
 
   const columns = useMemo(() => [
     {
@@ -136,35 +161,69 @@ export default function UsersView() {
       cell: ({ row }) => <Typography className='text-sm'>{formatDate(row.original.cre_dt)}</Typography>,
     }),
 
-    // Delete action column
+    // Actions column (Invite + Edit + Delete)
     {
-      id: 'delete',
-      header: '',
-      size: 50,
+      id: 'actions',
+      header: 'Actions',
+      size: 130,
       enableSorting: false,
       enableColumnFilter: false,
       enableHiding: false,
       enableResizing: false,
-      cell: ({ row }: any) => (
-        <Tooltip title='Delete user'>
-          <IconButton
-            size='small'
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation()
-              setDeleteError('')
-              setConfirmDelete(row.original)
-            }}
-            sx={{
-              color: '#ef4444',
-              p: '4px',
-              '&:hover': { color: '#b91c1c', background: '#fee2e2' },
-              transition: 'all 0.15s',
-            }}
-          >
-            <i className='tabler-trash' style={{ fontSize: 16 }} />
-          </IconButton>
-        </Tooltip>
-      ),
+      cell: ({ row }: any) => {
+        const u = row.original
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Tooltip title={`Send Invite / Login Link to ${u.first_name || u.email}`}>
+              <IconButton
+                size='small'
+                color='primary'
+                onClick={(e: React.MouseEvent) => handleOpenInvite(u, e)}
+                sx={{
+                  p: '4px',
+                  bgcolor: 'rgba(99,102,241,0.08)',
+                  '&:hover': { bgcolor: 'rgba(99,102,241,0.18)' },
+                }}
+              >
+                <i className='tabler-mail-fast text-[16px]' />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title='Edit User'>
+              <IconButton
+                size='small'
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation()
+                  setEditUser(u)
+                }}
+                sx={{ p: '4px' }}
+              >
+                <i className='tabler-edit text-[16px]' />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title='Delete User'>
+              <IconButton
+                size='small'
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation()
+                  setDeleteError('')
+                  setConfirmDelete(u)
+                }}
+                sx={{
+                  color: '#ef4444',
+                  p: '4px',
+                  '&:hover': { color: '#b91c1c', background: '#fee2e2' },
+                  transition: 'all 0.15s',
+                }}
+              >
+                <i className='tabler-trash text-[16px]' />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )
+      },
     },
   ], [])
 
@@ -210,7 +269,7 @@ return
         title='User Management'
         searchValue={search}
         onSearchChange={setSearch}
-        searchPlaceholder='Search users...'
+        searchPlaceholder='Search by name, email, role, or phone...'
         newButtonLabel='User'
         onNewClick={() => setAddOpen(true)}
         onExportCsv={(rows) => {
@@ -242,6 +301,88 @@ return
           .map(u => u.color as string)
         }
       />
+
+      {/* Invite / Login Link Modal */}
+      {inviteTarget && (
+        <Dialog
+          open
+          onClose={() => setInviteTarget(null)}
+          maxWidth='sm'
+          fullWidth
+        >
+          <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pb: 1 }}>
+            <i className='tabler-mail-fast text-2xl text-primary' />
+            <Typography variant='h6' fontWeight={700}>
+              Portal Invitation & Login Link
+            </Typography>
+          </DialogTitle>
+          <DialogContent sx={{ pt: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant='body2' color='text.secondary'>
+                Generate a 1-click portal login / password set link for <strong>{inviteTarget.user.first_name} {inviteTarget.user.last_name}</strong> ({inviteTarget.user.email}).
+              </Typography>
+
+              {inviteTarget.loading && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 3, justifyContent: 'center' }}>
+                  <CircularProgress size={24} />
+                  <Typography variant='body2'>Generating secure invitation link…</Typography>
+                </Box>
+              )}
+
+              {inviteTarget.error && (
+                <Alert severity='error'>{inviteTarget.error}</Alert>
+              )}
+
+              {inviteTarget.link && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 2, bgcolor: 'action.hover', borderRadius: 1.5, border: '1px solid', borderColor: 'divider' }}>
+                  <Typography variant='caption' fontWeight={700} color='primary.main' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    Direct Login / Password Set URL
+                  </Typography>
+
+                  <Box sx={{
+                    p: 1.5,
+                    bgcolor: 'background.paper',
+                    borderRadius: 1,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    wordBreak: 'break-all',
+                    fontFamily: 'monospace',
+                    fontSize: '12px',
+                    color: 'text.primary',
+                  }}>
+                    {inviteTarget.link}
+                  </Box>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.5 }}>
+                    <Button
+                      variant='contained'
+                      color='primary'
+                      size='small'
+                      startIcon={<i className='tabler-copy' />}
+                      onClick={() => {
+                        navigator.clipboard.writeText(inviteTarget.link!)
+                        setInviteTarget(prev => prev ? { ...prev, copied: true } : null)
+                        setTimeout(() => setInviteTarget(prev => prev ? { ...prev, copied: false } : null), 3000)
+                      }}
+                    >
+                      {inviteTarget.copied ? 'Copied to Clipboard!' : 'Copy Direct Link'}
+                    </Button>
+
+                    {inviteTarget.copied && (
+                      <Typography variant='caption' color='success.main' fontWeight={700}>
+                        ✅ Ready to paste in email/text!
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              )}
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setInviteTarget(null)}>Close</Button>
+          </DialogActions>
+        </Dialog>
+      )}
 
       {/* Delete Confirmation Dialog */}
       {confirmDelete && (

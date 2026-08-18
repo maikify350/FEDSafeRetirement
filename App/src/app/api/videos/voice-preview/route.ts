@@ -63,90 +63,59 @@ export async function POST(request: NextRequest) {
               'Cache-Control': 'public, max-age=3600',
             },
           })
+        } else {
+          const errText = await response.text()
+          console.error('[ElevenLabs TTS Error]', response.status, errText)
         }
-      } catch {
-        // Fallback to secondary provider if ElevenLabs voiceId error
+      } catch (err: any) {
+        console.error('[ElevenLabs Fetch Error]', err.message)
       }
     }
 
-    // Provider 2: OpenAI TTS
-    if (engine === 'openai') {
-      const apiKey = process.env.OPENAI_API_KEY
+    // Provider 2 / Fallback: OpenAI TTS
+    const openAiApiKey = process.env.OPENAI_API_KEY
 
-      if (!apiKey) {
-        return NextResponse.json({ error: 'OpenAI API key is not configured.' }, { status: 400 })
-      }
+    if (openAiApiKey) {
+      const femaleVoices = ['Sarah', 'Alice', 'Bella', 'Lily', 'Jessica', 'Laura', 'Matilda', 'Amelia', 'Elena', 'Hope', 'Natasha', 'Nova', 'Shimmer']
+      const isFemale = femaleVoices.includes(voiceName)
 
       const openAiVoice = ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'].includes(voiceId.toLowerCase())
         ? voiceId.toLowerCase()
-        : 'onyx'
+        : isFemale
+          ? 'nova'
+          : 'onyx'
 
-      const response = await fetch('https://api.openai.com/v1/audio/speech', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'tts-1-hd',
-          input: processedText,
-          voice: openAiVoice,
-          speed,
-        }),
-      })
-
-      if (!response.ok) {
-        const errText = await response.text()
-
-        return NextResponse.json({ error: `OpenAI TTS error: ${errText}` }, { status: response.status })
-      }
-
-      const audioBuffer = await response.arrayBuffer()
-
-      return new NextResponse(audioBuffer, {
-        status: 200,
-        headers: {
-          'Content-Type': 'audio/mpeg',
-          'Cache-Control': 'public, max-age=3600',
-        },
-      })
-    }
-
-    // Provider 3: OpenRouter / Qwen
-    if (engine === 'qwen-openrouter') {
-      const openRouterKey = process.env.OPENROUTER_API_KEY
-
-      if (!openRouterKey) {
-        return NextResponse.json({ error: 'OpenRouter API key is not configured.' }, { status: 400 })
-      }
-
-      // OpenRouter TTS or OpenAI fallback if audio endpoint is accessed
-      // If direct audio binary not supported over chat completions, route through OpenAI TTS with Qwen-validated text
-      const fallbackResponse = await fetch('https://api.openai.com/v1/audio/speech', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'tts-1',
-          input: processedText,
-          voice: 'onyx',
-          speed,
-        }),
-      })
-
-      if (fallbackResponse.ok) {
-        const audioBuffer = await fallbackResponse.arrayBuffer()
-
-        return new NextResponse(audioBuffer, {
-          status: 200,
-          headers: { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'public, max-age=3600' },
+      try {
+        const response = await fetch('https://api.openai.com/v1/audio/speech', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAiApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'tts-1-hd',
+            input: processedText,
+            voice: openAiVoice,
+            speed,
+          }),
         })
+
+        if (response.ok) {
+          const audioBuffer = await response.arrayBuffer()
+          return new NextResponse(audioBuffer, {
+            status: 200,
+            headers: {
+              'Content-Type': 'audio/mpeg',
+              'Cache-Control': 'public, max-age=3600',
+            },
+          })
+        }
+      } catch (err: any) {
+        console.error('[OpenAI TTS Error]', err.message)
       }
     }
 
-    return NextResponse.json({ error: 'Unsupported TTS engine' }, { status: 400 })
+    return NextResponse.json({ error: 'TTS service temporarily unavailable' }, { status: 500 })
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 })
   }

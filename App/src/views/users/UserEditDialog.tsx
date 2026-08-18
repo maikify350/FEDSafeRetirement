@@ -14,6 +14,8 @@ import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import Tooltip from '@mui/material/Tooltip'
 import Avatar from '@mui/material/Avatar'
+import Chip from '@mui/material/Chip'
+import IconButton from '@mui/material/IconButton'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import CircularProgress from '@mui/material/CircularProgress'
@@ -242,6 +244,32 @@ export default function UserEditDialog({ open, onClose, user, onSaved, usedColor
   const [pwSaving, setPwSaving]   = useState(false)
   const [pwError, setPwError]     = useState('')
   const [pwSuccess, setPwSuccess] = useState(false)
+
+  // Portal Invite states
+  const [inviteLink, setInviteLink] = useState<string | null>(null)
+  const [generatingInvite, setGeneratingInvite] = useState(false)
+  const [inviteCopied, setInviteCopied] = useState(false)
+
+  const handleGenerateInvite = async () => {
+    if (!user) return
+    setGeneratingInvite(true)
+    setPwError('')
+    try {
+      const res = await fetch(`/api/users/${user.id}/invite`, { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to generate invitation link')
+      setInviteLink(data.action_link)
+      if (data.action_link) {
+        navigator.clipboard.writeText(data.action_link)
+        setInviteCopied(true)
+        setTimeout(() => setInviteCopied(false), 3000)
+      }
+    } catch (err: any) {
+      setPwError(err.message || 'Failed to generate invitation link')
+    } finally {
+      setGeneratingInvite(false)
+    }
+  }
 
   const handlePwChange = (field: keyof typeof emptyPw) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setPwForm(prev => ({ ...prev, [field]: e.target.value }))
@@ -552,13 +580,67 @@ return (
       {/* ════════════════════ SECURITY TAB ═══════════════════════════════ */}
       {canManagePw && (
         <Box sx={{ display: tab === 2 ? 'block' : 'none' }}>
+          {/* Admin Invite / Reset Link Generator */}
+          {isAdmin && !isSelf && (
+            <Box sx={{ mb: 3.5, p: 2.5, bgcolor: 'action.hover', borderRadius: 1.5, border: '1px solid', borderColor: 'divider' }}>
+              <SectionHeader icon='tabler-mail-fast'>Portal Invitation & Login Link</SectionHeader>
+              <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+                Generate a secure, 1-click direct link that allows <strong>{displayName || user?.email}</strong> to set their password and log in immediately.
+              </Typography>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                <Button
+                  variant='outlined'
+                  color='primary'
+                  onClick={handleGenerateInvite}
+                  disabled={generatingInvite}
+                  startIcon={generatingInvite ? <CircularProgress size={16} color='inherit' /> : <i className='tabler-link' />}
+                >
+                  {generatingInvite ? 'Generating Link…' : 'Generate & Copy Invite Link'}
+                </Button>
+
+                {inviteCopied && (
+                  <Chip
+                    label='✅ Copied to clipboard!'
+                    color='success'
+                    size='small'
+                    variant='tonal'
+                  />
+                )}
+              </Box>
+
+              {inviteLink && (
+                <Box sx={{ mt: 2 }}>
+                  <CustomTextField
+                    fullWidth
+                    size='small'
+                    label='Direct Login / Password Set URL'
+                    value={inviteLink}
+                    InputProps={{
+                      readOnly: true,
+                      endAdornment: (
+                        <InputAdornment position='end'>
+                          <Tooltip title='Copy Link'>
+                            <IconButton size='small' onClick={() => { navigator.clipboard.writeText(inviteLink); setInviteCopied(true); setTimeout(() => setInviteCopied(false), 3000) }}>
+                              <i className='tabler-copy text-[16px]' />
+                            </IconButton>
+                          </Tooltip>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Box>
+              )}
+            </Box>
+          )}
+
           <SectionHeader icon='tabler-lock'>
-            {isSelf ? 'Change Your Password' : 'Set Password'}
+            {isSelf ? 'Change Your Password' : 'Set Password Directly'}
           </SectionHeader>
           <Typography variant='caption' color='text.secondary' sx={{ mb: 2, display: 'block' }}>
             {isSelf
               ? 'Enter your current password and choose a new one (at least 8 characters).'
-              : `As an admin you can set a new password for ${displayName || 'this user'} without their current password. The user must already have portal access.`}
+              : `As an admin you can directly set a new password for ${displayName || 'this user'} without waiting for an email.`}
           </Typography>
 
           {pwError   && <Alert severity='error'   sx={{ mb: 2 }} onClose={() => setPwError('')}>{pwError}</Alert>}
