@@ -232,6 +232,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   const [isPlayingPreview, setIsPlayingPreview] = useState(false)
   const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const scriptInputRef = useRef<HTMLTextAreaElement | null>(null)
 
   // Template Menu anchor
   const [templateMenuAnchor, setTemplateMenuAnchor] = useState<null | HTMLElement>(null)
@@ -294,12 +295,160 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
     }
   }, [open, video])
 
-  // Script metrics & Cost Estimation Engine
-  const words = script.trim() ? script.trim().split(/\s+/).length : 0
-  const estSec = words > 0 ? words / (2.58 * tempo) : 0
+  // Script metrics & Cost Estimation Engine (accounting for // 2s, //// 4s, and [pause:Xs])
+  const pauseMatches4 = (script.match(/\/\/\/\//g) || []).length
+  const scriptWithout4 = script.replace(/\/\/\/\//g, '')
+  const pauseMatches2 = (scriptWithout4.match(/\/\//g) || []).length
+  const customPauseMatches = [...script.matchAll(/\[pause:([\d.]+)s?\]/gi)]
+  const customPauseSec = customPauseMatches.reduce((acc, m) => acc + (parseFloat(m[1]) || 0), 0)
+  const totalPauseSec = (pauseMatches4 * 4) + (pauseMatches2 * 2) + customPauseSec
+
+  const cleanScriptWords = script.replace(/<[^>]*>/g, '').replace(/\[pause:[\d.]+s?\]/gi, '').replace(/\/\//g, '').trim()
+  const words = cleanScriptWords ? cleanScriptWords.split(/\s+/).filter(Boolean).length : 0
+  const estSec = (words > 0 ? words / (2.58 * tempo) : 0) + totalPauseSec
   const fmtDur = estSec < 60
     ? `~${Math.round(estSec)} sec`
     : `~${Math.floor(estSec / 60)}m ${String(Math.round(estSec % 60)).padStart(2, '0')}s`
+
+  // Voice Director tag insertion helper
+  const handleInsertTag = (tag: string) => {
+    const textarea = scriptInputRef.current
+    if (!textarea) {
+      setScript(prev => prev + tag)
+      setDirty(true)
+      return
+    }
+
+    const start = textarea.selectionStart || 0
+    const end = textarea.selectionEnd || 0
+    const newScript = script.substring(0, start) + tag + script.substring(end)
+    setScript(newScript)
+    setDirty(true)
+    setTimeout(() => {
+      textarea.focus()
+      textarea.setSelectionRange(start + tag.length, start + tag.length)
+    }, 50)
+  }
+
+  // Voice Director tag wrapper helper
+  const handleWrapTag = (tagName: string) => {
+    const textarea = scriptInputRef.current
+    if (!textarea) {
+      setScript(prev => `${prev} <${tagName}>...</${tagName}>`)
+      setDirty(true)
+      return
+    }
+
+    const start = textarea.selectionStart || 0
+    const end = textarea.selectionEnd || 0
+    const selected = script.substring(start, end)
+    const wrapped = selected ? `<${tagName}>${selected}</${tagName}>` : `<${tagName}>...</${tagName}>`
+    const newScript = script.substring(0, start) + wrapped + script.substring(end)
+    setScript(newScript)
+    setDirty(true)
+    setTimeout(() => {
+      textarea.focus()
+      textarea.setSelectionRange(start + wrapped.length, start + wrapped.length)
+    }, 50)
+  }
+
+  // Remove / strip tag at current cursor position or within selection
+  const handleRemoveTagAtCursor = () => {
+    const textarea = scriptInputRef.current
+    if (!textarea) return
+
+    const pos = textarea.selectionStart || 0
+    const endPos = textarea.selectionEnd || 0
+
+    // Range selected -> strip all director tags inside selection
+    if (pos !== endPos) {
+      const selected = script.substring(pos, endPos)
+      const cleaned = selected
+        .replace(/<\/?(loud|whisper|fast|slow|spell|emphasis)>/gi, '')
+        .replace(/\[pause:[\d.]+s?\]/gi, '')
+        .replace(/\/\/\/\//g, '')
+        .replace(/\/\//g, '')
+      const newScript = script.substring(0, pos) + cleaned + script.substring(endPos)
+      setScript(newScript)
+      setDirty(true)
+      setTimeout(() => {
+        textarea.focus()
+        textarea.setSelectionRange(pos, pos + cleaned.length)
+      }, 50)
+      return
+    }
+
+    // Cursor position -> detect surrounding tag and remove
+    // 1. XML tags: <tag>content</tag>
+    const tagRegex = /<(loud|whisper|fast|slow|spell|emphasis)>([\s\S]*?)<\/\1>/gi
+    let match: RegExpExecArray | null
+    while ((match = tagRegex.exec(script)) !== null) {
+      const matchStart = match.index
+      const matchEnd = match.index + match[0].length
+      if (pos >= matchStart && pos <= matchEnd) {
+        const innerContent = match[2]
+        const newScript = script.substring(0, matchStart) + innerContent + script.substring(matchEnd)
+        setScript(newScript)
+        setDirty(true)
+        setTimeout(() => {
+          textarea.focus()
+          textarea.setSelectionRange(matchStart, matchStart + innerContent.length)
+        }, 50)
+        return
+      }
+    }
+
+    // 2. Custom pause: [pause:Xs]
+    const pauseRegex = /\[pause:([\d.]+)s?\]/gi
+    while ((match = pauseRegex.exec(script)) !== null) {
+      const matchStart = match.index
+      const matchEnd = match.index + match[0].length
+      if (pos >= matchStart && pos <= matchEnd) {
+        const newScript = script.substring(0, matchStart) + script.substring(matchEnd)
+        setScript(newScript)
+        setDirty(true)
+        setTimeout(() => {
+          textarea.focus()
+          textarea.setSelectionRange(matchStart, matchStart)
+        }, 50)
+        return
+      }
+    }
+
+    // 3. 4s Pause: ////
+    const slash4Regex = /\/\/\/\//g
+    while ((match = slash4Regex.exec(script)) !== null) {
+      const matchStart = match.index
+      const matchEnd = match.index + match[0].length
+      if (pos >= matchStart && pos <= matchEnd) {
+        const newScript = script.substring(0, matchStart) + script.substring(matchEnd)
+        setScript(newScript)
+        setDirty(true)
+        setTimeout(() => {
+          textarea.focus()
+          textarea.setSelectionRange(matchStart, matchStart)
+        }, 50)
+        return
+      }
+    }
+
+    // 4. 2s Pause: //
+    const slash2Regex = /\/\//g
+    while ((match = slash2Regex.exec(script)) !== null) {
+      const matchStart = match.index
+      const matchEnd = match.index + match[0].length
+      if (pos >= matchStart && pos <= matchEnd) {
+        const newScript = script.substring(0, matchStart) + script.substring(matchEnd)
+        setScript(newScript)
+        setDirty(true)
+        setTimeout(() => {
+          textarea.focus()
+          textarea.setSelectionRange(matchStart, matchStart)
+        }, 50)
+        return
+      }
+    }
+  }
 
   // Granular Cost Breakdown
   const ttsRate = ttsEngine === 'qwen-openrouter' ? 0.010 : 0.030
@@ -1064,14 +1213,119 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                         Narration Script
                       </Typography>
                       <Typography variant='caption' color='text.secondary'>
-                        {fmtDur} @ {tempo.toFixed(2)}× · {words.toLocaleString()} words · ~${costPerRun}
+                        {fmtDur} @ {tempo.toFixed(2)}× · {words.toLocaleString()} words · {totalPauseSec > 0 ? `(+${totalPauseSec}s pauses) · ` : ''}~${costPerRun}
                       </Typography>
                     </Box>
+
+                    {/* Voice Director Quick Tags Toolbar */}
+                    <Box sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.75,
+                      flexWrap: 'wrap',
+                      p: 0.75,
+                      px: 1,
+                      bgcolor: 'action.hover',
+                      borderRadius: 1,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                    }}>
+                      <Typography variant='caption' sx={{ fontWeight: 700, color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.5, mr: 0.5, fontSize: 11 }}>
+                        <i className='tabler-adjustments-horizontal text-[14px] text-primary' /> Director Tags:
+                      </Typography>
+
+                      <Tooltip title='Insert 2-second breath / transition pause'>
+                        <Chip
+                          label='⏱️ // 2s Pause'
+                          size='small'
+                          onClick={() => handleInsertTag(' // ')}
+                          sx={{ height: 22, fontSize: 11, cursor: 'pointer', fontWeight: 600 }}
+                          color='primary'
+                          variant='outlined'
+                        />
+                      </Tooltip>
+
+                      <Tooltip title='Insert 4-second dramatic hook pause'>
+                        <Chip
+                          label='⏱️ //// 4s Pause'
+                          size='small'
+                          onClick={() => handleInsertTag(' //// ')}
+                          sx={{ height: 22, fontSize: 11, cursor: 'pointer', fontWeight: 600 }}
+                          color='secondary'
+                          variant='outlined'
+                        />
+                      </Tooltip>
+
+                      <Tooltip title='Wrap selected word in <loud> emphasis tags'>
+                        <Chip
+                          label='🔊 <loud>'
+                          size='small'
+                          onClick={() => handleWrapTag('loud')}
+                          sx={{ height: 22, fontSize: 11, cursor: 'pointer' }}
+                          variant='filled'
+                        />
+                      </Tooltip>
+
+                      <Tooltip title='Wrap selected word in <whisper> quiet advisory tags'>
+                        <Chip
+                          label='🤫 <whisper>'
+                          size='small'
+                          onClick={() => handleWrapTag('whisper')}
+                          sx={{ height: 22, fontSize: 11, cursor: 'pointer' }}
+                          variant='filled'
+                        />
+                      </Tooltip>
+
+                      <Tooltip title='Wrap in <fast> brisk pacing tags (1.25×)'>
+                        <Chip
+                          label='⚡ <fast>'
+                          size='small'
+                          onClick={() => handleWrapTag('fast')}
+                          sx={{ height: 22, fontSize: 11, cursor: 'pointer' }}
+                          variant='filled'
+                        />
+                      </Tooltip>
+
+                      <Tooltip title='Wrap in <slow> deliberate pacing tags (0.85×)'>
+                        <Chip
+                          label='🐢 <slow>'
+                          size='small'
+                          onClick={() => handleWrapTag('slow')}
+                          sx={{ height: 22, fontSize: 11, cursor: 'pointer' }}
+                          variant='filled'
+                        />
+                      </Tooltip>
+
+                      <Tooltip title='Wrap acronym in <spell> letter-by-letter spelling'>
+                        <Chip
+                          label='🔤 <spell>'
+                          size='small'
+                          onClick={() => handleWrapTag('spell')}
+                          sx={{ height: 22, fontSize: 11, cursor: 'pointer' }}
+                          variant='filled'
+                        />
+                      </Tooltip>
+
+                      <Divider orientation='vertical' flexItem sx={{ mx: 0.25, height: 16, alignSelf: 'center' }} />
+
+                      <Tooltip title='Remove tag at cursor position or strip tags from selection'>
+                        <Chip
+                          label='❌ Remove Tag'
+                          size='small'
+                          onClick={handleRemoveTagAtCursor}
+                          sx={{ height: 22, fontSize: 11, cursor: 'pointer', fontWeight: 700 }}
+                          color='error'
+                          variant='outlined'
+                        />
+                      </Tooltip>
+                    </Box>
+
                     <TextField
+                      inputRef={scriptInputRef}
                       fullWidth
                       multiline
                       rows={8}
-                      placeholder='Enter spoken narration...'
+                      placeholder='Enter spoken narration... Use // for 2s pause, //// for 4s pause, <loud>WON</loud> for emphasis'
                       value={script}
                       onChange={e => { setScript(e.target.value); setDirty(true) }}
                       sx={{

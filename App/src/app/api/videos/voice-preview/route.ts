@@ -16,7 +16,19 @@ export async function POST(request: NextRequest) {
     const voiceId = body.voice_id || 'GGRMgbKfr7QscdcrvWga' // default Kai
     const voiceName = body.voice_name || 'Kai'
     const speed = Math.min(2.0, Math.max(0.5, Number(body.speed) || 1.0))
-    const previewText = body.text || `Hello! This is a preview of the ${voiceName} voice for your FEDSafe Retirement video.`
+    const rawPreviewText = body.text || `Hello! This is a preview of the ${voiceName} voice for your FEDSafe Retirement video.`
+
+    // Preprocess text for pause markers (//, ////, [pause:Xs]) and emotion tags (<loud>, <whisper>, <spell>)
+    const processedText = rawPreviewText
+      .replace(/\/\/\/\//g, '... ... ... ... ')
+      .replace(/\/\//g, '... ... ')
+      .replace(/\[pause:([\d.]+)s?\]/gi, '... ... ')
+      .replace(/<loud>(.*?)<\/loud>/gi, '$1')
+      .replace(/<emphasis>(.*?)<\/emphasis>/gi, '$1')
+      .replace(/<whisper>(.*?)<\/whisper>/gi, '$1')
+      .replace(/<fast>(.*?)<\/fast>/gi, '$1')
+      .replace(/<slow>(.*?)<\/slow>/gi, '$1')
+      .replace(/<spell>(.*?)<\/spell>/gi, (_: string, p1: string) => p1.split('').join(' '))
 
     // Provider 1: ElevenLabs
     const apiKey = process.env.ELEVENLABS_API_KEY || process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY || 'sk_da462719dbc91e7ba72b2f0ad2c0b70d84ecad811459991f'
@@ -31,7 +43,7 @@ export async function POST(request: NextRequest) {
             'xi-api-key': apiKey,
           },
           body: JSON.stringify({
-            text: previewText,
+            text: processedText,
             model_id: 'eleven_turbo_v2_5',
             voice_settings: {
               stability: 0.5,
@@ -77,7 +89,7 @@ export async function POST(request: NextRequest) {
         },
         body: JSON.stringify({
           model: 'tts-1-hd',
-          input: previewText,
+          input: processedText,
           voice: openAiVoice,
           speed,
         }),
@@ -118,7 +130,7 @@ export async function POST(request: NextRequest) {
         },
         body: JSON.stringify({
           model: 'tts-1',
-          input: previewText,
+          input: processedText,
           voice: 'onyx',
           speed,
         }),
