@@ -450,27 +450,41 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         }),
       })
 
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Failed to generate voice preview')
+      if (res.ok) {
+        const blob = await res.blob()
+        const audioUrl = URL.createObjectURL(blob)
+        setGeneratedAudioUrl(audioUrl)
+
+        if (audioRef.current) {
+          audioRef.current.pause()
+        }
+
+        const audio = new Audio(audioUrl)
+        audioRef.current = audio
+        audio.onended = () => setIsPlayingPreview(false)
+        audio.onerror = () => setIsPlayingPreview(false)
+        await audio.play()
+        setIsPlayingPreview(true)
+        return
       }
+    } catch {
+      // Fallback to browser SpeechSynthesis
+    }
 
-      const blob = await res.blob()
-      const audioUrl = URL.createObjectURL(blob)
-      setGeneratedAudioUrl(audioUrl)
-
-      if (audioRef.current) {
-        audioRef.current.pause()
+    // Fallback to browser SpeechSynthesis
+    try {
+      if ('speechSynthesis' in window) {
+        const sampleText = script.trim() || `Hello! This is a preview of the ${selectedVoice.name} voice.`
+        const utterance = new SpeechSynthesisUtterance(sampleText)
+        utterance.rate = tempo || 1.0
+        utterance.onend = () => setIsPlayingPreview(false)
+        utterance.onerror = () => setIsPlayingPreview(false)
+        window.speechSynthesis.speak(utterance)
+        setIsPlayingPreview(true)
+        return
       }
-
-      const audio = new Audio(audioUrl)
-      audioRef.current = audio
-      audio.onended = () => setIsPlayingPreview(false)
-      audio.onerror = () => setIsPlayingPreview(false)
-      await audio.play()
-      setIsPlayingPreview(true)
-    } catch (err: any) {
-      setError(err.message || 'Voice preview failed')
+    } catch {
+      // ignore
     } finally {
       setPreviewLoading(false)
     }

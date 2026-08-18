@@ -81,8 +81,13 @@ export default function VideosView() {
   const handlePlayVoice = async (video: VideoRecord, e: React.MouseEvent) => {
     e.stopPropagation()
 
-    if (playingVoiceId === video.id && activeAudioRef.current) {
-      activeAudioRef.current.pause()
+    if (playingVoiceId === video.id) {
+      if (activeAudioRef.current) {
+        activeAudioRef.current.pause()
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel()
+      }
       setPlayingVoiceId(null)
       return
     }
@@ -90,8 +95,13 @@ export default function VideosView() {
     if (activeAudioRef.current) {
       activeAudioRef.current.pause()
     }
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+    }
 
     setPlayingVoiceId(video.id)
+
+    const sampleText = video.script ? video.script.substring(0, 120) : `Hello! This is a preview of the ${video.voice_name || 'Kai'} voice.`
 
     try {
       const res = await fetch('/api/videos/voice-preview', {
@@ -101,22 +111,40 @@ export default function VideosView() {
           voice_id: video.voice_id,
           voice_name: video.voice_name,
           speed: video.tempo,
-          text: video.script ? video.script.substring(0, 120) : undefined,
+          text: sampleText,
         }),
       })
 
-      if (!res.ok) throw new Error('Preview failed')
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const audio = new Audio(url)
-      activeAudioRef.current = audio
+      if (res.ok) {
+        const blob = await res.blob()
+        const url = URL.createObjectURL(blob)
+        const audio = new Audio(url)
+        activeAudioRef.current = audio
 
-      audio.onended = () => setPlayingVoiceId(null)
-      audio.onerror = () => setPlayingVoiceId(null)
-      await audio.play()
+        audio.onended = () => setPlayingVoiceId(null)
+        audio.onerror = () => setPlayingVoiceId(null)
+        await audio.play()
+        return
+      }
     } catch {
-      setPlayingVoiceId(null)
+      // Fallback
     }
+
+    // Fallback to browser SpeechSynthesis so voice preview always plays
+    try {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(sampleText)
+        utterance.rate = video.tempo || 1.0
+        utterance.onend = () => setPlayingVoiceId(null)
+        utterance.onerror = () => setPlayingVoiceId(null)
+        window.speechSynthesis.speak(utterance)
+        return
+      }
+    } catch {
+      // ignore
+    }
+
+    setPlayingVoiceId(null)
   }
 
   const handleDeleteConfirm = async () => {

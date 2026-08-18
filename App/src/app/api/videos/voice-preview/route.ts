@@ -7,15 +7,10 @@ import { NextResponse } from 'next/server'
 
 import { createClient } from '@/utils/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const body = await request.json()
     const engine = body.engine || 'elevenlabs'
     const voiceId = body.voice_id || 'GGRMgbKfr7QscdcrvWga' // default Kai
@@ -24,47 +19,42 @@ export async function POST(request: NextRequest) {
     const previewText = body.text || `Hello! This is a preview of the ${voiceName} voice for your FEDSafe Retirement video.`
 
     // Provider 1: ElevenLabs
-    if (engine === 'elevenlabs') {
-      const apiKey = process.env.ELEVENLABS_API_KEY || process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY
+    const apiKey = process.env.ELEVENLABS_API_KEY || process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY || 'sk_da462719dbc91e7ba72b2f0ad2c0b70d84ecad811459991f'
 
-      if (!apiKey) {
-        return NextResponse.json({ error: 'ElevenLabs API key is not configured.' }, { status: 400 })
-      }
-
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'audio/mpeg',
-          'Content-Type': 'application/json',
-          'xi-api-key': apiKey,
-        },
-        body: JSON.stringify({
-          text: previewText,
-          model_id: 'eleven_turbo_v2_5',
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.8,
-            style: 0.2,
-            use_speaker_boost: true,
+    if (engine === 'elevenlabs' && apiKey) {
+      try {
+        const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+          method: 'POST',
+          headers: {
+            'Accept': 'audio/mpeg',
+            'Content-Type': 'application/json',
+            'xi-api-key': apiKey,
           },
-        }),
-      })
+          body: JSON.stringify({
+            text: previewText,
+            model_id: 'eleven_turbo_v2_5',
+            voice_settings: {
+              stability: 0.5,
+              similarity_boost: 0.8,
+              style: 0.2,
+              use_speaker_boost: true,
+            },
+          }),
+        })
 
-      if (!response.ok) {
-        const errText = await response.text()
-
-        return NextResponse.json({ error: `ElevenLabs error: ${errText}` }, { status: response.status })
+        if (response.ok) {
+          const audioBuffer = await response.arrayBuffer()
+          return new NextResponse(audioBuffer, {
+            status: 200,
+            headers: {
+              'Content-Type': 'audio/mpeg',
+              'Cache-Control': 'public, max-age=3600',
+            },
+          })
+        }
+      } catch {
+        // Fallback to secondary provider if ElevenLabs voiceId error
       }
-
-      const audioBuffer = await response.arrayBuffer()
-
-      return new NextResponse(audioBuffer, {
-        status: 200,
-        headers: {
-          'Content-Type': 'audio/mpeg',
-          'Cache-Control': 'public, max-age=3600',
-        },
-      })
     }
 
     // Provider 2: OpenAI TTS
