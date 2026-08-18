@@ -17,7 +17,7 @@ export const DEFAULT_PREGENERATED_VIDEOS: VideoRecord[] = [
     voice_name: 'Kai',
     tempo: 1.00,
     status: 'ready',
-    video_url: '/videos/03_Video_Postal_Retirement_Reel.mp4',
+    video_url: 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/01_Video_Postal_Retirement_Reel.mp4',
     audio_url: null,
     thumbnail_url: null,
     hyperframes: [
@@ -52,7 +52,7 @@ export const DEFAULT_PREGENERATED_VIDEOS: VideoRecord[] = [
     voice_name: 'Havoc',
     tempo: 1.00,
     status: 'ready',
-    video_url: '/videos/04_Video_FEGLI_Shock_Alert_Reel.mp4',
+    video_url: 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/02_Video_FEGLI_Shock_Alert_Reel.mp4',
     audio_url: null,
     thumbnail_url: null,
     hyperframes: [
@@ -86,7 +86,7 @@ export const DEFAULT_PREGENERATED_VIDEOS: VideoRecord[] = [
     voice_name: 'Kai',
     tempo: 1.00,
     status: 'ready',
-    video_url: '/videos/03_Video_Postal_Retirement_Reel.mp4',
+    video_url: 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/01_Video_Postal_Retirement_Reel.mp4',
     audio_url: null,
     thumbnail_url: null,
     hyperframes: [
@@ -120,7 +120,7 @@ export const DEFAULT_PREGENERATED_VIDEOS: VideoRecord[] = [
     voice_name: 'Kai',
     tempo: 1.00,
     status: 'ready',
-    video_url: '/videos/04_Video_FEGLI_Shock_Alert_Reel.mp4',
+    video_url: 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/02_Video_FEGLI_Shock_Alert_Reel.mp4',
     audio_url: null,
     thumbnail_url: null,
     hyperframes: [
@@ -154,7 +154,7 @@ export const DEFAULT_PREGENERATED_VIDEOS: VideoRecord[] = [
     voice_name: 'Aurora',
     tempo: 1.00,
     status: 'ready',
-    video_url: '/videos/03_Video_Postal_Retirement_Reel.mp4',
+    video_url: 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/01_Video_Postal_Retirement_Reel.mp4',
     audio_url: null,
     thumbnail_url: null,
     hyperframes: [
@@ -188,7 +188,7 @@ export const DEFAULT_PREGENERATED_VIDEOS: VideoRecord[] = [
     voice_name: 'Kai',
     tempo: 1.00,
     status: 'ready',
-    video_url: '/videos/04_Video_FEGLI_Shock_Alert_Reel.mp4',
+    video_url: 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/02_Video_FEGLI_Shock_Alert_Reel.mp4',
     audio_url: null,
     thumbnail_url: null,
     hyperframes: [
@@ -222,7 +222,7 @@ export const DEFAULT_PREGENERATED_VIDEOS: VideoRecord[] = [
     voice_name: 'Brock',
     tempo: 1.00,
     status: 'ready',
-    video_url: '/videos/03_Video_Postal_Retirement_Reel.mp4',
+    video_url: 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/01_Video_Postal_Retirement_Reel.mp4',
     audio_url: null,
     thumbnail_url: null,
     hyperframes: [
@@ -256,7 +256,7 @@ export const DEFAULT_PREGENERATED_VIDEOS: VideoRecord[] = [
     voice_name: 'Hale',
     tempo: 1.00,
     status: 'ready',
-    video_url: '/videos/04_Video_FEGLI_Shock_Alert_Reel.mp4',
+    video_url: 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/02_Video_FEGLI_Shock_Alert_Reel.mp4',
     audio_url: null,
     thumbnail_url: null,
     hyperframes: [
@@ -290,7 +290,7 @@ export const DEFAULT_PREGENERATED_VIDEOS: VideoRecord[] = [
     voice_name: 'Kai',
     tempo: 1.00,
     status: 'ready',
-    video_url: '/videos/03_Video_Postal_Retirement_Reel.mp4',
+    video_url: 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/01_Video_Postal_Retirement_Reel.mp4',
     audio_url: null,
     thumbnail_url: null,
     hyperframes: [
@@ -324,7 +324,7 @@ export const DEFAULT_PREGENERATED_VIDEOS: VideoRecord[] = [
     voice_name: 'Kai',
     tempo: 1.00,
     status: 'ready',
-    video_url: '/videos/04_Video_FEGLI_Shock_Alert_Reel.mp4',
+    video_url: 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/02_Video_FEGLI_Shock_Alert_Reel.mp4',
     audio_url: null,
     thumbnail_url: null,
     hyperframes: [
