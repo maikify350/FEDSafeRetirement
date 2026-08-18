@@ -423,9 +423,8 @@ export default function GalleryView() {
                   </Box>
                 </CardContent>
               </Card>
-            </Grid>
           ))}
-        </Grid>
+        </Box>
       )}
 
       {/* Asset Preview Modal */}

@@ -1128,7 +1128,6 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                     />
                   </Box>
                 </Box>
-              </Box>
 
               {/* Right Column: Thumbnail & Voice Engine */}
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
