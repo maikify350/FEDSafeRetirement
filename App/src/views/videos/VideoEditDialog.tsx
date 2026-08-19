@@ -269,6 +269,32 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   // Pro Timeline Studio & Video Player state
   const [timelineStudioOpen, setTimelineStudioOpen] = useState(false)
   const [videoPlayerOpen, setVideoPlayerOpen] = useState(false)
+  const [showPlayerOverlay, setShowPlayerOverlay] = useState(true)
+
+  const stopAllAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+    }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+    }
+    setIsPlayingPreview(false)
+    setPreviewLoading(false)
+  }
+
+  // Always stop narration audio whenever video player or timeline studio opens or dialog closes
+  useEffect(() => {
+    if (videoPlayerOpen || timelineStudioOpen || !open) {
+      stopAllAudio()
+    }
+  }, [videoPlayerOpen, timelineStudioOpen, open])
+
+  useEffect(() => {
+    return () => {
+      stopAllAudio()
+    }
+  }, [])
 
   // Gallery Picker dialog state
   const [galleryOpen, setGalleryOpen] = useState(false)
@@ -3080,27 +3106,125 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         }}>
           {(() => {
             const playUrl = video?.video_url || 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/01_Video_Postal_Retirement_Reel.mp4'
+            const scaleMult = logoSize === 'xs' ? 0.6 : logoSize === 'small' ? 0.8 : logoSize === 'large' ? 1.3 : logoSize === 'xl' ? 1.6 : 1.0
+
+            const renderOverlayLogos = (pos: LogoPosition) => {
+              const items = []
+              if (showShieldLogo && shieldLogoPosition === pos) {
+                items.push(
+                  <Box key="shield" sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)', opacity: logoOpacity }}>
+                    <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='FEDSafe Shield' style={{ height: Math.round(20 * scaleMult), objectFit: 'contain', display: 'block' }} />
+                  </Box>
+                )
+              }
+              if (showSamBadge && samBadgePosition === pos) {
+                items.push(
+                  <Box key="sam" sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)', opacity: logoOpacity }}>
+                    <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM.gov' style={{ height: Math.round(18 * scaleMult), objectFit: 'contain', display: 'block' }} />
+                  </Box>
+                )
+              }
+              if (showDoubleLogo && doubleLogoPosition === pos) {
+                items.push(
+                  <Box key="double" sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)', opacity: logoOpacity }}>
+                    <img src='/images/branding/fedsafe-double-logo-transparent.webp' alt='Dual Lockup' style={{ height: Math.round(20 * scaleMult), objectFit: 'contain', display: 'block' }} />
+                  </Box>
+                )
+              }
+              if (showTaglineLogo && taglineLogoPosition === pos) {
+                items.push(
+                  <Box key="tagline" sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)', opacity: logoOpacity }}>
+                    <img src='/images/branding/fedsafe-logo-tagline-transparent.webp' alt='Tagline' style={{ height: Math.round(16 * scaleMult), objectFit: 'contain', display: 'block' }} />
+                  </Box>
+                )
+              }
+              return items
+            }
 
             return (
-              <video
-                src={playUrl}
-                controls
-                autoPlay
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '68vh',
-                  borderRadius: 12,
-                  boxShadow: '0 12px 40px rgba(0,0,0,0.8)',
-                  outline: 'none',
-                }}
-              />
+              <Box sx={{ position: 'relative', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', maxWidth: '100%' }}>
+                <video
+                  src={playUrl}
+                  controls
+                  autoPlay
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '68vh',
+                    borderRadius: 12,
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.8)',
+                    outline: 'none',
+                  }}
+                />
+
+                {/* Optional Dynamic Live Watermark Overlay Layer */}
+                {showPlayerOverlay && (
+                  <Box sx={{
+                    position: 'absolute',
+                    top: 12,
+                    left: 12,
+                    right: 12,
+                    bottom: 56,
+                    pointerEvents: 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    zIndex: 2,
+                  }}>
+                    {/* Top Row */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                        {renderOverlayLogos('top-left')}
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                        {renderOverlayLogos('top-center')}
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                        {renderOverlayLogos('top-right')}
+                      </Box>
+                    </Box>
+
+                    {/* Bottom Row */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                        {renderOverlayLogos('bottom-left')}
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                        {renderOverlayLogos('bottom-center')}
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                        {renderOverlayLogos('bottom-right')}
+                      </Box>
+                    </Box>
+                  </Box>
+                )}
+              </Box>
             )
           })()}
         </DialogContent>
-        <DialogActions sx={{ p: 2, px: 3, borderTop: '1px solid rgba(255, 255, 255, 0.1)', bgcolor: 'rgba(15, 23, 42, 0.8)', justifyContent: 'space-between' }}>
-          <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.7)', maxWidth: '65%' }} noWrap>
-            CTA: {ctaText || 'FedSafeRetirement.com'}
-          </Typography>
+        <DialogActions sx={{ p: 2, px: 3, borderTop: '1px solid rgba(255, 255, 255, 0.1)', bgcolor: 'rgba(15, 23, 42, 0.8)', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  size='small'
+                  checked={showPlayerOverlay}
+                  onChange={(e) => setShowPlayerOverlay(e.target.checked)}
+                  color='primary'
+                />
+              }
+              label={
+                <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>
+                  {showPlayerOverlay ? 'Live Branding Watermarks: Visible' : 'Raw Video Only'}
+                </Typography>
+              }
+              sx={{ m: 0 }}
+            />
+            {ctaText && (
+              <Typography variant='caption' sx={{ color: 'primary.light', fontWeight: 600 }} noWrap>
+                CTA: {ctaText}
+              </Typography>
+            )}
+          </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button size='small' variant='outlined' color='inherit' onClick={() => setVideoPlayerOpen(false)}>
               Close
