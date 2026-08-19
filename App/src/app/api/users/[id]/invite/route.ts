@@ -92,7 +92,7 @@ export async function POST(
     const recipientName = `${target.first_name || ''} ${target.last_name || ''}`.trim() || target.email
 
     // Dispatch automated invitation email via SMTP (if configured)
-    let emailResult = { success: false, error: 'SMTP not configured' }
+    let emailResult: { success: boolean; error?: string; messageId?: string } = { success: false, error: 'SMTP not configured' }
 
     if (actionLink) {
       emailResult = await sendInvitationEmail({

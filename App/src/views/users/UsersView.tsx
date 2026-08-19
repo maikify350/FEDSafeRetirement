@@ -166,7 +166,7 @@ export default function UsersView() {
     {
       id: 'actions',
       header: 'Actions',
-      size: 130,
+      size: 140,
       enableSorting: false,
       enableColumnFilter: false,
       enableHiding: false,
@@ -175,19 +175,21 @@ export default function UsersView() {
         const u = row.original
 
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
             <Tooltip title={`Send Invite / Login Link to ${u.first_name || u.email}`}>
               <IconButton
                 size='small'
                 color='primary'
                 onClick={(e: React.MouseEvent) => handleOpenInvite(u, e)}
                 sx={{
-                  p: '4px',
-                  bgcolor: 'rgba(99,102,241,0.08)',
-                  '&:hover': { bgcolor: 'rgba(99,102,241,0.18)' },
+                  p: '5px',
+                  bgcolor: 'rgba(99, 102, 241, 0.12)',
+                  border: '1px solid rgba(99, 102, 241, 0.25)',
+                  '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.25)' },
+                  transition: 'all 0.15s ease',
                 }}
               >
-                <i className='tabler-mail-fast text-[16px]' />
+                <i className='tabler-mail-fast text-[18px]' />
               </IconButton>
             </Tooltip>
 
@@ -198,9 +200,13 @@ export default function UsersView() {
                   e.stopPropagation()
                   setEditUser(u)
                 }}
-                sx={{ p: '4px' }}
+                sx={{
+                  p: '5px',
+                  bgcolor: 'action.hover',
+                  '&:hover': { bgcolor: 'action.selected' },
+                }}
               >
-                <i className='tabler-edit text-[16px]' />
+                <i className='tabler-edit text-[18px]' />
               </IconButton>
             </Tooltip>
 
@@ -214,12 +220,13 @@ export default function UsersView() {
                 }}
                 sx={{
                   color: '#ef4444',
-                  p: '4px',
+                  p: '5px',
+                  bgcolor: 'rgba(239, 68, 68, 0.08)',
                   '&:hover': { color: '#b91c1c', background: '#fee2e2' },
                   transition: 'all 0.15s',
                 }}
               >
-                <i className='tabler-trash text-[16px]' />
+                <i className='tabler-trash text-[18px]' />
               </IconButton>
             </Tooltip>
           </Box>
@@ -244,8 +251,7 @@ export default function UsersView() {
 
       if (!res.ok) {
         setDeleteError(result.error || 'Failed to delete user')
-        
-return
+        return
       }
 
       setUsers(prev => prev.filter(u => u.id !== confirmDelete.id))
@@ -283,7 +289,6 @@ return
         onExportJson={(rows) => downloadJson(rows, 'users.json')}
         emptyMessage='No users found'
         onRowDoubleClick={(u) => setEditUser(u)}
-        onRowEdit={(u) => setEditUser(u)}
       />
 
       <AddUserDialog
