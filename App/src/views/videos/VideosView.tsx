@@ -231,14 +231,13 @@ export default function VideosView() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Box
               onClick={(e) => {
-                if (v.video_url) {
-                  e.stopPropagation()
-                  setPreviewVideoUrl(v.video_url)
-                }
+                e.stopPropagation()
+                setPreviewVideoRecord(v)
+                setPreviewVideoUrl(v.video_url || 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/01_Video_Postal_Retirement_Reel.mp4')
               }}
               sx={{
                 position: 'relative',
-                cursor: v.video_url ? 'pointer' : 'default',
+                cursor: 'pointer',
                 width: 44,
                 height: v.format === 'short' ? 58 : 36,
                 borderRadius: 1,
