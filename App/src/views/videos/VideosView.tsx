@@ -733,109 +733,20 @@ export default function VideosView() {
           bgcolor: '#030712',
           minHeight: 460,
         }}>
-          {previewVideoUrl && (() => {
-            const meta = previewVideoRecord?.metadata || {}
-            const showShield = meta.show_shield_logo !== false
-            const shieldPos = meta.shield_logo_position || 'top-left'
-            const showSam = meta.show_sam_badge !== false
-            const samPos = meta.sam_badge_position || 'top-right'
-            const showDouble = Boolean(meta.show_double_logo)
-            const doublePos = meta.double_logo_position || 'top-center'
-            const showTagline = Boolean(meta.show_tagline_logo)
-            const taglinePos = meta.tagline_logo_position || 'bottom-left'
-            const logoScale = meta.logo_size === 'small' ? 0.8 : meta.logo_size === 'large' ? 1.3 : 1.0
-            const logoOpacity = typeof meta.logo_opacity === 'number' ? meta.logo_opacity : 0.9
-
-            const renderOverlayLogos = (pos: string) => {
-              const items = []
-              if (showShield && shieldPos === pos) {
-                items.push(
-                  <Box key="shield" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
-                    <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='FEDSafe Shield' style={{ height: Math.round(20 * logoScale), objectFit: 'contain', display: 'block' }} />
-                  </Box>
-                )
-              }
-              if (showSam && samPos === pos) {
-                items.push(
-                  <Box key="sam" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
-                    <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM.gov' style={{ height: Math.round(18 * logoScale), objectFit: 'contain', display: 'block' }} />
-                  </Box>
-                )
-              }
-              if (showDouble && doublePos === pos) {
-                items.push(
-                  <Box key="double" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
-                    <img src='/images/branding/fedsafe-double-logo-transparent.webp' alt='Dual Lockup' style={{ height: Math.round(20 * logoScale), objectFit: 'contain', display: 'block' }} />
-                  </Box>
-                )
-              }
-              if (showTagline && taglinePos === pos) {
-                items.push(
-                  <Box key="tagline" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
-                    <img src='/images/branding/fedsafe-logo-tagline-transparent.webp' alt='Tagline' style={{ height: Math.round(16 * logoScale), objectFit: 'contain', display: 'block' }} />
-                  </Box>
-                )
-              }
-              return items
-            }
-
-            return (
-              <Box sx={{ position: 'relative', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', maxWidth: '100%' }}>
-                <video
-                  src={previewVideoUrl}
-                  controls
-                  autoPlay
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '68vh',
-                    borderRadius: 12,
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.8)',
-                    outline: 'none',
-                  }}
-                />
-
-                {/* Live Multi-Position Watermark Overlay Badges */}
-                <Box sx={{
-                  position: 'absolute',
-                  top: 12,
-                  left: 12,
-                  right: 12,
-                  bottom: 56,
-                  pointerEvents: 'none',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  zIndex: 2,
-                }}>
-                  {/* Top Anchors Row */}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                      {renderOverlayLogos('top-left')}
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                      {renderOverlayLogos('top-center')}
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                      {renderOverlayLogos('top-right')}
-                    </Box>
-                  </Box>
-
-                  {/* Bottom Anchors Row */}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                      {renderOverlayLogos('bottom-left')}
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                      {renderOverlayLogos('bottom-center')}
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                      {renderOverlayLogos('bottom-right')}
-                    </Box>
-                  </Box>
-                </Box>
-              </Box>
-            )
-          })()}
+          {previewVideoUrl && (
+            <video
+              src={previewVideoUrl}
+              controls
+              autoPlay
+              style={{
+                maxWidth: '100%',
+                maxHeight: '68vh',
+                borderRadius: 12,
+                boxShadow: '0 12px 40px rgba(0,0,0,0.8)',
+                outline: 'none',
+              }}
+            />
+          )}
         </Box>
 
         {/* Footer / Script snippet & Action Controls */}

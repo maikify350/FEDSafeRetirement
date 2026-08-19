@@ -84,19 +84,19 @@ const HeaderBug = () => {
     >
       <div
         style={{
-          width: 220,
-          height: 120,
-          borderRadius: 14,
-          backgroundColor: "rgba(255,255,255,0.95)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: "0 14px 32px rgba(0,0,0,0.3)",
+          padding: "10px 18px",
+          borderRadius: 14,
+          backgroundColor: "rgba(6,29,50,0.85)",
+          border: "1px solid rgba(255,255,255,0.18)",
+          boxShadow: "0 14px 32px rgba(0,0,0,0.35)",
         }}
       >
         <Img
-          src={staticFile("fedsafe-logo-only.webp")}
-          style={{ width: 110, height: "auto", objectFit: "contain" }}
+          src={staticFile("fedsafe-shield-logo-transparent.webp")}
+          style={{ height: 80, width: "auto", objectFit: "contain" }}
         />
       </div>
       <div

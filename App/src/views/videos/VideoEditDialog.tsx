@@ -3025,96 +3025,20 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         }}>
           {(() => {
             const playUrl = video?.video_url || 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/01_Video_Postal_Retirement_Reel.mp4'
-            const logoScale = logoSize === 'small' ? 0.8 : logoSize === 'large' ? 1.3 : 1.0
-
-            const renderOverlayLogos = (pos: LogoPosition) => {
-              const items = []
-              if (showShieldLogo && shieldLogoPosition === pos) {
-                items.push(
-                  <Box key="shield" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
-                    <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='FEDSafe Shield' style={{ height: Math.round(20 * logoScale), objectFit: 'contain', display: 'block' }} />
-                  </Box>
-                )
-              }
-              if (showSamBadge && samBadgePosition === pos) {
-                items.push(
-                  <Box key="sam" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
-                    <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM.gov' style={{ height: Math.round(18 * logoScale), objectFit: 'contain', display: 'block' }} />
-                  </Box>
-                )
-              }
-              if (showDoubleLogo && doubleLogoPosition === pos) {
-                items.push(
-                  <Box key="double" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
-                    <img src='/images/branding/fedsafe-double-logo-transparent.webp' alt='Dual Lockup' style={{ height: Math.round(20 * logoScale), objectFit: 'contain', display: 'block' }} />
-                  </Box>
-                )
-              }
-              if (showTaglineLogo && taglineLogoPosition === pos) {
-                items.push(
-                  <Box key="tagline" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
-                    <img src='/images/branding/fedsafe-logo-tagline-transparent.webp' alt='Tagline' style={{ height: Math.round(16 * logoScale), objectFit: 'contain', display: 'block' }} />
-                  </Box>
-                )
-              }
-              return items
-            }
 
             return (
-              <Box sx={{ position: 'relative', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', maxWidth: '100%' }}>
-                <video
-                  src={playUrl}
-                  controls
-                  autoPlay
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '68vh',
-                    borderRadius: 12,
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.8)',
-                    outline: 'none',
-                  }}
-                />
-
-                {/* Live Watermark Overlay Badges */}
-                <Box sx={{
-                  position: 'absolute',
-                  top: 12,
-                  left: 12,
-                  right: 12,
-                  bottom: 56,
-                  pointerEvents: 'none',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  zIndex: 2,
-                }}>
-                  {/* Top Row */}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                      {renderOverlayLogos('top-left')}
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                      {renderOverlayLogos('top-center')}
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                      {renderOverlayLogos('top-right')}
-                    </Box>
-                  </Box>
-
-                  {/* Bottom Row */}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                      {renderOverlayLogos('bottom-left')}
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                      {renderOverlayLogos('bottom-center')}
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                      {renderOverlayLogos('bottom-right')}
-                    </Box>
-                  </Box>
-                </Box>
-              </Box>
+              <video
+                src={playUrl}
+                controls
+                autoPlay
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '68vh',
+                  borderRadius: 12,
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.8)',
+                  outline: 'none',
+                }}
+              />
             )
           })()}
         </DialogContent>
