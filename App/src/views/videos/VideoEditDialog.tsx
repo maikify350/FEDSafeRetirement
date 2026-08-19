@@ -197,7 +197,8 @@ interface VideoEditDialogProps {
 }
 
 export default function VideoEditDialog({ open, onClose, video, onSaved }: VideoEditDialogProps) {
-  const isEditing = Boolean(video?.id)
+  const isUUID = (str?: string | null) => Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str))
+  const isEditing = Boolean(video?.id && isUUID(video.id))
 
   const [tab, setTab] = useState<'script' | 'hyperframes' | 'continuity' | 'assets'>('script')
 
