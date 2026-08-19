@@ -1616,7 +1616,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                       <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ minWidth: 45 }}>
                         SPEED:
                       </Typography>
-                      {[1.0, 1.1, 1.2, 1.3, 1.5].map(preset => (
+                      {[0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5].map(preset => (
                         <Chip
                           key={preset}
                           label={`${preset.toFixed(1)}×`}
