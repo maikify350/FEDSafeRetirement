@@ -8,6 +8,8 @@ import { NextResponse } from 'next/server'
 
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 
+import { sendInvitationEmail } from '@/utils/mailer'
+
 export const dynamic = 'force-dynamic'
 
 export async function POST(
@@ -86,14 +88,33 @@ export async function POST(
       linkResult = data
     }
 
+    const actionLink = linkResult?.properties?.action_link || null
+    const recipientName = `${target.first_name || ''} ${target.last_name || ''}`.trim() || target.email
+
+    // Dispatch automated invitation email via SMTP (if configured)
+    let emailResult = { success: false, error: 'SMTP not configured' }
+
+    if (actionLink) {
+      emailResult = await sendInvitationEmail({
+        to: target.email,
+        recipientName,
+        actionLink,
+        role: target.role || 'Partner',
+      })
+    }
+
     return NextResponse.json({
       success: true,
       email: target.email,
-      name: `${target.first_name} ${target.last_name}`.trim(),
-      action_link: linkResult?.properties?.action_link || null,
+      name: recipientName,
+      action_link: actionLink,
       email_otp: linkResult?.properties?.email_otp || null,
       is_new: !authRecord,
-      message: `Invitation link generated successfully for ${target.email}`,
+      email_sent: emailResult.success,
+      email_error: emailResult.error || null,
+      message: emailResult.success
+        ? `Invitation email dispatched directly to ${target.email}`
+        : `Invitation link generated for ${target.email}`,
     })
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to generate invitation link' }, { status: 500 })

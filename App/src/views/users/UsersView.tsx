@@ -77,7 +77,7 @@ export default function UsersView() {
   const [deleteError, setDeleteError]     = useState('')
 
   // Invite modal state
-  const [inviteTarget, setInviteTarget]   = useState<{ user: User; link: string | null; loading: boolean; error: string; copied: boolean } | null>(null)
+  const [inviteTarget, setInviteTarget] = useState<{ user: User; link: string | null; loading: boolean; error: string; copied: boolean; emailSent?: boolean } | null>(null)
 
   const fetchUsers = useCallback(async () => {
     setLoading(true)
@@ -94,7 +94,7 @@ export default function UsersView() {
 
   const handleOpenInvite = async (user: User, e: React.MouseEvent) => {
     e.stopPropagation()
-    setInviteTarget({ user, link: null, loading: true, error: '', copied: false })
+    setInviteTarget({ user, link: null, loading: true, error: '', copied: false, emailSent: false })
 
     try {
       const res = await fetch(`/api/users/${user.id}/invite`, { method: 'POST' })
@@ -108,6 +108,7 @@ export default function UsersView() {
         loading: false,
         error: '',
         copied: false,
+        emailSent: Boolean(data.email_sent),
       })
     } catch (err: any) {
       setInviteTarget(prev => prev ? { ...prev, loading: false, error: err.message || 'Invitation failed' } : null)
@@ -321,6 +322,12 @@ return
               <Typography variant='body2' color='text.secondary'>
                 Generate a 1-click portal login / password set link for <strong>{inviteTarget.user.first_name} {inviteTarget.user.last_name}</strong> ({inviteTarget.user.email}).
               </Typography>
+
+              {inviteTarget.emailSent && (
+                <Alert severity='success' icon={<i className='tabler-mail-check text-[20px]' />}>
+                  Official invitation email dispatched directly to <strong>{inviteTarget.user.email}</strong> from <strong>contact@fedsaferetirement.com</strong>!
+                </Alert>
+              )}
 
               {inviteTarget.loading && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 3, justifyContent: 'center' }}>
