@@ -369,7 +369,7 @@ export default function ProTimelineStudioDialog({
               const doublePos = meta.double_logo_position || 'top-center'
               const showTagline = Boolean(meta.show_tagline_logo)
               const taglinePos = meta.tagline_logo_position || 'bottom-left'
-              const logoScale = meta.logo_size === 'small' ? 0.8 : meta.logo_size === 'large' ? 1.25 : 1.0
+              const logoScale = meta.logo_size === 'xs' ? 0.6 : meta.logo_size === 'small' ? 0.8 : meta.logo_size === 'large' ? 1.3 : meta.logo_size === 'xl' ? 1.6 : 1.0
               const logoOpacity = typeof meta.logo_opacity === 'number' ? meta.logo_opacity : 0.9
 
               const renderPositionLogos = (pos: string) => {

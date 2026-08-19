@@ -42,7 +42,7 @@ import EntityEditDialog from '@/components/EntityEditDialog'
 import ProTimelineStudioDialog from './ProTimelineStudioDialog'
 
 export type LogoPosition = 'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right' | 'bottom-center'
-export type LogoSize = 'small' | 'medium' | 'large'
+export type LogoSize = 'xs' | 'small' | 'medium' | 'large' | 'xl'
 
 export const LOGO_POSITIONS: { value: LogoPosition; label: string; short: string }[] = [
   { value: 'top-left', label: 'Top-Left (TL)', short: 'TL' },
@@ -1684,49 +1684,104 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
 
                     {/* Global Watermark Adjustments: Size & Opacity */}
                     <Box sx={{
-                      p: 1.25,
+                      p: 1.5,
                       borderRadius: 1.5,
                       bgcolor: 'action.hover',
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
+                      flexDirection: 'column',
                       gap: 1.5,
+                      border: '1px solid',
+                      borderColor: 'divider',
                     }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant='caption' fontWeight={700} color='text.secondary'>
-                          SCALE:
-                        </Typography>
-                        {(['small', 'medium', 'large'] as LogoSize[]).map(sz => (
-                          <Chip
-                            key={sz}
-                            label={sz.toUpperCase()}
+                      {/* Scale Controls Row */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1.5 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                          <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ mr: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <i className='tabler-arrows-maximize text-primary' /> SCALE:
+                          </Typography>
+                          {([
+                            { key: 'xs', label: 'XS (60%)', mult: '0.6×' },
+                            { key: 'small', label: 'SM (80%)', mult: '0.8×' },
+                            { key: 'medium', label: 'MD (100%)', mult: '1.0×' },
+                            { key: 'large', label: 'LG (130%)', mult: '1.3×' },
+                            { key: 'xl', label: 'XL (160%)', mult: '1.6×' },
+                          ] as const).map(sz => (
+                            <Chip
+                              key={sz.key}
+                              label={sz.label}
+                              size='small'
+                              clickable
+                              variant={logoSize === sz.key ? 'filled' : 'outlined'}
+                              color={logoSize === sz.key ? 'primary' : 'default'}
+                              onClick={() => { setLogoSize(sz.key as LogoSize); setDirty(true) }}
+                              sx={{ height: 22, fontSize: 10, fontWeight: 700 }}
+                            />
+                          ))}
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 200, flex: { xs: 1, sm: '0 1 240px' } }}>
+                          <Typography variant='caption' color='text.secondary' sx={{ fontSize: 10, fontWeight: 600 }}>
+                            {logoSize === 'xs' ? '60%' : logoSize === 'small' ? '80%' : logoSize === 'large' ? '130%' : logoSize === 'xl' ? '160%' : '100%'}
+                          </Typography>
+                          <Slider
                             size='small'
-                            clickable
-                            variant={logoSize === sz ? 'filled' : 'outlined'}
-                            color={logoSize === sz ? 'primary' : 'default'}
-                            onClick={() => { setLogoSize(sz); setDirty(true) }}
-                            sx={{ height: 20, fontSize: 9, fontWeight: 700 }}
+                            value={logoSize === 'xs' ? 60 : logoSize === 'small' ? 80 : logoSize === 'large' ? 130 : logoSize === 'xl' ? 160 : 100}
+                            min={50}
+                            max={170}
+                            step={10}
+                            onChange={(_, val) => {
+                              const num = val as number
+                              if (num <= 65) setLogoSize('xs')
+                              else if (num <= 85) setLogoSize('small')
+                              else if (num <= 115) setLogoSize('medium')
+                              else if (num <= 145) setLogoSize('large')
+                              else setLogoSize('xl')
+                              setDirty(true)
+                            }}
+                            sx={{ flex: 1 }}
                           />
-                        ))}
+                        </Box>
                       </Box>
 
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant='caption' fontWeight={700} color='text.secondary'>
-                          OPACITY:
-                        </Typography>
-                        {[0.5, 0.7, 0.85, 1.0].map(op => (
-                          <Chip
-                            key={op}
-                            label={`${Math.round(op * 100)}%`}
+                      <Divider sx={{ my: 0.25 }} />
+
+                      {/* Opacity Controls Row */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1.5 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                          <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ mr: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <i className='tabler-droplet-half-2 text-info' /> OPACITY:
+                          </Typography>
+                          {[0.4, 0.6, 0.75, 0.9, 1.0].map(op => (
+                            <Chip
+                              key={op}
+                              label={`${Math.round(op * 100)}%`}
+                              size='small'
+                              clickable
+                              variant={Math.abs(logoOpacity - op) < 0.05 ? 'filled' : 'outlined'}
+                              color={Math.abs(logoOpacity - op) < 0.05 ? 'info' : 'default'}
+                              onClick={() => { setLogoOpacity(op); setDirty(true) }}
+                              sx={{ height: 22, fontSize: 10, fontWeight: 700 }}
+                            />
+                          ))}
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 200, flex: { xs: 1, sm: '0 1 240px' } }}>
+                          <Typography variant='caption' color='text.secondary' sx={{ fontSize: 10, fontWeight: 600 }}>
+                            {Math.round(logoOpacity * 100)}%
+                          </Typography>
+                          <Slider
                             size='small'
-                            clickable
-                            variant={Math.abs(logoOpacity - op) < 0.05 ? 'filled' : 'outlined'}
-                            color={Math.abs(logoOpacity - op) < 0.05 ? 'primary' : 'default'}
-                            onClick={() => { setLogoOpacity(op); setDirty(true) }}
-                            sx={{ height: 20, fontSize: 9, fontWeight: 700 }}
+                            value={Math.round(logoOpacity * 100)}
+                            min={30}
+                            max={100}
+                            step={5}
+                            onChange={(_, val) => {
+                              setLogoOpacity((val as number) / 100)
+                              setDirty(true)
+                            }}
+                            sx={{ flex: 1 }}
                           />
-                        ))}
+                        </Box>
                       </Box>
                     </Box>
 
