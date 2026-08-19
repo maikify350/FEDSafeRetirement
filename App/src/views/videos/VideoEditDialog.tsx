@@ -247,6 +247,14 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   const [taglineLogoPosition, setTaglineLogoPosition] = useState<LogoPosition>('bottom-left')
   const [logoSize, setLogoSize] = useState<LogoSize>('medium')
   const [logoOpacity, setLogoOpacity] = useState<number>(0.9)
+  const [remotionComposition, setRemotionComposition] = useState<string>('')
+
+  // Render-and-replace states
+  const [rendering, setRendering] = useState(false)
+  const [renderProgress, setRenderProgress] = useState(0)
+  const [renderStatus, setRenderStatus] = useState<'idle' | 'queued' | 'running' | 'uploading' | 'done' | 'error'>('idle')
+  const [renderError, setRenderError] = useState<string>('')
+  const renderPollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   
   // UI states
   const [saving, setSaving] = useState(false)
@@ -337,6 +345,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         setTaglineLogoPosition(video.metadata?.tagline_logo_position || 'bottom-left')
         setLogoSize(video.metadata?.logo_size || 'medium')
         setLogoOpacity(typeof video.metadata?.logo_opacity === 'number' ? video.metadata.logo_opacity : 0.9)
+        setRemotionComposition(video.metadata?.remotion_composition || '')
       } else {
         setTitle('')
         setFormat('short')
@@ -366,6 +375,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         setTaglineLogoPosition('bottom-left')
         setLogoSize('medium')
         setLogoOpacity(0.9)
+        setRemotionComposition('')
       }
       setTab('script')
       setDirty(false)
@@ -552,6 +562,23 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   const activeVoicesList = ttsEngine === 'openai' ? OPENAI_VOICES : ELEVENLABS_VOICES
   const selectedVoice = activeVoicesList.find(v => v.id === voiceId) || activeVoicesList[0]
 
+  const REMOTION_COMPOSITIONS = [
+    { id: 'PostalRetirementReel',    label: 'USPS Postal Retirement Reel',     output: '01_Video_Postal_Retirement_Reel.mp4' },
+    { id: 'FegliShockReel',          label: 'FEGLI Rate Shock Alert',          output: '02_Video_FEGLI_Shock_Alert_Reel.mp4' },
+    { id: 'FersSupplementReel',      label: 'FERS Supplement Reel',            output: '03_Video_FERS_Supplement_Reel.mp4' },
+    { id: 'TspMistakesReel',         label: 'TSP Withdrawal Mistakes',         output: '04_Video_TSP_Mistakes_Reel.mp4' },
+    { id: 'SurvivorBenefitReel',     label: 'Survivor Benefit Plan (SBP)',     output: '05_Video_SBP_Reel.mp4' },
+    { id: 'FehbFiveYearRuleReel',    label: 'FEHB 5-Year Rule',                output: '06_Video_FEHB_Reel.mp4' },
+    { id: 'HighThreePensionReel',    label: 'High-3 Pension Calculation',      output: '07_Video_High3_Reel.mp4' },
+    { id: 'MilitaryBuybackReel',     label: 'Military Service Buyback',        output: '08_Video_Military_Buyback_Reel.mp4' },
+    { id: 'PartnerSpotlightReel',    label: 'Partner Spotlight – Mike Zaino', output: '09_Video_Partner_Spotlight_Reel.mp4' },
+    { id: 'WhyFedSafeReel',          label: 'Why FedSafe Exists (Mission)',    output: '10_Video_Why_FedSafe_Reel.mp4' },
+    { id: 'DidYouKnowReel',          label: 'Did You Know? Quick Fact',        output: '11_Video_DidYouKnow_Reel.mp4' },
+    { id: 'WebinarReel',             label: 'Webinar Social Reel',             output: '12_Video_Webinar_Reel.mp4' },
+    { id: 'WhoWeAreVideo',           label: 'Who We Are (16:9 Video)',         output: '13_Video_WhoWeAre.mp4' },
+    { id: 'FederalQuestionsVideo',   label: 'Federal Questions (16:9 Video)',  output: '14_Video_FederalQuestions.mp4' },
+  ]
+
   const [regenerating, setRegenerating] = useState(false)
 
   // Re-Generate Asset on script or directive change
@@ -641,6 +668,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
           tagline_logo_position: taglineLogoPosition,
           logo_size: logoSize,
           logo_opacity: logoOpacity,
+          remotion_composition: remotionComposition,
         },
       }
 
@@ -664,6 +692,84 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
       setError(err.message || 'Re-generation failed')
     } finally {
       setRegenerating(false)
+    }
+  }
+
+  // Render & Replace Video — triggers Remotion render + Supabase upload + video_url patch
+  const handleRenderAndReplace = async () => {
+    if (!video?.id) {
+      setError('Save the video record first before rendering.')
+      return
+    }
+
+    const comp = REMOTION_COMPOSITIONS.find(c => c.id === remotionComposition)
+    if (!comp) {
+      setError('Select a Remotion Composition in the Render Settings panel before rendering.')
+      return
+    }
+
+    setRendering(true)
+    setRenderStatus('queued')
+    setRenderProgress(0)
+    setRenderError('')
+    stopAllAudio()
+
+    try {
+      const startRes = await fetch('/api/videos/render', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          video_id: video.id,
+          composition_id: comp.id,
+          output_filename: comp.output,
+        }),
+      })
+
+      const startData = await startRes.json()
+      if (!startRes.ok) {
+        if (startData.local_only) {
+          throw new Error('⚠️ Render requires local dev server (npm run dev). Not available on Vercel production.')
+        }
+        throw new Error(startData.error || 'Failed to start render job')
+      }
+
+      const { job_id } = startData
+
+      // Poll every 2 seconds
+      if (renderPollRef.current) clearInterval(renderPollRef.current)
+      renderPollRef.current = setInterval(async () => {
+        try {
+          const statusRes = await fetch(`/api/videos/render/status?job=${job_id}`)
+          const statusData = await statusRes.json()
+
+          setRenderStatus(statusData.status)
+          setRenderProgress(statusData.progress ?? 0)
+
+          if (statusData.status === 'done') {
+            clearInterval(renderPollRef.current!)
+            renderPollRef.current = null
+            setRendering(false)
+            setShowSuccess(true)
+            // Refresh the parent list so thumbnail/video_url updates
+            if (statusData.video_url) {
+              onSaved({ ...video, video_url: statusData.video_url })
+            }
+          } else if (statusData.status === 'error') {
+            clearInterval(renderPollRef.current!)
+            renderPollRef.current = null
+            setRendering(false)
+            setRenderError(statusData.error || 'Render failed')
+            setError(statusData.error || 'Render failed')
+          }
+        } catch {
+          // Poll errors are transient; keep trying
+        }
+      }, 2000)
+    } catch (err: any) {
+      setRendering(false)
+      setRenderStatus('error')
+      setRenderError(err.message)
+      setError(err.message)
     }
   }
 
@@ -985,6 +1091,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         tagline_logo_position: taglineLogoPosition,
         logo_size: logoSize,
         logo_opacity: logoOpacity,
+        remotion_composition: remotionComposition,
       },
     }
 
@@ -1170,6 +1277,39 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
             >
               {regenerating ? 'Generating…' : dirty ? 'Re-Generate Asset' : 'Generate Asset'}
             </Button>
+
+            {/* Render & Replace Video — local dev only */}
+            {isEditing && (
+              <Tooltip title={rendering ? `Rendering… ${renderProgress}%` : 'Re-render Remotion composition → upload to Supabase → replace video_url (requires local dev server)'}>
+                <span>
+                  <Button
+                    size='small'
+                    variant='contained'
+                    color='warning'
+                    startIcon={rendering
+                      ? <CircularProgress size={14} color='inherit' />
+                      : <i className='tabler-rotate-clockwise-2' />
+                    }
+                    disabled={rendering || !remotionComposition}
+                    onClick={handleRenderAndReplace}
+                    sx={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      background: rendering
+                        ? 'linear-gradient(90deg, #f59e0b, #d97706)'
+                        : undefined,
+                      boxShadow: rendering ? '0 0 16px rgba(245, 158, 11, 0.5)' : 'none',
+                    }}
+                  >
+                    {rendering
+                      ? renderStatus === 'uploading'
+                        ? `Uploading ${renderProgress}%`
+                        : `Rendering ${renderProgress}%`
+                      : 'Render & Replace'}
+                  </Button>
+                </span>
+              </Tooltip>
+            )}
 
             {/* Clone / Save As Copy */}
             {isEditing && (
@@ -1809,6 +1949,90 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                           />
                         </Box>
                       </Box>
+                    </Box>
+
+                    {/* ── Render Settings ── */}
+                    <Box sx={{
+                      p: 1.5,
+                      borderRadius: 1.5,
+                      bgcolor: 'rgba(245, 158, 11, 0.06)',
+                      border: '1.5px solid',
+                      borderColor: rendering ? 'warning.main' : 'rgba(245, 158, 11, 0.3)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1.25,
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <i className='tabler-video text-warning' />
+                        <Typography variant='caption' fontWeight={700} color='warning.main'>
+                          RENDER SETTINGS (Local Dev Only)
+                        </Typography>
+                        {isEditing && !rendering && (
+                          <Chip
+                            label={remotionComposition || 'No composition selected'}
+                            size='small'
+                            color={remotionComposition ? 'warning' : 'default'}
+                            variant='outlined'
+                            sx={{ ml: 'auto', height: 20, fontSize: 9, fontWeight: 700 }}
+                          />
+                        )}
+                      </Box>
+
+                      <FormControl size='small' fullWidth>
+                        <InputLabel sx={{ fontSize: 12 }}>Remotion Composition</InputLabel>
+                        <Select
+                          value={remotionComposition}
+                          label='Remotion Composition'
+                          onChange={(e) => { setRemotionComposition(e.target.value); setDirty(true) }}
+                          sx={{ fontSize: 12 }}
+                        >
+                          <MenuItem value='' sx={{ fontSize: 12, color: 'text.secondary' }}>— Select composition —</MenuItem>
+                          {REMOTION_COMPOSITIONS.map(c => (
+                            <MenuItem key={c.id} value={c.id} sx={{ fontSize: 12 }}>
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                                <Typography variant='caption' fontWeight={700}>{c.label}</Typography>
+                                <Typography variant='caption' color='text.disabled' sx={{ fontSize: 10 }}>{c.id} → {c.output}</Typography>
+                              </Box>
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      {/* Render Progress Bar */}
+                      {rendering && (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Typography variant='caption' color='warning.main' fontWeight={700}>
+                              {renderStatus === 'queued' ? '⏳ Queued…'
+                                : renderStatus === 'running' ? `🎬 Rendering frames… ${renderProgress}%`
+                                : renderStatus === 'uploading' ? `☁️ Uploading to Supabase… ${renderProgress}%`
+                                : renderStatus === 'done' ? '✅ Done!'
+                                : `❌ ${renderError}`}
+                            </Typography>
+                            <Typography variant='caption' color='text.secondary' sx={{ fontSize: 10 }}>
+                              {renderProgress}%
+                            </Typography>
+                          </Box>
+                          <Box sx={{ width: '100%', bgcolor: 'rgba(255,255,255,0.08)', borderRadius: 1, overflow: 'hidden', height: 6 }}>
+                            <Box sx={{
+                              width: `${renderProgress}%`,
+                              height: '100%',
+                              bgcolor: renderStatus === 'done' ? 'success.main' : renderStatus === 'error' ? 'error.main' : 'warning.main',
+                              transition: 'width 0.4s ease, background-color 0.3s',
+                              borderRadius: 1,
+                            }} />
+                          </Box>
+                          <Typography variant='caption' color='text.secondary' sx={{ fontSize: 10 }}>
+                            This runs locally via `npm run dev` — Vercel production will show an error. Render takes 2–4 min.
+                          </Typography>
+                        </Box>
+                      )}
+
+                      {renderStatus === 'done' && !rendering && (
+                        <Typography variant='caption' color='success.main' fontWeight={700}>
+                          ✅ Video rendered, uploaded & video_url updated in database!
+                        </Typography>
+                      )}
                     </Box>
 
                     {/* 4 Official Logo Cards */}
