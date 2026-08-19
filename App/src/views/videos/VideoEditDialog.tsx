@@ -266,8 +266,9 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   // Template Menu anchor
   const [templateMenuAnchor, setTemplateMenuAnchor] = useState<null | HTMLElement>(null)
 
-  // Pro Timeline Studio state
+  // Pro Timeline Studio & Video Player state
   const [timelineStudioOpen, setTimelineStudioOpen] = useState(false)
+  const [videoPlayerOpen, setVideoPlayerOpen] = useState(false)
 
   // Gallery Picker dialog state
   const [galleryOpen, setGalleryOpen] = useState(false)
@@ -1097,6 +1098,35 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
               />
             </Tooltip>
 
+            {/* Watch Video Screen Preview */}
+            <Button
+              size='small'
+              variant='contained'
+              color='info'
+              startIcon={<i className='tabler-player-play' />}
+              onClick={() => setVideoPlayerOpen(true)}
+              sx={{
+                fontSize: 11,
+                fontWeight: 700,
+                bgcolor: 'info.main',
+                '&:hover': { bgcolor: 'info.dark' },
+              }}
+            >
+              Watch Video
+            </Button>
+
+            {/* Launch Pro Timeline Studio */}
+            <Button
+              size='small'
+              variant='outlined'
+              color='primary'
+              startIcon={<i className='tabler-movie' />}
+              onClick={() => setTimelineStudioOpen(true)}
+              sx={{ fontSize: 11, fontWeight: 700 }}
+            >
+              Timeline Studio
+            </Button>
+
             {/* Dynamic Re-Generate Asset Button */}
             <Button
               size='small'
@@ -1504,37 +1534,80 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                     </Box>
 
                     {thumbnailUrl ? (
-                      <Box sx={{ position: 'relative', borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+                      <Box
+                        onClick={() => setVideoPlayerOpen(true)}
+                        sx={{
+                          position: 'relative',
+                          borderRadius: 1,
+                          overflow: 'hidden',
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          cursor: 'pointer',
+                          '&:hover .play-thumb-btn': { opacity: 1 },
+                        }}
+                      >
                         <CardMedia
                           component='img'
                           image={thumbnailUrl}
                           alt='Thumbnail'
                           sx={{ width: '100%', height: format === 'short' ? 140 : 100, objectFit: 'cover' }}
                         />
+                        <Box
+                          className='play-thumb-btn'
+                          sx={{
+                            position: 'absolute',
+                            inset: 0,
+                            bgcolor: 'rgba(0,0,0,0.45)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            opacity: 0.75,
+                            transition: 'all 0.2s ease',
+                          }}
+                        >
+                          <Box sx={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: '50%',
+                            bgcolor: 'info.main',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+                          }}>
+                            <i className='tabler-player-play text-[18px]' />
+                          </Box>
+                        </Box>
                         <IconButton
                           size='small'
                           color='error'
-                          onClick={() => { setThumbnailUrl(null); setDirty(true) }}
+                          onClick={(e) => { e.stopPropagation(); setThumbnailUrl(null); setDirty(true) }}
                           sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'rgba(0,0,0,0.65)', p: 0.25 }}
                         >
                           <i className='tabler-trash text-white text-[14px]' />
                         </IconButton>
                       </Box>
                     ) : (
-                      <Box sx={{
-                        height: 90,
-                        borderRadius: 1,
-                        border: '1px dashed',
-                        borderColor: 'divider',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        bgcolor: 'action.hover',
-                        p: 1,
-                      }}>
-                        <i className='tabler-photo text-[24px] text-textSecondary mb-0.5' />
-                        <Typography variant='caption' color='text.secondary'>No thumbnail set</Typography>
+                      <Box
+                        onClick={() => setVideoPlayerOpen(true)}
+                        sx={{
+                          height: 90,
+                          borderRadius: 1,
+                          border: '1px dashed',
+                          borderColor: 'divider',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          bgcolor: 'action.hover',
+                          cursor: 'pointer',
+                          p: 1,
+                          '&:hover': { borderColor: 'primary.main', bgcolor: 'rgba(99,102,241,0.06)' },
+                        }}
+                      >
+                        <i className='tabler-player-play text-[24px] text-primary mb-0.5' />
+                        <Typography variant='caption' color='primary' fontWeight={600}>Click to Play Video Screen</Typography>
                       </Box>
                     )}
 
@@ -1546,6 +1619,16 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                         accept='image/*'
                         onChange={handleThumbnailUpload}
                       />
+                      <Button
+                        size='small'
+                        variant='contained'
+                        color='info'
+                        startIcon={<i className='tabler-player-play' />}
+                        onClick={() => setVideoPlayerOpen(true)}
+                        sx={{ fontSize: 11, flex: 1.2, fontWeight: 700 }}
+                      >
+                        Play Video
+                      </Button>
                       <Button
                         size='small'
                         variant='outlined'
@@ -2890,6 +2973,165 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         audioUrl={generatedAudioUrl}
         ctaText={ctaText}
       />
+
+      {/* Full Video Screen Player Modal */}
+      <Dialog
+        open={videoPlayerOpen}
+        onClose={() => setVideoPlayerOpen(false)}
+        maxWidth='md'
+        fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: '#030712',
+            color: 'white',
+            borderRadius: 2.5,
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.85)',
+            overflow: 'hidden',
+          }
+        }}
+      >
+        <DialogTitle sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          p: 2,
+          px: 3,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <i className='tabler-player-play text-[22px] text-primary' />
+            <Box>
+              <Typography variant='subtitle1' fontWeight={700} sx={{ color: 'white', lineHeight: 1.2 }}>
+                {title || 'Video Screen Preview'}
+              </Typography>
+              <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.6)' }}>
+                {format === 'long' ? '16:9 Landscape' : '9:16 Vertical Short'} · {durationSec}s · Voice: {currentVoiceName}
+              </Typography>
+            </Box>
+          </Box>
+          <IconButton size='small' onClick={() => setVideoPlayerOpen(false)} sx={{ color: 'white' }}>
+            <i className='tabler-x' />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{
+          p: 3,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          bgcolor: '#030712',
+          minHeight: 460,
+        }}>
+          {(() => {
+            const playUrl = video?.video_url || 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/01_Video_Postal_Retirement_Reel.mp4'
+            const logoScale = logoSize === 'small' ? 0.8 : logoSize === 'large' ? 1.3 : 1.0
+
+            const renderOverlayLogos = (pos: LogoPosition) => {
+              const items = []
+              if (showShieldLogo && shieldLogoPosition === pos) {
+                items.push(
+                  <Box key="shield" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
+                    <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='FEDSafe Shield' style={{ height: Math.round(20 * logoScale), objectFit: 'contain', display: 'block' }} />
+                  </Box>
+                )
+              }
+              if (showSamBadge && samBadgePosition === pos) {
+                items.push(
+                  <Box key="sam" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
+                    <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM.gov' style={{ height: Math.round(18 * logoScale), objectFit: 'contain', display: 'block' }} />
+                  </Box>
+                )
+              }
+              if (showDoubleLogo && doubleLogoPosition === pos) {
+                items.push(
+                  <Box key="double" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
+                    <img src='/images/branding/fedsafe-double-logo-transparent.webp' alt='Dual Lockup' style={{ height: Math.round(20 * logoScale), objectFit: 'contain', display: 'block' }} />
+                  </Box>
+                )
+              }
+              if (showTaglineLogo && taglineLogoPosition === pos) {
+                items.push(
+                  <Box key="tagline" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
+                    <img src='/images/branding/fedsafe-logo-tagline-transparent.webp' alt='Tagline' style={{ height: Math.round(16 * logoScale), objectFit: 'contain', display: 'block' }} />
+                  </Box>
+                )
+              }
+              return items
+            }
+
+            return (
+              <Box sx={{ position: 'relative', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', maxWidth: '100%' }}>
+                <video
+                  src={playUrl}
+                  controls
+                  autoPlay
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '68vh',
+                    borderRadius: 12,
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.8)',
+                    outline: 'none',
+                  }}
+                />
+
+                {/* Live Watermark Overlay Badges */}
+                <Box sx={{
+                  position: 'absolute',
+                  top: 12,
+                  left: 12,
+                  right: 12,
+                  bottom: 56,
+                  pointerEvents: 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  zIndex: 2,
+                }}>
+                  {/* Top Row */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                      {renderOverlayLogos('top-left')}
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                      {renderOverlayLogos('top-center')}
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                      {renderOverlayLogos('top-right')}
+                    </Box>
+                  </Box>
+
+                  {/* Bottom Row */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                      {renderOverlayLogos('bottom-left')}
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                      {renderOverlayLogos('bottom-center')}
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                      {renderOverlayLogos('bottom-right')}
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
+            )
+          })()}
+        </DialogContent>
+        <DialogActions sx={{ p: 2, px: 3, borderTop: '1px solid rgba(255, 255, 255, 0.1)', bgcolor: 'rgba(15, 23, 42, 0.8)', justifyContent: 'space-between' }}>
+          <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.7)', maxWidth: '65%' }} noWrap>
+            CTA: {ctaText || 'FedSafeRetirement.com'}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button size='small' variant='outlined' color='inherit' onClick={() => setVideoPlayerOpen(false)}>
+              Close
+            </Button>
+            <Button size='small' variant='contained' color='primary' startIcon={<i className='tabler-movie' />} onClick={() => { setVideoPlayerOpen(false); setTimelineStudioOpen(true) }}>
+              Open Timeline Studio
+            </Button>
+          </Box>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }
