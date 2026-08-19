@@ -8,6 +8,7 @@ import InputAdornment from '@mui/material/InputAdornment'
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import Switch from '@mui/material/Switch'
+import Checkbox from '@mui/material/Checkbox'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
@@ -223,6 +224,10 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   const [continuityReferences, setContinuityReferences] = useState<ContinuityReference[]>([])
   const [mediaAssets, setMediaAssets] = useState<MediaAsset[]>([])
   
+  // Brand Watermarks
+  const [showShieldLogo, setShowShieldLogo] = useState<boolean>(true)
+  const [showSamBadge, setShowSamBadge] = useState<boolean>(true)
+  
   // UI states
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -275,6 +280,8 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         setContinuityReferences(video.continuity_references || [])
         setMediaAssets(video.media_assets || [])
         setGeneratedAudioUrl(video.audio_url || null)
+        setShowShieldLogo(video.metadata?.show_shield_logo ?? true)
+        setShowSamBadge(video.metadata?.show_sam_badge ?? true)
       } else {
         setTitle('')
         setFormat('short')
@@ -294,6 +301,8 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         setContinuityReferences([])
         setMediaAssets([])
         setGeneratedAudioUrl(null)
+        setShowShieldLogo(true)
+        setShowSamBadge(true)
       }
       setTab('script')
       setDirty(false)
@@ -557,6 +566,11 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         continuity_references: continuityReferences,
         media_assets: mediaAssets,
         version_no: versionCount + 1,
+        metadata: {
+          ...(video?.metadata || {}),
+          show_shield_logo: showShieldLogo,
+          show_sam_badge: showSamBadge,
+        },
       }
 
       const url = isEditing ? `/api/videos/${video!.id}` : '/api/videos'
@@ -888,6 +902,11 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
       hyperframes,
       continuity_references: continuityReferences,
       media_assets: mediaAssets,
+      metadata: {
+        ...(video?.metadata || {}),
+        show_shield_logo: showShieldLogo,
+        show_sam_badge: showSamBadge,
+      },
     }
 
     try {
@@ -1493,6 +1512,133 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                       >
                         Upload
                       </Button>
+                    </Box>
+                  </Box>
+
+                  {/* Brand Watermark Logos */}
+                  <Box sx={{
+                    p: 1.5,
+                    borderRadius: 1.5,
+                    bgcolor: 'background.paper',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1.5,
+                  }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant='subtitle2' fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <i className='tabler-shield-check text-[18px] text-primary' />
+                        Brand Watermark Logos
+                      </Typography>
+                      <Chip
+                        label='Top Overlay'
+                        size='small'
+                        color='secondary'
+                        sx={{ height: 18, fontSize: 9, fontWeight: 700 }}
+                      />
+                    </Box>
+
+                    <Typography variant='caption' color='text.secondary'>
+                      Select official logos to display at the top corners of your video and static scenes:
+                    </Typography>
+
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+                      {/* Logo 1: FEDSafe Shield */}
+                      <Box
+                        onClick={() => { setShowShieldLogo(!showShieldLogo); setDirty(true) }}
+                        sx={{
+                          p: 1,
+                          borderRadius: 1.5,
+                          border: '1.5px solid',
+                          borderColor: showShieldLogo ? 'primary.main' : 'divider',
+                          bgcolor: showShieldLogo ? 'rgba(99, 102, 241, 0.08)' : 'action.hover',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: 0.75,
+                        }}
+                      >
+                        <Box sx={{
+                          width: '100%',
+                          height: 56,
+                          bgcolor: '#0a0e1a',
+                          borderRadius: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          p: 0.5,
+                          border: '1px solid rgba(255, 255, 255, 0.06)',
+                        }}>
+                          <img
+                            src='/images/branding/fedsafe-shield-logo-transparent.webp'
+                            alt='FEDSafe Shield'
+                            style={{ maxHeight: 42, maxWidth: '90%', objectFit: 'contain' }}
+                          />
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%' }}>
+                          <Checkbox
+                            size='small'
+                            checked={showShieldLogo}
+                            sx={{ p: 0 }}
+                            onChange={(e) => { e.stopPropagation(); setShowShieldLogo(e.target.checked); setDirty(true) }}
+                          />
+                          <Box sx={{ minWidth: 0, flex: 1 }}>
+                            <Typography sx={{ fontSize: 11, fontWeight: 700, lineHeight: 1.2 }}>FEDSafe Shield</Typography>
+                            <Typography variant='caption' color='text.secondary' sx={{ fontSize: 9 }}>Top-Left</Typography>
+                          </Box>
+                        </Box>
+                      </Box>
+
+                      {/* Logo 2: SAM.gov Badge */}
+                      <Box
+                        onClick={() => { setShowSamBadge(!showSamBadge); setDirty(true) }}
+                        sx={{
+                          p: 1,
+                          borderRadius: 1.5,
+                          border: '1.5px solid',
+                          borderColor: showSamBadge ? 'primary.main' : 'divider',
+                          bgcolor: showSamBadge ? 'rgba(99, 102, 241, 0.08)' : 'action.hover',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: 0.75,
+                        }}
+                      >
+                        <Box sx={{
+                          width: '100%',
+                          height: 56,
+                          bgcolor: '#0a0e1a',
+                          borderRadius: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          p: 0.5,
+                          border: '1px solid rgba(255, 255, 255, 0.06)',
+                        }}>
+                          <img
+                            src='/images/branding/fedsafe-sam-badge-transparent.webp'
+                            alt='SAM.gov UEI Registered'
+                            style={{ maxHeight: 42, maxWidth: '90%', objectFit: 'contain' }}
+                          />
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%' }}>
+                          <Checkbox
+                            size='small'
+                            checked={showSamBadge}
+                            sx={{ p: 0 }}
+                            onChange={(e) => { e.stopPropagation(); setShowSamBadge(e.target.checked); setDirty(true) }}
+                          />
+                          <Box sx={{ minWidth: 0, flex: 1 }}>
+                            <Typography sx={{ fontSize: 11, fontWeight: 700, lineHeight: 1.2 }}>SAM.gov Badge</Typography>
+                            <Typography variant='caption' color='text.secondary' sx={{ fontSize: 9 }}>Top-Right</Typography>
+                          </Box>
+                        </Box>
+                      </Box>
                     </Box>
                   </Box>
 

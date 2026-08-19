@@ -373,13 +373,27 @@ export default function ProTimelineStudioDialog({
               justifyContent: 'space-between',
               p: 1,
             }}>
-              {/* Top Notch & Brand Badge */}
+              {/* Top Notch & Brand Badges */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#ef4444', animation: 'pulse 1.5s infinite' }} />
-                  <Typography sx={{ fontSize: 7, fontWeight: 800, color: '#fff', textTransform: 'uppercase' }}>
-                    FedSafe
-                  </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                  {video?.metadata?.show_shield_logo !== false && (
+                    <Box sx={{ bgcolor: 'rgba(0,0,0,0.5)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <img
+                        src='/images/branding/fedsafe-shield-logo-transparent.webp'
+                        alt='FEDSafe Shield'
+                        style={{ height: 12, objectFit: 'contain', display: 'block' }}
+                      />
+                    </Box>
+                  )}
+                  {video?.metadata?.show_sam_badge !== false && (
+                    <Box sx={{ bgcolor: 'rgba(0,0,0,0.5)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <img
+                        src='/images/branding/fedsafe-sam-badge-transparent.webp'
+                        alt='SAM.gov Registered'
+                        style={{ height: 11, objectFit: 'contain', display: 'block' }}
+                      />
+                    </Box>
+                  )}
                 </Box>
                 <Chip
                   label={currentHyperframe?.camera_motion || 'Motion'}
