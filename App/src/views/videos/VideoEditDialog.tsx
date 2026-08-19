@@ -41,6 +41,18 @@ import Paper from '@mui/material/Paper'
 import EntityEditDialog from '@/components/EntityEditDialog'
 import ProTimelineStudioDialog from './ProTimelineStudioDialog'
 
+export type LogoPosition = 'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right' | 'bottom-center'
+export type LogoSize = 'small' | 'medium' | 'large'
+
+export const LOGO_POSITIONS: { value: LogoPosition; label: string; short: string }[] = [
+  { value: 'top-left', label: 'Top-Left (TL)', short: 'TL' },
+  { value: 'top-center', label: 'Top-Center (TC)', short: 'TC' },
+  { value: 'top-right', label: 'Top-Right (TR)', short: 'TR' },
+  { value: 'bottom-left', label: 'Bottom-Left (BL)', short: 'BL' },
+  { value: 'bottom-center', label: 'Bottom-Center (BC)', short: 'BC' },
+  { value: 'bottom-right', label: 'Bottom-Right (BR)', short: 'BR' },
+]
+
 export interface MediaAsset {
   id: string
   url: string
@@ -224,9 +236,17 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   const [continuityReferences, setContinuityReferences] = useState<ContinuityReference[]>([])
   const [mediaAssets, setMediaAssets] = useState<MediaAsset[]>([])
   
-  // Brand Watermarks
+  // Brand Watermarks & Multi-Position Branding
   const [showShieldLogo, setShowShieldLogo] = useState<boolean>(true)
+  const [shieldLogoPosition, setShieldLogoPosition] = useState<LogoPosition>('top-left')
   const [showSamBadge, setShowSamBadge] = useState<boolean>(true)
+  const [samBadgePosition, setSamBadgePosition] = useState<LogoPosition>('top-right')
+  const [showDoubleLogo, setShowDoubleLogo] = useState<boolean>(false)
+  const [doubleLogoPosition, setDoubleLogoPosition] = useState<LogoPosition>('top-center')
+  const [showTaglineLogo, setShowTaglineLogo] = useState<boolean>(false)
+  const [taglineLogoPosition, setTaglineLogoPosition] = useState<LogoPosition>('bottom-left')
+  const [logoSize, setLogoSize] = useState<LogoSize>('medium')
+  const [logoOpacity, setLogoOpacity] = useState<number>(0.9)
   
   // UI states
   const [saving, setSaving] = useState(false)
@@ -281,7 +301,15 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         setMediaAssets(video.media_assets || [])
         setGeneratedAudioUrl(video.audio_url || null)
         setShowShieldLogo(video.metadata?.show_shield_logo ?? true)
+        setShieldLogoPosition(video.metadata?.shield_logo_position || 'top-left')
         setShowSamBadge(video.metadata?.show_sam_badge ?? true)
+        setSamBadgePosition(video.metadata?.sam_badge_position || 'top-right')
+        setShowDoubleLogo(Boolean(video.metadata?.show_double_logo))
+        setDoubleLogoPosition(video.metadata?.double_logo_position || 'top-center')
+        setShowTaglineLogo(Boolean(video.metadata?.show_tagline_logo))
+        setTaglineLogoPosition(video.metadata?.tagline_logo_position || 'bottom-left')
+        setLogoSize(video.metadata?.logo_size || 'medium')
+        setLogoOpacity(typeof video.metadata?.logo_opacity === 'number' ? video.metadata.logo_opacity : 0.9)
       } else {
         setTitle('')
         setFormat('short')
@@ -302,7 +330,15 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         setMediaAssets([])
         setGeneratedAudioUrl(null)
         setShowShieldLogo(true)
+        setShieldLogoPosition('top-left')
         setShowSamBadge(true)
+        setSamBadgePosition('top-right')
+        setShowDoubleLogo(false)
+        setDoubleLogoPosition('top-center')
+        setShowTaglineLogo(false)
+        setTaglineLogoPosition('bottom-left')
+        setLogoSize('medium')
+        setLogoOpacity(0.9)
       }
       setTab('script')
       setDirty(false)
@@ -569,7 +605,15 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         metadata: {
           ...(video?.metadata || {}),
           show_shield_logo: showShieldLogo,
+          shield_logo_position: shieldLogoPosition,
           show_sam_badge: showSamBadge,
+          sam_badge_position: samBadgePosition,
+          show_double_logo: showDoubleLogo,
+          double_logo_position: doubleLogoPosition,
+          show_tagline_logo: showTaglineLogo,
+          tagline_logo_position: taglineLogoPosition,
+          logo_size: logoSize,
+          logo_opacity: logoOpacity,
         },
       }
 
@@ -905,7 +949,15 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
       metadata: {
         ...(video?.metadata || {}),
         show_shield_logo: showShieldLogo,
+        shield_logo_position: shieldLogoPosition,
         show_sam_badge: showSamBadge,
+        sam_badge_position: samBadgePosition,
+        show_double_logo: showDoubleLogo,
+        double_logo_position: doubleLogoPosition,
+        show_tagline_logo: showTaglineLogo,
+        tagline_logo_position: taglineLogoPosition,
+        logo_size: logoSize,
+        logo_opacity: logoOpacity,
       },
     }
 
@@ -1515,55 +1567,125 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                     </Box>
                   </Box>
 
-                  {/* Brand Watermark Logos */}
+                  {/* Brand Watermark Logos & Multi-Position Placement */}
                   <Box sx={{
-                    p: 1.5,
-                    borderRadius: 1.5,
+                    p: 2,
+                    borderRadius: 2,
                     bgcolor: 'background.paper',
                     border: '1px solid',
                     borderColor: 'divider',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 1.5,
+                    gap: 2,
                   }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant='subtitle2' fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                        <i className='tabler-shield-check text-[18px] text-primary' />
-                        Brand Watermark Logos
-                      </Typography>
-                      <Chip
-                        label='Top Overlay'
-                        size='small'
-                        color='secondary'
-                        sx={{ height: 18, fontSize: 9, fontWeight: 700 }}
-                      />
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                      <Box>
+                        <Typography variant='subtitle2' fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                          <i className='tabler-shield-check text-[18px] text-primary' />
+                          Brand Watermarks & Logo Positions
+                        </Typography>
+                        <Typography variant='caption' color='text.secondary'>
+                          Select official FedSafe logos and assign their on-screen corner or center positions:
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <Chip
+                          label={`${[showShieldLogo, showSamBadge, showDoubleLogo, showTaglineLogo].filter(Boolean).length} Active`}
+                          size='small'
+                          color='primary'
+                          variant='tonal'
+                          sx={{ height: 20, fontSize: 10, fontWeight: 700 }}
+                        />
+                      </Box>
                     </Box>
 
-                    <Typography variant='caption' color='text.secondary'>
-                      Select official logos to display at the top corners of your video and static scenes:
-                    </Typography>
+                    {/* Global Watermark Adjustments: Size & Opacity */}
+                    <Box sx={{
+                      p: 1.25,
+                      borderRadius: 1.5,
+                      bgcolor: 'action.hover',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: 1.5,
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant='caption' fontWeight={700} color='text.secondary'>
+                          SCALE:
+                        </Typography>
+                        {(['small', 'medium', 'large'] as LogoSize[]).map(sz => (
+                          <Chip
+                            key={sz}
+                            label={sz.toUpperCase()}
+                            size='small'
+                            clickable
+                            variant={logoSize === sz ? 'filled' : 'outlined'}
+                            color={logoSize === sz ? 'primary' : 'default'}
+                            onClick={() => { setLogoSize(sz); setDirty(true) }}
+                            sx={{ height: 20, fontSize: 9, fontWeight: 700 }}
+                          />
+                        ))}
+                      </Box>
 
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant='caption' fontWeight={700} color='text.secondary'>
+                          OPACITY:
+                        </Typography>
+                        {[0.5, 0.7, 0.85, 1.0].map(op => (
+                          <Chip
+                            key={op}
+                            label={`${Math.round(op * 100)}%`}
+                            size='small'
+                            clickable
+                            variant={Math.abs(logoOpacity - op) < 0.05 ? 'filled' : 'outlined'}
+                            color={Math.abs(logoOpacity - op) < 0.05 ? 'primary' : 'default'}
+                            onClick={() => { setLogoOpacity(op); setDirty(true) }}
+                            sx={{ height: 20, fontSize: 9, fontWeight: 700 }}
+                          />
+                        ))}
+                      </Box>
+                    </Box>
+
+                    {/* 4 Official Logo Cards */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
+                      
                       {/* Logo 1: FEDSafe Shield */}
-                      <Box
-                        onClick={() => { setShowShieldLogo(!showShieldLogo); setDirty(true) }}
-                        sx={{
-                          p: 1,
-                          borderRadius: 1.5,
-                          border: '1.5px solid',
-                          borderColor: showShieldLogo ? 'primary.main' : 'divider',
-                          bgcolor: showShieldLogo ? 'rgba(99, 102, 241, 0.08)' : 'action.hover',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: 0.75,
-                        }}
-                      >
+                      <Box sx={{
+                        p: 1.25,
+                        borderRadius: 1.5,
+                        border: '1.5px solid',
+                        borderColor: showShieldLogo ? 'primary.main' : 'divider',
+                        bgcolor: showShieldLogo ? 'rgba(99, 102, 241, 0.06)' : 'background.default',
+                        transition: 'all 0.15s ease',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 1,
+                      }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                            <Checkbox
+                              size='small'
+                              checked={showShieldLogo}
+                              sx={{ p: 0 }}
+                              onChange={(e) => { setShowShieldLogo(e.target.checked); setDirty(true) }}
+                            />
+                            <Box>
+                              <Typography sx={{ fontSize: 11, fontWeight: 700, lineHeight: 1.2 }}>FEDSafe Shield</Typography>
+                              <Typography variant='caption' color='text.secondary' sx={{ fontSize: 9 }}>Core Crest</Typography>
+                            </Box>
+                          </Box>
+                          <Chip
+                            label={LOGO_POSITIONS.find(p => p.value === shieldLogoPosition)?.short || 'TL'}
+                            size='small'
+                            color={showShieldLogo ? 'primary' : 'default'}
+                            sx={{ height: 18, fontSize: 9, fontWeight: 700 }}
+                          />
+                        </Box>
+
                         <Box sx={{
                           width: '100%',
-                          height: 56,
+                          height: 52,
                           bgcolor: '#0a0e1a',
                           borderRadius: 1,
                           display: 'flex',
@@ -1571,47 +1693,74 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                           justifyContent: 'center',
                           p: 0.5,
                           border: '1px solid rgba(255, 255, 255, 0.06)',
+                          opacity: showShieldLogo ? logoOpacity : 0.35,
                         }}>
                           <img
                             src='/images/branding/fedsafe-shield-logo-transparent.webp'
                             alt='FEDSafe Shield'
-                            style={{ maxHeight: 42, maxWidth: '90%', objectFit: 'contain' }}
+                            style={{
+                              maxHeight: logoSize === 'small' ? 30 : logoSize === 'large' ? 44 : 36,
+                              maxWidth: '90%',
+                              objectFit: 'contain',
+                            }}
                           />
                         </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%' }}>
-                          <Checkbox
-                            size='small'
-                            checked={showShieldLogo}
-                            sx={{ p: 0 }}
-                            onChange={(e) => { e.stopPropagation(); setShowShieldLogo(e.target.checked); setDirty(true) }}
-                          />
-                          <Box sx={{ minWidth: 0, flex: 1 }}>
-                            <Typography sx={{ fontSize: 11, fontWeight: 700, lineHeight: 1.2 }}>FEDSafe Shield</Typography>
-                            <Typography variant='caption' color='text.secondary' sx={{ fontSize: 9 }}>Top-Left</Typography>
-                          </Box>
-                        </Box>
+
+                        {/* Position Selector */}
+                        <FormControl fullWidth size='small'>
+                          <InputLabel sx={{ fontSize: 11 }}>Position</InputLabel>
+                          <Select
+                            value={shieldLogoPosition}
+                            label='Position'
+                            disabled={!showShieldLogo}
+                            onChange={(e) => { setShieldLogoPosition(e.target.value as LogoPosition); setDirty(true) }}
+                            sx={{ height: 28, fontSize: 11 }}
+                          >
+                            {LOGO_POSITIONS.map(pos => (
+                              <MenuItem key={pos.value} value={pos.value} sx={{ fontSize: 11 }}>
+                                {pos.label}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
                       </Box>
 
                       {/* Logo 2: SAM.gov Badge */}
-                      <Box
-                        onClick={() => { setShowSamBadge(!showSamBadge); setDirty(true) }}
-                        sx={{
-                          p: 1,
-                          borderRadius: 1.5,
-                          border: '1.5px solid',
-                          borderColor: showSamBadge ? 'primary.main' : 'divider',
-                          bgcolor: showSamBadge ? 'rgba(99, 102, 241, 0.08)' : 'action.hover',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: 0.75,
-                        }}
-                      >
+                      <Box sx={{
+                        p: 1.25,
+                        borderRadius: 1.5,
+                        border: '1.5px solid',
+                        borderColor: showSamBadge ? 'primary.main' : 'divider',
+                        bgcolor: showSamBadge ? 'rgba(99, 102, 241, 0.06)' : 'background.default',
+                        transition: 'all 0.15s ease',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 1,
+                      }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                            <Checkbox
+                              size='small'
+                              checked={showSamBadge}
+                              sx={{ p: 0 }}
+                              onChange={(e) => { setShowSamBadge(e.target.checked); setDirty(true) }}
+                            />
+                            <Box>
+                              <Typography sx={{ fontSize: 11, fontWeight: 700, lineHeight: 1.2 }}>SAM.gov Badge</Typography>
+                              <Typography variant='caption' color='text.secondary' sx={{ fontSize: 9 }}>Verified Contractor</Typography>
+                            </Box>
+                          </Box>
+                          <Chip
+                            label={LOGO_POSITIONS.find(p => p.value === samBadgePosition)?.short || 'TR'}
+                            size='small'
+                            color={showSamBadge ? 'primary' : 'default'}
+                            sx={{ height: 18, fontSize: 9, fontWeight: 700 }}
+                          />
+                        </Box>
+
                         <Box sx={{
                           width: '100%',
-                          height: 56,
+                          height: 52,
                           bgcolor: '#0a0e1a',
                           borderRadius: 1,
                           display: 'flex',
@@ -1619,23 +1768,382 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                           justifyContent: 'center',
                           p: 0.5,
                           border: '1px solid rgba(255, 255, 255, 0.06)',
+                          opacity: showSamBadge ? logoOpacity : 0.35,
                         }}>
                           <img
                             src='/images/branding/fedsafe-sam-badge-transparent.webp'
                             alt='SAM.gov UEI Registered'
-                            style={{ maxHeight: 42, maxWidth: '90%', objectFit: 'contain' }}
+                            style={{
+                              maxHeight: logoSize === 'small' ? 30 : logoSize === 'large' ? 44 : 36,
+                              maxWidth: '90%',
+                              objectFit: 'contain',
+                            }}
                           />
                         </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%' }}>
-                          <Checkbox
+
+                        {/* Position Selector */}
+                        <FormControl fullWidth size='small'>
+                          <InputLabel sx={{ fontSize: 11 }}>Position</InputLabel>
+                          <Select
+                            value={samBadgePosition}
+                            label='Position'
+                            disabled={!showSamBadge}
+                            onChange={(e) => { setSamBadgePosition(e.target.value as LogoPosition); setDirty(true) }}
+                            sx={{ height: 28, fontSize: 11 }}
+                          >
+                            {LOGO_POSITIONS.map(pos => (
+                              <MenuItem key={pos.value} value={pos.value} sx={{ fontSize: 11 }}>
+                                {pos.label}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Box>
+
+                      {/* Logo 3: Official Double Logo */}
+                      <Box sx={{
+                        p: 1.25,
+                        borderRadius: 1.5,
+                        border: '1.5px solid',
+                        borderColor: showDoubleLogo ? 'primary.main' : 'divider',
+                        bgcolor: showDoubleLogo ? 'rgba(99, 102, 241, 0.06)' : 'background.default',
+                        transition: 'all 0.15s ease',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 1,
+                      }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                            <Checkbox
+                              size='small'
+                              checked={showDoubleLogo}
+                              sx={{ p: 0 }}
+                              onChange={(e) => { setShowDoubleLogo(e.target.checked); setDirty(true) }}
+                            />
+                            <Box>
+                              <Typography sx={{ fontSize: 11, fontWeight: 700, lineHeight: 1.2 }}>Dual Brand Lockup</Typography>
+                              <Typography variant='caption' color='text.secondary' sx={{ fontSize: 9 }}>Shield + SAM.gov</Typography>
+                            </Box>
+                          </Box>
+                          <Chip
+                            label={LOGO_POSITIONS.find(p => p.value === doubleLogoPosition)?.short || 'TC'}
                             size='small'
-                            checked={showSamBadge}
-                            sx={{ p: 0 }}
-                            onChange={(e) => { e.stopPropagation(); setShowSamBadge(e.target.checked); setDirty(true) }}
+                            color={showDoubleLogo ? 'primary' : 'default'}
+                            sx={{ height: 18, fontSize: 9, fontWeight: 700 }}
                           />
-                          <Box sx={{ minWidth: 0, flex: 1 }}>
-                            <Typography sx={{ fontSize: 11, fontWeight: 700, lineHeight: 1.2 }}>SAM.gov Badge</Typography>
-                            <Typography variant='caption' color='text.secondary' sx={{ fontSize: 9 }}>Top-Right</Typography>
+                        </Box>
+
+                        <Box sx={{
+                          width: '100%',
+                          height: 52,
+                          bgcolor: '#0a0e1a',
+                          borderRadius: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          p: 0.5,
+                          border: '1px solid rgba(255, 255, 255, 0.06)',
+                          opacity: showDoubleLogo ? logoOpacity : 0.35,
+                        }}>
+                          <img
+                            src='/images/branding/fedsafe-double-logo-transparent.webp'
+                            alt='Dual Brand Lockup'
+                            style={{
+                              maxHeight: logoSize === 'small' ? 30 : logoSize === 'large' ? 44 : 36,
+                              maxWidth: '90%',
+                              objectFit: 'contain',
+                            }}
+                          />
+                        </Box>
+
+                        {/* Position Selector */}
+                        <FormControl fullWidth size='small'>
+                          <InputLabel sx={{ fontSize: 11 }}>Position</InputLabel>
+                          <Select
+                            value={doubleLogoPosition}
+                            label='Position'
+                            disabled={!showDoubleLogo}
+                            onChange={(e) => { setDoubleLogoPosition(e.target.value as LogoPosition); setDirty(true) }}
+                            sx={{ height: 28, fontSize: 11 }}
+                          >
+                            {LOGO_POSITIONS.map(pos => (
+                              <MenuItem key={pos.value} value={pos.value} sx={{ fontSize: 11 }}>
+                                {pos.label}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Box>
+
+                      {/* Logo 4: Tagline Horizontal Lockup */}
+                      <Box sx={{
+                        p: 1.25,
+                        borderRadius: 1.5,
+                        border: '1.5px solid',
+                        borderColor: showTaglineLogo ? 'primary.main' : 'divider',
+                        bgcolor: showTaglineLogo ? 'rgba(99, 102, 241, 0.06)' : 'background.default',
+                        transition: 'all 0.15s ease',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 1,
+                      }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                            <Checkbox
+                              size='small'
+                              checked={showTaglineLogo}
+                              sx={{ p: 0 }}
+                              onChange={(e) => { setShowTaglineLogo(e.target.checked); setDirty(true) }}
+                            />
+                            <Box>
+                              <Typography sx={{ fontSize: 11, fontWeight: 700, lineHeight: 1.2 }}>Tagline Lockup</Typography>
+                              <Typography variant='caption' color='text.secondary' sx={{ fontSize: 9 }}>With Official Slogan</Typography>
+                            </Box>
+                          </Box>
+                          <Chip
+                            label={LOGO_POSITIONS.find(p => p.value === taglineLogoPosition)?.short || 'BL'}
+                            size='small'
+                            color={showTaglineLogo ? 'primary' : 'default'}
+                            sx={{ height: 18, fontSize: 9, fontWeight: 700 }}
+                          />
+                        </Box>
+
+                        <Box sx={{
+                          width: '100%',
+                          height: 52,
+                          bgcolor: '#0a0e1a',
+                          borderRadius: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          p: 0.5,
+                          border: '1px solid rgba(255, 255, 255, 0.06)',
+                          opacity: showTaglineLogo ? logoOpacity : 0.35,
+                        }}>
+                          <img
+                            src='/images/branding/fedsafe-logo-tagline-transparent.webp'
+                            alt='Tagline Lockup'
+                            style={{
+                              maxHeight: logoSize === 'small' ? 26 : logoSize === 'large' ? 38 : 32,
+                              maxWidth: '90%',
+                              objectFit: 'contain',
+                            }}
+                          />
+                        </Box>
+
+                        {/* Position Selector */}
+                        <FormControl fullWidth size='small'>
+                          <InputLabel sx={{ fontSize: 11 }}>Position</InputLabel>
+                          <Select
+                            value={taglineLogoPosition}
+                            label='Position'
+                            disabled={!showTaglineLogo}
+                            onChange={(e) => { setTaglineLogoPosition(e.target.value as LogoPosition); setDirty(true) }}
+                            sx={{ height: 28, fontSize: 11 }}
+                          >
+                            {LOGO_POSITIONS.map(pos => (
+                              <MenuItem key={pos.value} value={pos.value} sx={{ fontSize: 11 }}>
+                                {pos.label}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Box>
+                    </Box>
+
+                    {/* Real-time Visual Watermark Canvas Preview */}
+                    <Box sx={{
+                      p: 1.5,
+                      borderRadius: 1.5,
+                      bgcolor: '#030712',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1,
+                    }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography sx={{ fontSize: 11, fontWeight: 700, color: 'white', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <i className='tabler-device-mobile text-primary' />
+                          Live Screen Watermark Overlay Mockup (9:16)
+                        </Typography>
+                        <Chip
+                          label={`Opacity: ${Math.round(logoOpacity * 100)}% · ${logoSize.toUpperCase()}`}
+                          size='small'
+                          sx={{ height: 18, fontSize: 9, bgcolor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.8)' }}
+                        />
+                      </Box>
+
+                      {/* Phone Canvas Mockup */}
+                      <Box sx={{
+                        height: 160,
+                        width: '100%',
+                        maxWidth: 280,
+                        mx: 'auto',
+                        borderRadius: 2,
+                        border: '1.5px solid rgba(255, 255, 255, 0.2)',
+                        bgcolor: '#000',
+                        position: 'relative',
+                        p: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        overflow: 'hidden',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+                      }}>
+                        {/* Top Anchors Row */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 2, minHeight: 28 }}>
+                          {/* Top-Left */}
+                          <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', opacity: logoOpacity }}>
+                            {showShieldLogo && shieldLogoPosition === 'top-left' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='Shield' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showSamBadge && samBadgePosition === 'top-left' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showDoubleLogo && doubleLogoPosition === 'top-left' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-double-logo-transparent.webp' alt='Double' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showTaglineLogo && taglineLogoPosition === 'top-left' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-logo-tagline-transparent.webp' alt='Tagline' style={{ height: logoSize === 'small' ? 9 : logoSize === 'large' ? 14 : 11, display: 'block' }} />
+                              </Box>
+                            )}
+                          </Box>
+
+                          {/* Top-Center */}
+                          <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', opacity: logoOpacity }}>
+                            {showShieldLogo && shieldLogoPosition === 'top-center' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='Shield' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showSamBadge && samBadgePosition === 'top-center' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showDoubleLogo && doubleLogoPosition === 'top-center' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-double-logo-transparent.webp' alt='Double' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showTaglineLogo && taglineLogoPosition === 'top-center' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-logo-tagline-transparent.webp' alt='Tagline' style={{ height: logoSize === 'small' ? 9 : logoSize === 'large' ? 14 : 11, display: 'block' }} />
+                              </Box>
+                            )}
+                          </Box>
+
+                          {/* Top-Right */}
+                          <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', opacity: logoOpacity }}>
+                            {showShieldLogo && shieldLogoPosition === 'top-right' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='Shield' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showSamBadge && samBadgePosition === 'top-right' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showDoubleLogo && doubleLogoPosition === 'top-right' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-double-logo-transparent.webp' alt='Double' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showTaglineLogo && taglineLogoPosition === 'top-right' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-logo-tagline-transparent.webp' alt='Tagline' style={{ height: logoSize === 'small' ? 9 : logoSize === 'large' ? 14 : 11, display: 'block' }} />
+                              </Box>
+                            )}
+                          </Box>
+                        </Box>
+
+                        {/* Center Frame Content Preview */}
+                        <Box sx={{ textAlign: 'center', zIndex: 2 }}>
+                          <Typography sx={{ fontSize: 8, fontWeight: 700, color: 'rgba(255,255,255,0.75)' }}>
+                            Federal Video Scene Content
+                          </Typography>
+                        </Box>
+
+                        {/* Bottom Anchors Row */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', zIndex: 2, minHeight: 28 }}>
+                          {/* Bottom-Left */}
+                          <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', opacity: logoOpacity }}>
+                            {showShieldLogo && shieldLogoPosition === 'bottom-left' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='Shield' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showSamBadge && samBadgePosition === 'bottom-left' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showDoubleLogo && doubleLogoPosition === 'bottom-left' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-double-logo-transparent.webp' alt='Double' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showTaglineLogo && taglineLogoPosition === 'bottom-left' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-logo-tagline-transparent.webp' alt='Tagline' style={{ height: logoSize === 'small' ? 9 : logoSize === 'large' ? 14 : 11, display: 'block' }} />
+                              </Box>
+                            )}
+                          </Box>
+
+                          {/* Bottom-Center */}
+                          <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', opacity: logoOpacity }}>
+                            {showShieldLogo && shieldLogoPosition === 'bottom-center' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='Shield' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showSamBadge && samBadgePosition === 'bottom-center' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showDoubleLogo && doubleLogoPosition === 'bottom-center' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-double-logo-transparent.webp' alt='Double' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showTaglineLogo && taglineLogoPosition === 'bottom-center' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-logo-tagline-transparent.webp' alt='Tagline' style={{ height: logoSize === 'small' ? 9 : logoSize === 'large' ? 14 : 11, display: 'block' }} />
+                              </Box>
+                            )}
+                          </Box>
+
+                          {/* Bottom-Right */}
+                          <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', opacity: logoOpacity }}>
+                            {showShieldLogo && shieldLogoPosition === 'bottom-right' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='Shield' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showSamBadge && samBadgePosition === 'bottom-right' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showDoubleLogo && doubleLogoPosition === 'bottom-right' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-double-logo-transparent.webp' alt='Double' style={{ height: logoSize === 'small' ? 10 : logoSize === 'large' ? 16 : 13, display: 'block' }} />
+                              </Box>
+                            )}
+                            {showTaglineLogo && taglineLogoPosition === 'bottom-right' && (
+                              <Box sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)' }}>
+                                <img src='/images/branding/fedsafe-logo-tagline-transparent.webp' alt='Tagline' style={{ height: logoSize === 'small' ? 9 : logoSize === 'large' ? 14 : 11, display: 'block' }} />
+                              </Box>
+                            )}
                           </Box>
                         </Box>
                       </Box>

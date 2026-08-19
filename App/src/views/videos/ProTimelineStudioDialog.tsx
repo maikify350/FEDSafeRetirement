@@ -359,90 +359,149 @@ export default function ProTimelineStudioDialog({
             bgcolor: '#04060b',
           }}>
             {/* Phone Bezel */}
-            <Box sx={{
-              width: 140,
-              height: 248,
-              borderRadius: 3.5,
-              border: '2px solid rgba(255, 255, 255, 0.2)',
-              bgcolor: '#000',
-              boxShadow: '0 12px 30px rgba(0,0,0,0.8), 0 0 15px rgba(99,102,241,0.2)',
-              position: 'relative',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              p: 1,
-            }}>
-              {/* Top Notch & Brand Badges */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                  {video?.metadata?.show_shield_logo !== false && (
-                    <Box sx={{ bgcolor: 'rgba(0,0,0,0.5)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.1)' }}>
-                      <img
-                        src='/images/branding/fedsafe-shield-logo-transparent.webp'
-                        alt='FEDSafe Shield'
-                        style={{ height: 12, objectFit: 'contain', display: 'block' }}
+            {(() => {
+              const meta = video?.metadata || {}
+              const showShield = meta.show_shield_logo !== false
+              const shieldPos = meta.shield_logo_position || 'top-left'
+              const showSam = meta.show_sam_badge !== false
+              const samPos = meta.sam_badge_position || 'top-right'
+              const showDouble = Boolean(meta.show_double_logo)
+              const doublePos = meta.double_logo_position || 'top-center'
+              const showTagline = Boolean(meta.show_tagline_logo)
+              const taglinePos = meta.tagline_logo_position || 'bottom-left'
+              const logoScale = meta.logo_size === 'small' ? 0.8 : meta.logo_size === 'large' ? 1.25 : 1.0
+              const logoOpacity = typeof meta.logo_opacity === 'number' ? meta.logo_opacity : 0.9
+
+              const renderPositionLogos = (pos: string) => {
+                const items = []
+                if (showShield && shieldPos === pos) {
+                  items.push(
+                    <Box key="shield" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
+                      <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='FEDSafe Shield' style={{ height: Math.round(12 * logoScale), objectFit: 'contain', display: 'block' }} />
+                    </Box>
+                  )
+                }
+                if (showSam && samPos === pos) {
+                  items.push(
+                    <Box key="sam" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
+                      <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM.gov' style={{ height: Math.round(11 * logoScale), objectFit: 'contain', display: 'block' }} />
+                    </Box>
+                  )
+                }
+                if (showDouble && doublePos === pos) {
+                  items.push(
+                    <Box key="double" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
+                      <img src='/images/branding/fedsafe-double-logo-transparent.webp' alt='Dual Lockup' style={{ height: Math.round(12 * logoScale), objectFit: 'contain', display: 'block' }} />
+                    </Box>
+                  )
+                }
+                if (showTagline && taglinePos === pos) {
+                  items.push(
+                    <Box key="tagline" sx={{ bgcolor: 'rgba(0,0,0,0.6)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.15)', opacity: logoOpacity }}>
+                      <img src='/images/branding/fedsafe-logo-tagline-transparent.webp' alt='Tagline' style={{ height: Math.round(10 * logoScale), objectFit: 'contain', display: 'block' }} />
+                    </Box>
+                  )
+                }
+                return items
+              }
+
+              return (
+                <Box sx={{
+                  width: 140,
+                  height: 248,
+                  borderRadius: 3.5,
+                  border: '2px solid rgba(255, 255, 255, 0.2)',
+                  bgcolor: '#000',
+                  boxShadow: '0 12px 30px rgba(0,0,0,0.8), 0 0 15px rgba(99,102,241,0.2)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  p: 1,
+                }}>
+                  {/* Top Notch & Multi-Position Watermarks */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 2, gap: 0.5 }}>
+                    {/* Top-Left */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                      {renderPositionLogos('top-left')}
+                    </Box>
+
+                    {/* Top-Center */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                      {renderPositionLogos('top-center')}
+                    </Box>
+
+                    {/* Top-Right & Camera Motion */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                      {renderPositionLogos('top-right')}
+                      <Chip
+                        label={currentHyperframe?.camera_motion || 'Motion'}
+                        size='small'
+                        sx={{
+                          height: 12,
+                          fontSize: 7,
+                          fontWeight: 700,
+                          bgcolor: 'rgba(6, 182, 212, 0.25)',
+                          color: '#22d3ee',
+                          px: 0,
+                        }}
                       />
                     </Box>
-                  )}
-                  {video?.metadata?.show_sam_badge !== false && (
-                    <Box sx={{ bgcolor: 'rgba(0,0,0,0.5)', p: '2px 4px', borderRadius: 0.5, border: '1px solid rgba(255,255,255,0.1)' }}>
-                      <img
-                        src='/images/branding/fedsafe-sam-badge-transparent.webp'
-                        alt='SAM.gov Registered'
-                        style={{ height: 11, objectFit: 'contain', display: 'block' }}
-                      />
+                  </Box>
+
+                  {/* Center Live Subtitle Preview */}
+                  <Box sx={{
+                    zIndex: 2,
+                    my: 'auto',
+                    p: 0.75,
+                    bgcolor: 'rgba(0, 0, 0, 0.65)',
+                    borderRadius: 1,
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(4px)',
+                    textAlign: 'center',
+                  }}>
+                    <Typography sx={{ fontSize: 9, fontWeight: 800, color: '#facc15', lineHeight: 1.2, mb: 0.25 }}>
+                      {currentHyperframe?.text_segment || 'Federal Retirement Overview'}
+                    </Typography>
+                    <Typography sx={{ fontSize: 7, color: '#94a3b8' }}>
+                      Transition: <span style={{ color: '#a78bfa' }}>{currentHyperframe?.transition}</span>
+                    </Typography>
+                  </Box>
+
+                  {/* Bottom Multi-Position Watermarks & CTA */}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, zIndex: 2 }}>
+                    {/* Bottom Row Anchors */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 0.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                        {renderPositionLogos('bottom-left')}
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                        {renderPositionLogos('bottom-center')}
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                        {renderPositionLogos('bottom-right')}
+                      </Box>
                     </Box>
-                  )}
+
+                    {/* Bottom CTA Overlay */}
+                    <Box sx={{ bgcolor: 'rgba(15, 23, 42, 0.85)', borderRadius: 0.5, p: 0.5, textAlign: 'center' }}>
+                      <Typography sx={{ fontSize: 6.5, fontWeight: 700, color: '#38bdf8' }}>
+                        {ctaText || 'FedSafeRetirement.com'}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* Background Ambient Glow */}
+                  <Box sx={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'radial-gradient(circle at center, rgba(99,102,241,0.2) 0%, rgba(0,0,0,0.8) 100%)',
+                    zIndex: 1,
+                  }} />
                 </Box>
-                <Chip
-                  label={currentHyperframe?.camera_motion || 'Motion'}
-                  size='small'
-                  sx={{
-                    height: 12,
-                    fontSize: 7,
-                    fontWeight: 700,
-                    bgcolor: 'rgba(6, 182, 212, 0.25)',
-                    color: '#22d3ee',
-                    px: 0,
-                  }}
-                />
-              </Box>
-
-              {/* Center Live Subtitle Preview */}
-              <Box sx={{
-                zIndex: 2,
-                my: 'auto',
-                p: 0.75,
-                bgcolor: 'rgba(0, 0, 0, 0.65)',
-                borderRadius: 1,
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(4px)',
-                textAlign: 'center',
-              }}>
-                <Typography sx={{ fontSize: 9, fontWeight: 800, color: '#facc15', lineHeight: 1.2, mb: 0.25 }}>
-                  {currentHyperframe?.text_segment || 'Federal Retirement Overview'}
-                </Typography>
-                <Typography sx={{ fontSize: 7, color: '#94a3b8' }}>
-                  Transition: <span style={{ color: '#a78bfa' }}>{currentHyperframe?.transition}</span>
-                </Typography>
-              </Box>
-
-              {/* Bottom CTA Overlay */}
-              <Box sx={{ zIndex: 2, bgcolor: 'rgba(15, 23, 42, 0.85)', borderRadius: 0.5, p: 0.5, textAlign: 'center' }}>
-                <Typography sx={{ fontSize: 6.5, fontWeight: 700, color: '#38bdf8' }}>
-                  {ctaText || 'FedSafeRetirement.com'}
-                </Typography>
-              </Box>
-
-              {/* Background Ambient Glow */}
-              <Box sx={{
-                position: 'absolute',
-                top: 0, left: 0, right: 0, bottom: 0,
-                background: 'radial-gradient(circle at center, rgba(99,102,241,0.2) 0%, rgba(0,0,0,0.8) 100%)',
-                zIndex: 1,
-              }} />
-            </Box>
+              )
+            })()}
           </Box>
 
           {/* 2. Active Hyperframe & Director Inspector */}
