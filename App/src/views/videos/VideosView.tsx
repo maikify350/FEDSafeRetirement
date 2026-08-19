@@ -64,7 +64,12 @@ export default function VideosView() {
       const res = await fetch('/api/videos')
       const data = await res.json()
       if (Array.isArray(data) && data.length > 0) {
-        setVideos(data)
+        // Keep all saved database videos and merge any remaining default templates
+        const dbTitles = new Set(data.map(v => v.title?.toLowerCase().trim()))
+        const remainingDefaults = DEFAULT_PREGENERATED_VIDEOS.filter(
+          def => !dbTitles.has(def.title?.toLowerCase().trim())
+        )
+        setVideos([...data, ...remainingDefaults])
       } else {
         setVideos(DEFAULT_PREGENERATED_VIDEOS)
       }
