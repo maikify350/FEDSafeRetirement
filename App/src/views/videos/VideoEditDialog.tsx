@@ -635,6 +635,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         audio.onerror = () => setIsPlayingPreview(false)
         await audio.play()
         setIsPlayingPreview(true)
+        setPreviewLoading(false)
         return
       }
     } catch {
@@ -651,7 +652,6 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         utterance.onerror = () => setIsPlayingPreview(false)
         window.speechSynthesis.speak(utterance)
         setIsPlayingPreview(true)
-        return
       }
     } catch {
       // ignore
