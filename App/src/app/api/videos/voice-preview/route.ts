@@ -18,8 +18,8 @@ export async function POST(request: NextRequest) {
     const speed = Math.min(2.0, Math.max(0.5, Number(body.speed) || 1.0))
     const rawPreviewText = body.text || `Hello! This is a preview of the ${voiceName} voice for your FEDSafe Retirement video.`
 
-    // Dynamic Voice Settings from UI or optimized defaults
-    const stability = typeof body.stability === 'number' ? Math.max(0, Math.min(1, body.stability)) : 0.32
+    // Dynamic Voice Settings (0.30 = Creative & Expressive for ElevenLabs v3)
+    const stability = typeof body.stability === 'number' ? Math.max(0, Math.min(1, body.stability)) : 0.30
     const style = typeof body.style === 'number' ? Math.max(0, Math.min(1, body.style)) : 0.60
     const similarityBoost = typeof body.similarity_boost === 'number' ? Math.max(0, Math.min(1, body.similarity_boost)) : 0.75
     const useSpeakerBoost = body.use_speaker_boost !== undefined ? Boolean(body.use_speaker_boost) : true
