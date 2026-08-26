@@ -46,6 +46,46 @@ export async function POST(request: NextRequest) {
       .replace(/<spell>(.*?)<\/spell>/gi, (_: string, p1: string) => p1.split('').join(' '))
       .replace(/\[pause:([\d.]+)s?\]/gi, (_: string, p1: string) => ` {{pause:${Math.max(1, Math.round(parseFloat(p1) || 1))}}} `)
 
+    // 4. Financial, IRS, Tax Forms & Federal Account Normalization
+    const normalizedText = processedText
+      // IRS Tax Forms & Accounts
+      .replace(/\b401\(?k\)?\b/gi, 'four-oh-one-k')
+      .replace(/\b403\(?b\)?\b/gi, 'four-oh-three-b')
+      .replace(/\b457\(?b\)?\b/gi, 'four-five-seven-b')
+      .replace(/\b529\b/g, 'five-twenty-nine')
+      .replace(/\b1099-?R\b/gi, 'ten ninety-nine R')
+      .replace(/\bW-?2\b/gi, 'W-two')
+      .replace(/\b1040\b/g, 'ten-forty')
+      .replace(/\bIRAs?\b/g, 'I-R-A')
+      .replace(/\bRMDs?\b/g, 'R-M-D')
+      .replace(/\bIRS\b/g, 'I-R-S')
+      .replace(/\bSSA\b/g, 'S-S-A')
+      .replace(/\bCOLA\b/g, 'CO-la')
+      // Federal Retirement Programs & Forms
+      .replace(/\bFEGLI\b/g, 'FEG-lee')
+      .replace(/\bFERS\b/g, 'FERS')
+      .replace(/\bCSRS\b/g, 'C-S-R-S')
+      .replace(/\bTSP\b/g, 'T-S-P')
+      .replace(/\bPSHB\b/g, 'P-S-H-B')
+      .replace(/\bFEHB\b/g, 'F-E-H-B')
+      .replace(/\bOPM\b/g, 'O-P-M')
+      .replace(/\bORA\b/g, 'O-R-A')
+      .replace(/\bSF-?2818\b/gi, 'S-F twenty-eight eighteen')
+      .replace(/\bSF-?3107\b/gi, 'S-F thirty-one oh-seven')
+      .replace(/\bSF-?2801\b/gi, 'S-F twenty-eight oh-one')
+      .replace(/\bDD-?214\b/gi, 'D-D two-fourteen')
+      .replace(/\bVGLI\b/g, 'V-G-L-I')
+      // Currency, Percentages & Phone numbers
+      .replace(/\$([0-9,]+(\.[0-9]{2})?)\b/g, (_: string, p1: string) => {
+        const clean = p1.replace(/,/g, '')
+        const num = parseFloat(clean)
+        if (num >= 1000000) return `${(num / 1000000).toFixed(num % 1000000 === 0 ? 0 : 1)} million dollars`
+        if (num >= 1000) return `${(num / 1000).toFixed(num % 1000 === 0 ? 0 : 1)} thousand dollars`
+        return `${clean} dollars`
+      })
+      .replace(/(\d+)%/g, '$1 percent')
+      .replace(/(\d{3})-(\d{3})-(\d{4})/g, '$1, $2, $3')
+
     // Provider 1: ElevenLabs
     const apiKey = process.env.ELEVENLABS_API_KEY || process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY || 'sk_da462719dbc91e7ba72b2f0ad2c0b70d84ecad811459991f'
 
@@ -59,7 +99,7 @@ export async function POST(request: NextRequest) {
             'xi-api-key': apiKey,
           },
           body: JSON.stringify({
-            text: processedText,
+            text: normalizedText,
             model_id: 'eleven_turbo_v2_5',
             voice_settings: {
               stability,

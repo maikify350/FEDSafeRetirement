@@ -49,18 +49,38 @@ Use inline section tags to modulate tone, emotion, and pacing for **distinct wor
 
 Text-to-speech models struggle with raw numerals, currency, acronyms, and phone numbers unless normalized or phonetically expanded:
 
-### Pronunciation Replacements:
+### Pronunciation & Normalization Replacements:
 - **Phone Numbers:** `(774) 273-8473` → `"seven seven four, two seven three, eight four seven three"`
-- **Currency:** `$1,000,000` → `"one million dollars"`
+- **Currency:** `$1,000,000` → `"one million dollars"`, `$45.50` → `"forty-five dollars and fifty cents"`
 - **Percentages:** `500%` → `"five hundred percent"`
 - **Websites:** `FedSafeRetirement.com` → `"FedSafe Retirement dot com"`
-- **Acronyms:**
+- **IRS Tax Forms & Retirement Accounts:**
+  - `401(k)` / `401k` → `"four-oh-one-k"`
+  - `403(b)` / `403b` → `"four-oh-three-b"`
+  - `457(b)` / `457b` → `"four-five-seven-b"`
+  - `529 Plan` → `"five-twenty-nine plan"`
+  - `1099-R` → `"ten ninety-nine R"`
+  - `W-2` → `"W-two"`
+  - `Form 1040` → `"form ten-forty"`
+  - `Traditional IRA / Roth IRA` → `"I-R-A"`
+  - `RMD` / `RMDs` → `"R-M-D"` / `"R-M-Ds"`
+  - `COLA` → `"CO-la"`
+  - `IRS` → `"I-R-S"`
+  - `SSA` → `"S-S-A"`
+- **Federal Retirement Programs & Standard Forms:**
   - `FEGLI` → `"FEG-lee"`
   - `FERS` → `"FERS"`
+  - `CSRS` → `"C-S-R-S"`
   - `TSP` → `"T-S-P"`
   - `PSHB` → `"P-S-H-B"`
+  - `FEHB` → `"F-E-H-B"`
   - `OPM` → `"O-P-M"`
   - `ORA` → `"O-R-A"`
+  - `SF-2818` → `"S-F twenty-eight eighteen"` (FEGLI Continuation Form)
+  - `SF-3107` → `"S-F thirty-one oh-seven"` (FERS Application for Immediate Retirement)
+  - `SF-2801` → `"S-F twenty-eight oh-one"` (CSRS Application)
+  - `DD-214` → `"D-D two-fourteen"` (Military Certificate of Release/Discharge)
+  - `VGLI` → `"V-G-L-I"` (Veterans' Group Life Insurance)
 
 ---
 
