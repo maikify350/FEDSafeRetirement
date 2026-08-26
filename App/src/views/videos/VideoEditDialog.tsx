@@ -915,6 +915,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
 
       const autoMediaAssets = richHyperframes.map((hf: any, idx: number) => ({
         id: `asset_${idx + 1}`,
+        name: `Scene #${idx + 1} Visual`,
         type: 'image' as const,
         label: `Scene #${idx + 1} Visual`,
         url: hf.scene_image,
@@ -979,7 +980,6 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
           tagline_logo_position: taglineLogoPosition,
           logo_size: logoSize,
           logo_opacity: logoOpacity,
-          remotion_composition: remotionComposition,
         },
       }
 
