@@ -583,7 +583,7 @@ export default function VideosView() {
       size: 130,
       cell: ({ row }) => (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Typography variant='caption'>{formatDate(row.original.cre_dt)}</Typography>
+          <Typography variant='caption' suppressHydrationWarning>{formatDate(row.original.cre_dt)}</Typography>
           <Typography variant='caption' color='text.disabled' sx={{ fontSize: 10 }}>
             {row.original.cre_by || 'System'}
           </Typography>

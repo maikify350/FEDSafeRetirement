@@ -323,7 +323,7 @@ export function DraggableColumnHeader<T>({ header, showFilters }: Props<T>) {
   }
 
   return (
-    <th ref={setNodeRef} style={style}>
+    <th ref={setNodeRef} style={style} suppressHydrationWarning>
       {header.isPlaceholder ? null : (
         <>
           <div
@@ -337,6 +337,7 @@ export function DraggableColumnHeader<T>({ header, showFilters }: Props<T>) {
               <span
                 {...attributes}
                 {...listeners}
+                suppressHydrationWarning
                 style={{ cursor: 'grab', display: 'inline-flex', alignItems: 'center', opacity: 0.4, fontSize: '0.9rem' }}
                 onClick={e => e.stopPropagation()}
                 title='Drag to reorder'

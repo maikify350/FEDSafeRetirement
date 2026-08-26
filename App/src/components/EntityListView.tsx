@@ -776,7 +776,7 @@ return (
         </div>
 
         {/* ── Table ─────────────────────────────────────────────────────────── */}
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext id={storageKey || 'entity-list-dnd'} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <div style={{ flex: 1, minHeight: 0, overflowX: 'auto', overflowY: 'auto', position: 'relative' }}>
             {isLoading && (
               <Box sx={{
