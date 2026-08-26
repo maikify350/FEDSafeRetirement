@@ -303,7 +303,7 @@ export default function VideosView() {
               onClick={(e) => {
                 e.stopPropagation()
                 setPreviewVideoRecord(v)
-                setPreviewVideoUrl(v.video_url || 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/01_Video_Postal_Retirement_Reel.mp4')
+                setPreviewVideoUrl(v.video_url || null)
               }}
               sx={{
                 position: 'relative',
@@ -606,7 +606,7 @@ export default function VideosView() {
                 color='info'
                 onClick={() => {
                   setPreviewVideoRecord(v)
-                  setPreviewVideoUrl(v.video_url || '/images/03_Video_Postal_Retirement_Reel.mp4')
+                  setPreviewVideoUrl(v.video_url || null)
                 }}
                 sx={{
                   bgcolor: 'rgba(0, 186, 255, 0.08)',
@@ -865,9 +865,9 @@ export default function VideosView() {
         onClose={() => setDeleteTarget(null)}
       />
 
-      {/* Video Screen Preview Player Large Modal Panel */}
+      {/* Video Screen Preview Player Modal */}
       <Dialog
-        open={Boolean(previewVideoUrl)}
+        open={Boolean(previewVideoRecord)}
         onClose={() => {
           setPreviewVideoUrl(null)
           setPreviewVideoRecord(null)
@@ -898,9 +898,19 @@ export default function VideosView() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
             <i className='tabler-player-play text-[22px] text-primary' />
             <Box>
-              <Typography variant='subtitle1' fontWeight={700} sx={{ color: 'white', lineHeight: 1.2 }}>
-                {previewVideoRecord?.title || 'Video Screen Preview'}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {previewVideoRecord?.script_no !== null && previewVideoRecord?.script_no !== undefined && (
+                  <Chip
+                    label={`#${String(previewVideoRecord.script_no).padStart(2, '0')}`}
+                    size='small'
+                    color='primary'
+                    sx={{ height: 18, fontSize: 10, fontWeight: 800 }}
+                  />
+                )}
+                <Typography variant='subtitle1' fontWeight={700} sx={{ color: 'white', lineHeight: 1.2 }}>
+                  {previewVideoRecord?.title || 'Video Script Preview'}
+                </Typography>
+              </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.25 }}>
                 <Chip
                   label={previewVideoRecord?.format === 'long' ? '16:9 Landscape' : '9:16 Vertical Short'}
@@ -909,7 +919,9 @@ export default function VideosView() {
                   sx={{ height: 18, fontSize: 10, fontWeight: 700 }}
                 />
                 <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.6)' }}>
-                  {previewVideoRecord?.duration_sec}s Duration · Voice: {previewVideoRecord?.voice_name || 'Adam'}
+                  {previewVideoRecord?.target_length_min && previewVideoRecord?.target_length_max
+                    ? `${previewVideoRecord.target_length_min}–${previewVideoRecord.target_length_max}s Target`
+                    : `${previewVideoRecord?.duration_sec}s Duration`} · Voice: {previewVideoRecord?.voice_name || 'Adam'}
                 </Typography>
               </Box>
             </Box>
@@ -933,9 +945,9 @@ export default function VideosView() {
           bgcolor: '#030712',
           minHeight: 460,
         }}>
-          {previewVideoUrl && (
+          {previewVideoRecord?.video_url ? (
             <video
-              src={previewVideoUrl}
+              src={previewVideoRecord.video_url}
               controls
               autoPlay
               style={{
@@ -946,7 +958,67 @@ export default function VideosView() {
                 outline: 'none',
               }}
             />
-          )}
+          ) : previewVideoRecord ? (
+            <Box sx={{
+              width: previewVideoRecord.format === 'short' ? 320 : 600,
+              height: previewVideoRecord.format === 'short' ? 520 : 340,
+              maxWidth: '100%',
+              bgcolor: '#0f172a',
+              borderRadius: 3,
+              border: '2px solid #312e81',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.8)',
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              p: 3,
+              overflow: 'hidden',
+              background: 'linear-gradient(180deg, #0b1329 0%, #030712 100%)',
+            }}>
+              {/* Header Badges */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)' }}>
+                  <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='FEDSafe' style={{ height: 18, display: 'block' }} />
+                </Box>
+                <Box sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)' }}>
+                  <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM.gov' style={{ height: 16, display: 'block' }} />
+                </Box>
+              </Box>
+
+              {/* Center Script Content (100% Match) */}
+              <Box sx={{ my: 'auto', textAlign: 'center' }}>
+                <Typography variant='caption' sx={{ color: 'primary.light', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 1 }}>
+                  {previewVideoRecord.batch_name || 'Federal Retirement Script'}
+                </Typography>
+                <Typography variant='h6' sx={{ color: 'white', fontWeight: 800, lineHeight: 1.3, mb: 1.5 }}>
+                  "{previewVideoRecord.title}"
+                </Typography>
+                <Typography variant='body2' sx={{ color: '#cbd5e1', fontSize: 13, lineHeight: 1.5, px: 1, fontStyle: 'italic' }}>
+                  "{previewVideoRecord.script ? previewVideoRecord.script.substring(0, 200) + (previewVideoRecord.script.length > 200 ? '…' : '') : 'No script configured'}"
+                </Typography>
+              </Box>
+
+              {/* Footer CTA */}
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {previewVideoRecord.spoken_cta && (
+                  <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.4)', textAlign: 'center' }}>
+                    <Typography variant='caption' sx={{ color: '#c7d2fe', fontWeight: 700, fontSize: 10, display: 'block' }}>
+                      📢 Closing Spoken CTA:
+                    </Typography>
+                    <Typography variant='caption' sx={{ color: 'white', fontWeight: 600, fontSize: 11 }}>
+                      "{previewVideoRecord.spoken_cta}"
+                    </Typography>
+                  </Box>
+                )}
+
+                {previewVideoRecord.cta_text && (
+                  <Box sx={{ bgcolor: 'primary.main', color: 'white', py: 0.75, px: 1.5, borderRadius: 1, textAlign: 'center', fontWeight: 700, fontSize: 11 }}>
+                    {previewVideoRecord.cta_text}
+                  </Box>
+                )}
+              </Box>
+            </Box>
+          ) : null}
         </Box>
 
         {/* Footer / Script snippet & Action Controls */}
@@ -961,10 +1033,10 @@ export default function VideosView() {
           flexWrap: 'wrap',
           gap: 1.5,
         }}>
-          <Box sx={{ maxWidth: '65%', minWidth: 260 }}>
-            {previewVideoRecord?.cta_text && (
+          <Box sx={{ maxWidth: '60%', minWidth: 240 }}>
+            {previewVideoRecord?.spoken_cta && (
               <Typography variant='caption' display='block' sx={{ color: 'primary.light', fontWeight: 600, mb: 0.25 }}>
-                CTA: {previewVideoRecord.cta_text}
+                📢 {previewVideoRecord.spoken_cta}
               </Typography>
             )}
             {previewVideoRecord?.script && (
@@ -984,15 +1056,30 @@ export default function VideosView() {
           </Box>
 
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            {previewVideoRecord && (
+              <Button
+                size='small'
+                variant='outlined'
+                color='secondary'
+                startIcon={<i className='tabler-player-play' />}
+                onClick={(e) => handlePlayVoice(previewVideoRecord, e)}
+              >
+                {playingVoiceId === previewVideoRecord.id ? 'Pause Audio' : 'Play Narration'}
+              </Button>
+            )}
             <Button
               size='small'
               variant='outlined'
-              color='inherit'
-              startIcon={<i className='tabler-copy' />}
-              onClick={() => previewVideoUrl && navigator.clipboard.writeText(previewVideoUrl)}
-              sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}
+              color='primary'
+              startIcon={<i className='tabler-movie' />}
+              onClick={() => {
+                const target = previewVideoRecord
+                setPreviewVideoUrl(null)
+                setPreviewVideoRecord(null)
+                if (target) setStudioTargetVideo(target)
+              }}
             >
-              Copy URL
+              Timeline Studio
             </Button>
             <Button
               size='small'
@@ -1006,7 +1093,7 @@ export default function VideosView() {
                 if (target) setEditVideo(target)
               }}
             >
-              Edit Video
+              Edit Script
             </Button>
           </Box>
         </Box>

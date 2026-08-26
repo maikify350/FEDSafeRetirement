@@ -3658,7 +3658,8 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
           minHeight: 460,
         }}>
           {(() => {
-            const playUrl = video?.video_url || 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/01_Video_Postal_Retirement_Reel.mp4'
+            const hasRenderedMp4 = Boolean(video?.video_url)
+            const playUrl = video?.video_url
             const scaleMult = logoSize === 'xs' ? 0.6 : logoSize === 'small' ? 0.8 : logoSize === 'large' ? 1.3 : logoSize === 'xl' ? 1.6 : 1.0
 
             const renderOverlayLogos = (pos: LogoPosition) => {
@@ -3694,62 +3695,141 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
               return items
             }
 
+            if (hasRenderedMp4 && playUrl) {
+              return (
+                <Box sx={{ position: 'relative', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', maxWidth: '100%' }}>
+                  <video
+                    src={playUrl}
+                    controls
+                    autoPlay
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '68vh',
+                      borderRadius: 12,
+                      boxShadow: '0 12px 40px rgba(0,0,0,0.8)',
+                      outline: 'none',
+                    }}
+                  />
+
+                  {/* Optional Dynamic Live Watermark Overlay Layer */}
+                  {showPlayerOverlay && (
+                    <Box sx={{
+                      position: 'absolute',
+                      top: 12,
+                      left: 12,
+                      right: 12,
+                      bottom: 56,
+                      pointerEvents: 'none',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      zIndex: 2,
+                    }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                          {renderOverlayLogos('top-left')}
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                          {renderOverlayLogos('top-center')}
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                          {renderOverlayLogos('top-right')}
+                        </Box>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                          {renderOverlayLogos('bottom-left')}
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                          {renderOverlayLogos('bottom-center')}
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                          {renderOverlayLogos('bottom-right')}
+                        </Box>
+                      </Box>
+                    </Box>
+                  )}
+                </Box>
+              )
+            }
+
+            // Live Script Preview Canvas when MP4 is not rendered yet
             return (
-              <Box sx={{ position: 'relative', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', maxWidth: '100%' }}>
-                <video
-                  src={playUrl}
-                  controls
-                  autoPlay
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '68vh',
-                    borderRadius: 12,
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.8)',
-                    outline: 'none',
-                  }}
-                />
-
-                {/* Optional Dynamic Live Watermark Overlay Layer */}
-                {showPlayerOverlay && (
-                  <Box sx={{
-                    position: 'absolute',
-                    top: 12,
-                    left: 12,
-                    right: 12,
-                    bottom: 56,
-                    pointerEvents: 'none',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    zIndex: 2,
-                  }}>
-                    {/* Top Row */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                        {renderOverlayLogos('top-left')}
+              <Box sx={{
+                width: format === 'short' ? 320 : 640,
+                height: format === 'short' ? 540 : 360,
+                maxWidth: '100%',
+                bgcolor: '#0f172a',
+                borderRadius: 3,
+                border: '2px solid #312e81',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.8)',
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                p: 3,
+                overflow: 'hidden',
+                background: 'linear-gradient(180deg, #0b1329 0%, #030712 100%)',
+              }}>
+                {/* Header Badge */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    {showShieldLogo && (
+                      <Box sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)' }}>
+                        <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='FEDSafe' style={{ height: 18, display: 'block' }} />
                       </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                        {renderOverlayLogos('top-center')}
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                        {renderOverlayLogos('top-right')}
-                      </Box>
-                    </Box>
-
-                    {/* Bottom Row */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 1 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                        {renderOverlayLogos('bottom-left')}
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                        {renderOverlayLogos('bottom-center')}
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                        {renderOverlayLogos('bottom-right')}
-                      </Box>
-                    </Box>
+                    )}
+                    {scriptNo !== null && (
+                      <Chip label={`Script #${scriptNo}`} size='small' color='primary' sx={{ height: 20, fontSize: 10, fontWeight: 800 }} />
+                    )}
                   </Box>
-                )}
+
+                  {showSamBadge && (
+                    <Box sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)' }}>
+                      <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM.gov' style={{ height: 16, display: 'block' }} />
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Center Script Display matching exact text 100% */}
+                <Box sx={{ my: 'auto', textAlign: 'center', zIndex: 3 }}>
+                  <Typography variant='caption' sx={{ color: 'primary.light', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 1 }}>
+                    {batchName || 'Federal Retirement Script'}
+                  </Typography>
+                  <Typography variant='h6' sx={{ color: 'white', fontWeight: 800, lineHeight: 1.3, mb: 1.5, textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
+                    "{title}"
+                  </Typography>
+                  <Typography variant='body2' sx={{ color: '#cbd5e1', fontSize: 13, lineHeight: 1.5, px: 1, fontStyle: 'italic' }}>
+                    "{script ? script.substring(0, 180) + (script.length > 180 ? '…' : '') : 'No script configured'}"
+                  </Typography>
+                </Box>
+
+                {/* Footer Spoken CTA & Voice Banner */}
+                <Box sx={{ zIndex: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  {spokenCta && (
+                    <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.4)', textAlign: 'center' }}>
+                      <Typography variant='caption' sx={{ color: '#c7d2fe', fontWeight: 700, fontSize: 11, display: 'block' }}>
+                        📢 Closing Spoken CTA:
+                      </Typography>
+                      <Typography variant='caption' sx={{ color: 'white', fontWeight: 600, fontSize: 11 }}>
+                        "{spokenCta}"
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {ctaText && (
+                    <Box sx={{ bgcolor: 'primary.main', color: 'white', py: 0.75, px: 1.5, borderRadius: 1, textAlign: 'center', fontWeight: 700, fontSize: 11 }}>
+                      {ctaText}
+                    </Box>
+                  )}
+
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 0.5 }}>
+                    <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.5)', fontSize: 10 }}>
+                      🎙️ Voice: {currentVoiceName} · {durationSec}s target
+                    </Typography>
+                    <Chip label='⚡ Ready to Render' size='small' color='success' variant='tonal' sx={{ height: 18, fontSize: 9, fontWeight: 700 }} />
+                  </Box>
+                </Box>
               </Box>
             )
           })()}
