@@ -160,6 +160,16 @@ export const VIDEO_MODELS = [
   { id: 'remotion-kinetic', name: 'Remotion Kinetic Cards', desc: 'Static typography & hyperframe slide transitions' },
 ]
 
+export function cleanSubtitleText(text: string): string {
+  return (text || '')
+    .replace(/\{\{[^}]*\}\}/g, '')
+    .replace(/\[(short pause|long pause|thoughtful|excited|whispers|dramatically|sighs|pause:[^\]]*)\]/gi, '')
+    .replace(/<\/?(loud|whisper|fast|slow|spell|emphasis|excited|thoughtful|dramatically)>/gi, '')
+    .replace(/\*\*/g, '')
+    .replace(/\/+/g, '')
+    .trim()
+}
+
 export const QUICK_TEMPLATES = [
   {
     name: 'FERS Special Supplement Bridge',
@@ -408,7 +418,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
       order: idx + 1,
       timestamp_start: Number((idx * segDur).toFixed(1)),
       timestamp_end: Number(((idx + 1) * segDur).toFixed(1)),
-      text_segment: s.replace(/\*\*/g, '').replace(/\/+/g, '').replace(/<[^>]*>/g, '').trim(),
+      text_segment: cleanSubtitleText(s),
       transition: idx % 2 === 0 ? 'slide_left' : 'zoom_in',
       camera_motion: idx % 2 === 0 ? 'push_forward' : 'pan_slow_right',
       scene_image: mediaAssets[idx]?.url || pool[idx % pool.length],
@@ -653,13 +663,22 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
     }
   }, [open, video])
 
-  // Script metrics & Cost Estimation Engine (accounting for / = 1s pause per slash)
+  // Script metrics & Cost Estimation Engine (accounting for / = 1s pause per slash, {{pause:N}}, [short/long pause])
   const slashMatches = (script.match(/\//g) || []).length
+  const pauseTagMatches = [...script.matchAll(/\{\{pause:([\d.]+)\}\}/gi)]
+  const pauseTagSec = pauseTagMatches.reduce((acc, m) => acc + (parseFloat(m[1]) || 0), 0)
+  const bracketPauseSec = (script.match(/\[short pause\]/gi) || []).length * 1 + (script.match(/\[long pause\]/gi) || []).length * 2
   const customPauseMatches = [...script.matchAll(/\[pause:([\d.]+)s?\]/gi)]
   const customPauseSec = customPauseMatches.reduce((acc, m) => acc + (parseFloat(m[1]) || 0), 0)
-  const totalPauseSec = (slashMatches * 1) + customPauseSec
+  const totalPauseSec = (slashMatches * 1) + pauseTagSec + bracketPauseSec + customPauseSec
 
-  const cleanScriptWords = script.replace(/<[^>]*>/g, '').replace(/\[pause:[\d.]+s?\]/gi, '').replace(/\/+/g, '').trim()
+  const cleanScriptWords = script
+    .replace(/\{\{[^}]*\}\}/g, '')
+    .replace(/\[(short pause|long pause|thoughtful|excited|whispers|dramatically|sighs|pause:[^\]]*)\]/gi, '')
+    .replace(/<[^>]*>/g, '')
+    .replace(/\*\*/g, '')
+    .replace(/\/+/g, '')
+    .trim()
   const words = cleanScriptWords ? cleanScriptWords.split(/\s+/).filter(Boolean).length : 0
   const estSec = (words > 0 ? words / (2.58 * tempo) : 0) + totalPauseSec
   const fmtDur = estSec < 60
@@ -686,11 +705,15 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
     }, 50)
   }
 
-  // Voice Director tag wrapper helper
+  // Voice Director tag wrapper helper (supports {{emphasis}}, {{whisper}}, {{slow}}, {{excited}}, etc.)
   const handleWrapTag = (tagName: string) => {
     const textarea = scriptInputRef.current
+    const isDoubleCurly = ['emphasis', 'whisper', 'slow', 'excited'].includes(tagName)
+    const openTag = isDoubleCurly ? `{{${tagName}}}` : `<${tagName}>`
+    const closeTag = isDoubleCurly ? `{{/${tagName}}}` : `</${tagName}>`
+
     if (!textarea) {
-      setScript(prev => `${prev} <${tagName}>...</${tagName}>`)
+      setScript(prev => `${prev} ${openTag}...${closeTag}`)
       setDirty(true)
       return
     }
@@ -698,7 +721,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
     const start = textarea.selectionStart || 0
     const end = textarea.selectionEnd || 0
     const selected = script.substring(start, end)
-    const wrapped = selected ? `<${tagName}>${selected}</${tagName}>` : `<${tagName}>...</${tagName}>`
+    const wrapped = selected ? `${openTag}${selected}${closeTag}` : `${openTag}...${closeTag}`
     const newScript = script.substring(0, start) + wrapped + script.substring(end)
     setScript(newScript)
     setDirty(true)
@@ -719,9 +742,19 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
     // If text is selected
     if (start !== end) {
       const selected = script.substring(start, end)
-      // Check if already bold: **text**
+      // Check if already emphasis: {{emphasis}}text{{/emphasis}} or **text**
+      if (selected.startsWith('{{emphasis}}') && selected.endsWith('{{/emphasis}}')) {
+        const unbolded = selected.slice(12, -13)
+        const newScript = script.substring(0, start) + unbolded + script.substring(end)
+        setScript(newScript)
+        setDirty(true)
+        setTimeout(() => {
+          textarea.focus()
+          textarea.setSelectionRange(start, start + unbolded.length)
+        }, 50)
+        return
+      }
       if (selected.startsWith('**') && selected.endsWith('**') && selected.length >= 4) {
-        // Unbold (undo)
         const unbolded = selected.substring(2, selected.length - 2)
         const newScript = script.substring(0, start) + unbolded + script.substring(end)
         setScript(newScript)
@@ -730,48 +763,29 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
           textarea.focus()
           textarea.setSelectionRange(start, start + unbolded.length)
         }, 50)
-      } else {
-        // Bold
-        const bolded = `**${selected}**`
-        const newScript = script.substring(0, start) + bolded + script.substring(end)
-        setScript(newScript)
-        setDirty(true)
-        setTimeout(() => {
-          textarea.focus()
-          textarea.setSelectionRange(start, start + bolded.length)
-        }, 50)
+        return
       }
+
+      // Wrap in {{emphasis}}
+      const bolded = `{{emphasis}}${selected}{{/emphasis}}`
+      const newScript = script.substring(0, start) + bolded + script.substring(end)
+      setScript(newScript)
+      setDirty(true)
+      setTimeout(() => {
+        textarea.focus()
+        textarea.setSelectionRange(start, start + bolded.length)
+      }, 50)
       return
     }
 
-    // If no text selected, check if cursor is inside or touching **word**
-    const boldRegex = /\*\*([^*]+)\*\*/g
-    let match: RegExpExecArray | null
-    while ((match = boldRegex.exec(script)) !== null) {
-      const mStart = match.index
-      const mEnd = match.index + match[0].length
-      if (start >= mStart && start <= mEnd) {
-        // Cursor inside bold word -> unbold (undo)
-        const inner = match[1]
-        const newScript = script.substring(0, mStart) + inner + script.substring(mEnd)
-        setScript(newScript)
-        setDirty(true)
-        setTimeout(() => {
-          textarea.focus()
-          textarea.setSelectionRange(mStart, mStart + inner.length)
-        }, 50)
-        return
-      }
-    }
-
-    // Default: Insert **emphasis** placeholder and select inner word
-    const placeholder = '**emphasis**'
+    // Default: Insert {{emphasis}}word{{/emphasis}} placeholder
+    const placeholder = '{{emphasis}}important{{/emphasis}}'
     const newScript = script.substring(0, start) + placeholder + script.substring(end)
     setScript(newScript)
     setDirty(true)
     setTimeout(() => {
       textarea.focus()
-      textarea.setSelectionRange(start + 2, start + placeholder.length - 2)
+      textarea.setSelectionRange(start + 12, start + placeholder.length - 13)
     }, 50)
   }
 
@@ -787,8 +801,9 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
     if (pos !== endPos) {
       const selected = script.substring(pos, endPos)
       const cleaned = selected
-        .replace(/<\/?(loud|whisper|fast|slow|spell|emphasis)>/gi, '')
-        .replace(/\[pause:[\d.]+s?\]/gi, '')
+        .replace(/\{\{[^}]*\}\}/g, '')
+        .replace(/\[(short pause|long pause|thoughtful|excited|whispers|dramatically|sighs|pause:[^\]]*)\]/gi, '')
+        .replace(/<\/?(loud|whisper|fast|slow|spell|emphasis|excited|thoughtful|dramatically)>/gi, '')
         .replace(/\*\*/g, '')
         .replace(/\/+/g, '')
       const newScript = script.substring(0, pos) + cleaned + script.substring(endPos)
@@ -801,9 +816,8 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
       return
     }
 
-    // Cursor position -> detect surrounding tag and remove
-    // 1. XML tags: <tag>content</tag>
-    const tagRegex = /<(loud|whisper|fast|slow|spell|emphasis)>([\s\S]*?)<\/\1>/gi
+    // Cursor position -> strip surrounding tag
+    const tagRegex = /\{\{(emphasis|whisper|slow|excited)\}\}([\s\S]*?)\{\/\1\}\}/gi
     let match: RegExpExecArray | null
     while ((match = tagRegex.exec(script)) !== null) {
       const matchStart = match.index
@@ -1999,10 +2013,10 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                       borderColor: 'divider',
                     }}>
                       <Typography variant='caption' sx={{ fontWeight: 700, color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.5, mr: 0.5, fontSize: 11 }}>
-                        <i className='tabler-adjustments-horizontal text-[14px] text-primary' /> Director Tags:
+                        <i className='tabler-adjustments-horizontal text-[14px] text-primary' /> Section Direction:
                       </Typography>
 
-                      <Tooltip title='Insert 1-second pause (/); click multiple times or type /// for longer pauses'>
+                      <Tooltip title='Insert 1-second pause (/ or {{pause:1}}); click multiple times or type /// for longer pauses'>
                         <Chip
                           label='⏱️ / 1s Pause'
                           size='small'
@@ -2013,9 +2027,9 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                         />
                       </Tooltip>
 
-                      <Tooltip title='Bold selected word/phrase for vocal stress & visual highlight (**word**). Click again to unbold/undo.'>
+                      <Tooltip title='Wrap selected word/phrase in {{emphasis}} for vocal stress & acoustic punch'>
                         <Chip
-                          label='𝐁 Bold Emphasis'
+                          label='𝐁 {{emphasis}}'
                           size='small'
                           onClick={handleToggleBold}
                           sx={{ height: 22, fontSize: 11, cursor: 'pointer', fontWeight: 800 }}
@@ -2024,19 +2038,42 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                         />
                       </Tooltip>
 
-                      <Tooltip title='Wrap selected word in <loud> emphasis tags'>
+                      <Tooltip title='Insert [dramatically] delivery tag for high-stakes hook intensity'>
                         <Chip
-                          label='🔊 <loud>'
+                          label='🎭 [dramatically]'
                           size='small'
-                          onClick={() => handleWrapTag('loud')}
-                          sx={{ height: 22, fontSize: 11, cursor: 'pointer' }}
-                          variant='filled'
+                          onClick={() => handleInsertTag(' [dramatically] ')}
+                          sx={{ height: 22, fontSize: 11, cursor: 'pointer', fontWeight: 600 }}
+                          color='secondary'
+                          variant='outlined'
                         />
                       </Tooltip>
 
-                      <Tooltip title='Wrap selected word in <whisper> quiet advisory tags'>
+                      <Tooltip title='Insert [thoughtful] delivery tag for reflective advisor analysis'>
                         <Chip
-                          label='🤫 <whisper>'
+                          label='🤔 [thoughtful]'
+                          size='small'
+                          onClick={() => handleInsertTag(' [thoughtful] ')}
+                          sx={{ height: 22, fontSize: 11, cursor: 'pointer', fontWeight: 600 }}
+                          color='info'
+                          variant='outlined'
+                        />
+                      </Tooltip>
+
+                      <Tooltip title='Insert [excited] delivery tag for high-energy momentum'>
+                        <Chip
+                          label='🔥 [excited]'
+                          size='small'
+                          onClick={() => handleInsertTag(' [excited] ')}
+                          sx={{ height: 22, fontSize: 11, cursor: 'pointer', fontWeight: 600 }}
+                          color='error'
+                          variant='outlined'
+                        />
+                      </Tooltip>
+
+                      <Tooltip title='Wrap phrase in {{whisper}} for confidential advisory tone'>
+                        <Chip
+                          label='🤫 [whispers]'
                           size='small'
                           onClick={() => handleWrapTag('whisper')}
                           sx={{ height: 22, fontSize: 11, cursor: 'pointer' }}
@@ -2044,19 +2081,9 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                         />
                       </Tooltip>
 
-                      <Tooltip title='Wrap in <fast> brisk pacing tags (1.25×)'>
+                      <Tooltip title='Wrap phrase in {{slow}} for deliberate, clear explanation'>
                         <Chip
-                          label='⚡ <fast>'
-                          size='small'
-                          onClick={() => handleWrapTag('fast')}
-                          sx={{ height: 22, fontSize: 11, cursor: 'pointer' }}
-                          variant='filled'
-                        />
-                      </Tooltip>
-
-                      <Tooltip title='Wrap in <slow> deliberate pacing tags (0.85×)'>
-                        <Chip
-                          label='🐢 <slow>'
+                          label='🐢 {{slow}}'
                           size='small'
                           onClick={() => handleWrapTag('slow')}
                           sx={{ height: 22, fontSize: 11, cursor: 'pointer' }}
@@ -2064,13 +2091,13 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                         />
                       </Tooltip>
 
-                      <Tooltip title='Wrap acronym in <spell> letter-by-letter spelling'>
+                      <Tooltip title='Insert [sighs] emotional pause tag'>
                         <Chip
-                          label='🔤 <spell>'
+                          label='💨 [sighs]'
                           size='small'
-                          onClick={() => handleWrapTag('spell')}
+                          onClick={() => handleInsertTag(' [sighs] ')}
                           sx={{ height: 22, fontSize: 11, cursor: 'pointer' }}
-                          variant='filled'
+                          variant='outlined'
                         />
                       </Tooltip>
 
@@ -4172,8 +4199,8 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                       letterSpacing: -0.2,
                     }}>
                       "{activeLiveSegment?.text_segment
-                        ? activeLiveSegment.text_segment.replace(/\*\*/g, '').replace(/\/+/g, '').replace(/<[^>]*>/g, '').trim()
-                        : title}"
+                        ? cleanSubtitleText(activeLiveSegment.text_segment)
+                        : cleanSubtitleText(title)}"
                     </Typography>
                   </Box>
 

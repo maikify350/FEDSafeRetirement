@@ -18,22 +18,33 @@ export async function POST(request: NextRequest) {
     const speed = Math.min(2.0, Math.max(0.5, Number(body.speed) || 1.0))
     const rawPreviewText = body.text || `Hello! This is a preview of the ${voiceName} voice for your FEDSafe Retirement video.`
 
-    // Preprocess text for slash pause markers (each '/' = 1s pause) and vocal emphasis
+    // Dynamic Voice Settings from UI or optimized defaults
+    const stability = typeof body.stability === 'number' ? Math.max(0, Math.min(1, body.stability)) : 0.32
+    const style = typeof body.style === 'number' ? Math.max(0, Math.min(1, body.style)) : 0.60
+    const similarityBoost = typeof body.similarity_boost === 'number' ? Math.max(0, Math.min(1, body.similarity_boost)) : 0.75
+    const useSpeakerBoost = body.use_speaker_boost !== undefined ? Boolean(body.use_speaker_boost) : true
+
+    // Preprocess text with ElevenLabs native prompt engineering & SSML/v3 tags
     const processedText = rawPreviewText
-      // 1. Pauses: each '/' injects deliberate silence cadence ('... ... ')
+      // 1. Slashes -> native ElevenLabs {{pause:N}} & [pause] tokens
       .replace(/\/+/g, (match: string) => {
-        return (' ... ... '.repeat(match.length)) + ' '
+        const sec = match.length
+        return sec === 1 ? ' {{pause:1}} [short pause] ... ' : ` {{pause:${sec}}} [long pause] ... ... `
       })
-      // 2. Bold / Emphasis: transform **word**, <b>word</b>, <loud>word</loud> to UPPERCASE with acoustic stress for ElevenLabs vocal punch
-      .replace(/\*\*([^*]+)\*\*/g, (_: string, p1: string) => ` ${p1.toUpperCase()}! `)
-      .replace(/<b>(.*?)<\/b>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()}! `)
-      .replace(/<loud>(.*?)<\/loud>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()}! `)
-      .replace(/<emphasis>(.*?)<\/emphasis>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
-      .replace(/<whisper>(.*?)<\/whisper>/gi, (_: string, p1: string) => ` (softly) ${p1} `)
+      // 2. Bold / Emphasis -> native {{emphasis}} and uppercase stress token
+      .replace(/\*\*([^*]+)\*\*/g, (_: string, p1: string) => ` {{emphasis}}${p1.toUpperCase()}{{/emphasis}} `)
+      .replace(/<b>(.*?)<\/b>/gi, (_: string, p1: string) => ` {{emphasis}}${p1.toUpperCase()}{{/emphasis}} `)
+      .replace(/<loud>(.*?)<\/loud>/gi, (_: string, p1: string) => ` {{emphasis}}${p1.toUpperCase()}{{/emphasis}} `)
+      .replace(/<emphasis>(.*?)<\/emphasis>/gi, (_: string, p1: string) => ` {{emphasis}}${p1}{{/emphasis}} `)
+      // 3. Emotion and Delivery Tags (v2 {{tag}} & v3 [tag])
+      .replace(/<whisper>(.*?)<\/whisper>/gi, (_: string, p1: string) => ` {{whisper}}${p1}{{/whisper}} [whispers] `)
+      .replace(/<excited>(.*?)<\/excited>/gi, (_: string, p1: string) => ` {{excited}}${p1}{{/excited}} [excited] `)
+      .replace(/<dramatically>(.*?)<\/dramatically>/gi, (_: string, p1: string) => ` [dramatically] ${p1} `)
+      .replace(/<thoughtful>(.*?)<\/thoughtful>/gi, (_: string, p1: string) => ` [thoughtful] ${p1} `)
+      .replace(/<slow>(.*?)<\/slow>/gi, (_: string, p1: string) => ` {{slow}}${p1}{{/slow}} `)
       .replace(/<fast>(.*?)<\/fast>/gi, '$1')
-      .replace(/<slow>(.*?)<\/slow>/gi, (_: string, p1: string) => ` ${p1} `)
       .replace(/<spell>(.*?)<\/spell>/gi, (_: string, p1: string) => p1.split('').join(' '))
-      .replace(/\[pause:([\d.]+)s?\]/gi, (_: string, p1: string) => ' ... ... '.repeat(Math.max(1, Math.round(parseFloat(p1) || 1))))
+      .replace(/\[pause:([\d.]+)s?\]/gi, (_: string, p1: string) => ` {{pause:${Math.max(1, Math.round(parseFloat(p1) || 1))}}} `)
 
     // Provider 1: ElevenLabs
     const apiKey = process.env.ELEVENLABS_API_KEY || process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY || 'sk_da462719dbc91e7ba72b2f0ad2c0b70d84ecad811459991f'
@@ -51,10 +62,10 @@ export async function POST(request: NextRequest) {
             text: processedText,
             model_id: 'eleven_turbo_v2_5',
             voice_settings: {
-              stability: 0.32,          // Lower stability for high dynamic emotional variance & pitch inflection
-              similarity_boost: 0.75,
-              style: 0.60,              // High style for prominent vocal emphasis on uppercase words
-              use_speaker_boost: true,
+              stability,
+              similarity_boost: similarityBoost,
+              style,
+              use_speaker_boost: useSpeakerBoost,
             },
           }),
         })
