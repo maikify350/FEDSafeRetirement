@@ -20,13 +20,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Script is required' }, { status: 400 })
     }
 
-    // Calculate pause durations: // = 2s, //// = 4s
-    const pauseMatches4 = (script.match(/\/\/\/\//g) || []).length
-    const scriptWithout4 = script.replace(/\/\/\/\//g, '')
-    const pauseMatches2 = (scriptWithout4.match(/\/\//g) || []).length
-    const totalPauseSec = (pauseMatches4 * 4) + (pauseMatches2 * 2)
+    // Calculate pause durations: 1s per slash (/)
+    const totalPauseSec = (script.match(/\//g) || []).length * 1
 
-    const cleanWords = script.replace(/<[^>]*>/g, '').replace(/\/\//g, '').trim().split(/\s+/).filter(Boolean)
+    const cleanWords = script.replace(/<[^>]*>/g, '').replace(/\/+/g, '').trim().split(/\s+/).filter(Boolean)
     const wordCount = cleanWords.length
     const estimatedSeconds = Math.round((wordCount / (2.58 * tempo)) + totalPauseSec)
 
@@ -37,7 +34,7 @@ export async function POST(request: NextRequest) {
     const generatedHyperframes = sentences.map((sentence: string, idx: number) => {
       const start = Number((idx * segmentDuration).toFixed(1))
       const end = Number(((idx + 1) * segmentDuration).toFixed(1))
-      const cleanSentence = sentence.replace(/\/\//g, '').replace(/<[^>]*>/g, '').trim()
+      const cleanSentence = sentence.replace(/\/+/g, '').replace(/<[^>]*>/g, '').trim()
 
       return {
         id: `hf_${idx + 1}_${Date.now()}`,

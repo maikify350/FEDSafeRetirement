@@ -18,11 +18,10 @@ export async function POST(request: NextRequest) {
     const speed = Math.min(2.0, Math.max(0.5, Number(body.speed) || 1.0))
     const rawPreviewText = body.text || `Hello! This is a preview of the ${voiceName} voice for your FEDSafe Retirement video.`
 
-    // Preprocess text for pause markers (//, ////, [pause:Xs]) and emotion tags (<loud>, <whisper>, <spell>)
+    // Preprocess text for slash pause markers (each '/' = 1s pause) and emotion tags
     const processedText = rawPreviewText
-      .replace(/\/\/\/\//g, '... ... ... ... ')
-      .replace(/\/\//g, '... ... ')
-      .replace(/\[pause:([\d.]+)s?\]/gi, '... ... ')
+      .replace(/\/+/g, (match: string) => '... '.repeat(match.length))
+      .replace(/\[pause:([\d.]+)s?\]/gi, (_: string, p1: string) => '... '.repeat(Math.max(1, Math.round(parseFloat(p1) || 1))))
       .replace(/<loud>(.*?)<\/loud>/gi, '$1')
       .replace(/<emphasis>(.*?)<\/emphasis>/gi, '$1')
       .replace(/<whisper>(.*?)<\/whisper>/gi, '$1')

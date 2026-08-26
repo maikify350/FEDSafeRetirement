@@ -653,15 +653,13 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
     }
   }, [open, video])
 
-  // Script metrics & Cost Estimation Engine (accounting for // 2s, //// 4s, and [pause:Xs])
-  const pauseMatches4 = (script.match(/\/\/\/\//g) || []).length
-  const scriptWithout4 = script.replace(/\/\/\/\//g, '')
-  const pauseMatches2 = (scriptWithout4.match(/\/\//g) || []).length
+  // Script metrics & Cost Estimation Engine (accounting for / = 1s pause per slash)
+  const slashMatches = (script.match(/\//g) || []).length
   const customPauseMatches = [...script.matchAll(/\[pause:([\d.]+)s?\]/gi)]
   const customPauseSec = customPauseMatches.reduce((acc, m) => acc + (parseFloat(m[1]) || 0), 0)
-  const totalPauseSec = (pauseMatches4 * 4) + (pauseMatches2 * 2) + customPauseSec
+  const totalPauseSec = (slashMatches * 1) + customPauseSec
 
-  const cleanScriptWords = script.replace(/<[^>]*>/g, '').replace(/\[pause:[\d.]+s?\]/gi, '').replace(/\/\//g, '').trim()
+  const cleanScriptWords = script.replace(/<[^>]*>/g, '').replace(/\[pause:[\d.]+s?\]/gi, '').replace(/\/+/g, '').trim()
   const words = cleanScriptWords ? cleanScriptWords.split(/\s+/).filter(Boolean).length : 0
   const estSec = (words > 0 ? words / (2.58 * tempo) : 0) + totalPauseSec
   const fmtDur = estSec < 60
@@ -724,8 +722,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
       const cleaned = selected
         .replace(/<\/?(loud|whisper|fast|slow|spell|emphasis)>/gi, '')
         .replace(/\[pause:[\d.]+s?\]/gi, '')
-        .replace(/\/\/\/\//g, '')
-        .replace(/\/\//g, '')
+        .replace(/\/+/g, '')
       const newScript = script.substring(0, pos) + cleaned + script.substring(endPos)
       setScript(newScript)
       setDirty(true)
@@ -1940,24 +1937,13 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                         <i className='tabler-adjustments-horizontal text-[14px] text-primary' /> Director Tags:
                       </Typography>
 
-                      <Tooltip title='Insert 2-second breath / transition pause'>
+                      <Tooltip title='Insert 1-second pause (/); click multiple times or type /// for longer pauses'>
                         <Chip
-                          label='⏱️ // 2s Pause'
+                          label='⏱️ / 1s Pause'
                           size='small'
-                          onClick={() => handleInsertTag(' // ')}
-                          sx={{ height: 22, fontSize: 11, cursor: 'pointer', fontWeight: 600 }}
+                          onClick={() => handleInsertTag(' / ')}
+                          sx={{ height: 22, fontSize: 11, cursor: 'pointer', fontWeight: 700 }}
                           color='primary'
-                          variant='outlined'
-                        />
-                      </Tooltip>
-
-                      <Tooltip title='Insert 4-second dramatic hook pause'>
-                        <Chip
-                          label='⏱️ //// 4s Pause'
-                          size='small'
-                          onClick={() => handleInsertTag(' //// ')}
-                          sx={{ height: 22, fontSize: 11, cursor: 'pointer', fontWeight: 600 }}
-                          color='secondary'
                           variant='outlined'
                         />
                       </Tooltip>
@@ -2031,7 +2017,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                       fullWidth
                       multiline
                       rows={8}
-                      placeholder='Enter spoken narration... Use // for 2s pause, //// for 4s pause, <loud>WON</loud> for emphasis'
+                      placeholder='Enter spoken narration... Use / for 1s pause, /// for 3s pause, <loud>emphasis</loud>'
                       value={script}
                       onChange={e => { setScript(e.target.value); setDirty(true) }}
                       sx={{
