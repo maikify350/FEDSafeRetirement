@@ -1120,7 +1120,7 @@ export default function VideosView() {
                     "{previewVideoRecord.title}"
                   </Typography>
                   <Typography variant='body2' sx={{ color: '#e2e8f0', fontSize: 13, lineHeight: 1.5, px: 1, fontStyle: 'italic' }}>
-                    "{previewVideoRecord.script ? previewVideoRecord.script.substring(0, 180) + (previewVideoRecord.script.length > 180 ? '…' : '') : 'No script configured'}"
+                    "{previewVideoRecord.script ? previewVideoRecord.script.replace(/\*\*/g, '').replace(/\/+/g, '').replace(/<[^>]*>/g, '').substring(0, 180) + (previewVideoRecord.script.length > 180 ? '…' : '') : 'No script configured'}"
                   </Typography>
                 </Box>
 

@@ -151,7 +151,7 @@ export const DynamicScriptReel = ({
                   <TextReveal
                     eyebrow={scene.eyebrow || title}
                     headline={scene.headline || `Key Point #${idx + 1}`}
-                    body={scene.body}
+                    body={scene.body ? scene.body.replace(/\*\*/g, '').replace(/\/+/g, '').replace(/<[^>]*>/g, '').trim() : ''}
                     accentColor={palette.gold}
                   />
                 </div>

@@ -20,18 +20,20 @@ export async function POST(request: NextRequest) {
 
     // Preprocess text for slash pause markers (each '/' = 1s pause) and vocal emphasis
     const processedText = rawPreviewText
-      // 1. Pauses: replace single or stacked slashes (e.g. '/' -> 1s, '///' -> 3s)
-      .replace(/\/+/g, (match: string) => ' — ... '.repeat(match.length) + ' ')
-      // 2. Bold / Emphasis: transform **word**, <b>word</b>, <loud>word</loud>, <emphasis>word</emphasis> to uppercase for ElevenLabs vocal stress
-      .replace(/\*\*([^*]+)\*\*/g, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
-      .replace(/<b>(.*?)<\/b>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
-      .replace(/<loud>(.*?)<\/loud>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
+      // 1. Pauses: each '/' injects deliberate silence cadence ('... ... ')
+      .replace(/\/+/g, (match: string) => {
+        return (' ... ... '.repeat(match.length)) + ' '
+      })
+      // 2. Bold / Emphasis: transform **word**, <b>word</b>, <loud>word</loud> to UPPERCASE with acoustic stress for ElevenLabs vocal punch
+      .replace(/\*\*([^*]+)\*\*/g, (_: string, p1: string) => ` ${p1.toUpperCase()}! `)
+      .replace(/<b>(.*?)<\/b>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()}! `)
+      .replace(/<loud>(.*?)<\/loud>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()}! `)
       .replace(/<emphasis>(.*?)<\/emphasis>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
-      .replace(/<whisper>(.*?)<\/whisper>/gi, (_: string, p1: string) => `... ${p1} ...`)
+      .replace(/<whisper>(.*?)<\/whisper>/gi, (_: string, p1: string) => ` (softly) ${p1} `)
       .replace(/<fast>(.*?)<\/fast>/gi, '$1')
       .replace(/<slow>(.*?)<\/slow>/gi, (_: string, p1: string) => ` ${p1} `)
       .replace(/<spell>(.*?)<\/spell>/gi, (_: string, p1: string) => p1.split('').join(' '))
-      .replace(/\[pause:([\d.]+)s?\]/gi, (_: string, p1: string) => ' — ... '.repeat(Math.max(1, Math.round(parseFloat(p1) || 1))))
+      .replace(/\[pause:([\d.]+)s?\]/gi, (_: string, p1: string) => ' ... ... '.repeat(Math.max(1, Math.round(parseFloat(p1) || 1))))
 
     // Provider 1: ElevenLabs
     const apiKey = process.env.ELEVENLABS_API_KEY || process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY || 'sk_da462719dbc91e7ba72b2f0ad2c0b70d84ecad811459991f'
@@ -49,9 +51,9 @@ export async function POST(request: NextRequest) {
             text: processedText,
             model_id: 'eleven_turbo_v2_5',
             voice_settings: {
-              stability: 0.5,
-              similarity_boost: 0.8,
-              style: 0.2,
+              stability: 0.32,          // Lower stability for high dynamic emotional variance & pitch inflection
+              similarity_boost: 0.75,
+              style: 0.60,              // High style for prominent vocal emphasis on uppercase words
               use_speaker_boost: true,
             },
           }),

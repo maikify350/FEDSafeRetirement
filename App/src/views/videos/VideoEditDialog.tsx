@@ -408,7 +408,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
       order: idx + 1,
       timestamp_start: Number((idx * segDur).toFixed(1)),
       timestamp_end: Number(((idx + 1) * segDur).toFixed(1)),
-      text_segment: s.replace(/\/\//g, '').replace(/<[^>]*>/g, '').trim(),
+      text_segment: s.replace(/\*\*/g, '').replace(/\/+/g, '').replace(/<[^>]*>/g, '').trim(),
       transition: idx % 2 === 0 ? 'slide_left' : 'zoom_in',
       camera_motion: idx % 2 === 0 ? 'push_forward' : 'pan_slow_right',
       scene_image: mediaAssets[idx]?.url || pool[idx % pool.length],
@@ -4162,7 +4162,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                       </Typography>
                     </Box>
 
-                    {/* Active Spoken Sentence with Bold Visual Highlighting */}
+                    {/* Active Spoken Sentence: Clean Uniform Subtitles (No Visual Highlighting or Tag Artifacts) */}
                     <Typography sx={{
                       color: '#ffffff',
                       fontWeight: 800,
@@ -4171,20 +4171,9 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                       textShadow: '0 2px 12px rgba(0,0,0,0.95), 0 4px 24px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,1)',
                       letterSpacing: -0.2,
                     }}>
-                      "{(() => {
-                        const raw = activeLiveSegment?.text_segment || title
-                        const parts = raw.split(/(\*\*[^*]+\*\*)/g)
-                        return parts.map((part: string, pIdx: number) => {
-                          if (part.startsWith('**') && part.endsWith('**')) {
-                            return (
-                              <span key={pIdx} style={{ color: '#facc15', textDecoration: 'underline', textUnderlineOffset: '3px', fontWeight: 900 }}>
-                                {part.slice(2, -2)}
-                              </span>
-                            )
-                          }
-                          return part
-                        })
-                      })()}"
+                      "{activeLiveSegment?.text_segment
+                        ? activeLiveSegment.text_segment.replace(/\*\*/g, '').replace(/\/+/g, '').replace(/<[^>]*>/g, '').trim()
+                        : title}"
                     </Typography>
                   </Box>
 
