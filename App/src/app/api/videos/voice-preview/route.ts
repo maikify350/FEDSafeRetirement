@@ -18,16 +18,20 @@ export async function POST(request: NextRequest) {
     const speed = Math.min(2.0, Math.max(0.5, Number(body.speed) || 1.0))
     const rawPreviewText = body.text || `Hello! This is a preview of the ${voiceName} voice for your FEDSafe Retirement video.`
 
-    // Preprocess text for slash pause markers (each '/' = 1s pause) and emotion tags
+    // Preprocess text for slash pause markers (each '/' = 1s pause) and vocal emphasis
     const processedText = rawPreviewText
-      .replace(/\/+/g, (match: string) => '... '.repeat(match.length))
-      .replace(/\[pause:([\d.]+)s?\]/gi, (_: string, p1: string) => '... '.repeat(Math.max(1, Math.round(parseFloat(p1) || 1))))
-      .replace(/<loud>(.*?)<\/loud>/gi, '$1')
-      .replace(/<emphasis>(.*?)<\/emphasis>/gi, '$1')
-      .replace(/<whisper>(.*?)<\/whisper>/gi, '$1')
+      // 1. Pauses: replace single or stacked slashes (e.g. '/' -> 1s, '///' -> 3s)
+      .replace(/\/+/g, (match: string) => ' — ... '.repeat(match.length) + ' ')
+      // 2. Bold / Emphasis: transform **word**, <b>word</b>, <loud>word</loud>, <emphasis>word</emphasis> to uppercase for ElevenLabs vocal stress
+      .replace(/\*\*([^*]+)\*\*/g, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
+      .replace(/<b>(.*?)<\/b>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
+      .replace(/<loud>(.*?)<\/loud>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
+      .replace(/<emphasis>(.*?)<\/emphasis>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
+      .replace(/<whisper>(.*?)<\/whisper>/gi, (_: string, p1: string) => `... ${p1} ...`)
       .replace(/<fast>(.*?)<\/fast>/gi, '$1')
-      .replace(/<slow>(.*?)<\/slow>/gi, '$1')
+      .replace(/<slow>(.*?)<\/slow>/gi, (_: string, p1: string) => ` ${p1} `)
       .replace(/<spell>(.*?)<\/spell>/gi, (_: string, p1: string) => p1.split('').join(' '))
+      .replace(/\[pause:([\d.]+)s?\]/gi, (_: string, p1: string) => ' — ... '.repeat(Math.max(1, Math.round(parseFloat(p1) || 1))))
 
     // Provider 1: ElevenLabs
     const apiKey = process.env.ELEVENLABS_API_KEY || process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY || 'sk_da462719dbc91e7ba72b2f0ad2c0b70d84ecad811459991f'

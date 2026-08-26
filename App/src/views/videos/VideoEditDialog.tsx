@@ -708,6 +708,73 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
     }, 50)
   }
 
+  // Toggle Bold / Vocal Emphasis with Undo capability
+  const handleToggleBold = () => {
+    const textarea = scriptInputRef.current
+    if (!textarea) return
+
+    const start = textarea.selectionStart || 0
+    const end = textarea.selectionEnd || 0
+
+    // If text is selected
+    if (start !== end) {
+      const selected = script.substring(start, end)
+      // Check if already bold: **text**
+      if (selected.startsWith('**') && selected.endsWith('**') && selected.length >= 4) {
+        // Unbold (undo)
+        const unbolded = selected.substring(2, selected.length - 2)
+        const newScript = script.substring(0, start) + unbolded + script.substring(end)
+        setScript(newScript)
+        setDirty(true)
+        setTimeout(() => {
+          textarea.focus()
+          textarea.setSelectionRange(start, start + unbolded.length)
+        }, 50)
+      } else {
+        // Bold
+        const bolded = `**${selected}**`
+        const newScript = script.substring(0, start) + bolded + script.substring(end)
+        setScript(newScript)
+        setDirty(true)
+        setTimeout(() => {
+          textarea.focus()
+          textarea.setSelectionRange(start, start + bolded.length)
+        }, 50)
+      }
+      return
+    }
+
+    // If no text selected, check if cursor is inside or touching **word**
+    const boldRegex = /\*\*([^*]+)\*\*/g
+    let match: RegExpExecArray | null
+    while ((match = boldRegex.exec(script)) !== null) {
+      const mStart = match.index
+      const mEnd = match.index + match[0].length
+      if (start >= mStart && start <= mEnd) {
+        // Cursor inside bold word -> unbold (undo)
+        const inner = match[1]
+        const newScript = script.substring(0, mStart) + inner + script.substring(mEnd)
+        setScript(newScript)
+        setDirty(true)
+        setTimeout(() => {
+          textarea.focus()
+          textarea.setSelectionRange(mStart, mStart + inner.length)
+        }, 50)
+        return
+      }
+    }
+
+    // Default: Insert **emphasis** placeholder and select inner word
+    const placeholder = '**emphasis**'
+    const newScript = script.substring(0, start) + placeholder + script.substring(end)
+    setScript(newScript)
+    setDirty(true)
+    setTimeout(() => {
+      textarea.focus()
+      textarea.setSelectionRange(start + 2, start + placeholder.length - 2)
+    }, 50)
+  }
+
   // Remove / strip tag at current cursor position or within selection
   const handleRemoveTagAtCursor = () => {
     const textarea = scriptInputRef.current
@@ -716,12 +783,13 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
     const pos = textarea.selectionStart || 0
     const endPos = textarea.selectionEnd || 0
 
-    // Range selected -> strip all director tags inside selection
+    // Range selected -> strip all director tags & bold marks inside selection
     if (pos !== endPos) {
       const selected = script.substring(pos, endPos)
       const cleaned = selected
         .replace(/<\/?(loud|whisper|fast|slow|spell|emphasis)>/gi, '')
         .replace(/\[pause:[\d.]+s?\]/gi, '')
+        .replace(/\*\*/g, '')
         .replace(/\/+/g, '')
       const newScript = script.substring(0, pos) + cleaned + script.substring(endPos)
       setScript(newScript)
@@ -1945,6 +2013,17 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                           sx={{ height: 22, fontSize: 11, cursor: 'pointer', fontWeight: 700 }}
                           color='primary'
                           variant='outlined'
+                        />
+                      </Tooltip>
+
+                      <Tooltip title='Bold selected word/phrase for vocal stress & visual highlight (**word**). Click again to unbold/undo.'>
+                        <Chip
+                          label='𝐁 Bold Emphasis'
+                          size='small'
+                          onClick={handleToggleBold}
+                          sx={{ height: 22, fontSize: 11, cursor: 'pointer', fontWeight: 800 }}
+                          color='warning'
+                          variant='filled'
                         />
                       </Tooltip>
 
@@ -4086,7 +4165,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                       </Typography>
                     </Box>
 
-                    {/* Active Spoken Sentence (1-2 lines kinetic typography) */}
+                    {/* Active Spoken Sentence with Bold Visual Highlighting */}
                     <Typography sx={{
                       color: '#ffffff',
                       fontWeight: 800,
@@ -4095,7 +4174,20 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                       textShadow: '0 2px 12px rgba(0,0,0,0.95), 0 4px 24px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,1)',
                       letterSpacing: -0.2,
                     }}>
-                      "{activeLiveSegment?.text_segment || title}"
+                      "{(() => {
+                        const raw = activeLiveSegment?.text_segment || title
+                        const parts = raw.split(/(\*\*[^*]+\*\*)/g)
+                        return parts.map((part: string, pIdx: number) => {
+                          if (part.startsWith('**') && part.endsWith('**')) {
+                            return (
+                              <span key={pIdx} style={{ color: '#facc15', textDecoration: 'underline', textUnderlineOffset: '3px', fontWeight: 900 }}>
+                                {part.slice(2, -2)}
+                              </span>
+                            )
+                          }
+                          return part
+                        })
+                      })()}"
                     </Typography>
                   </Box>
 
