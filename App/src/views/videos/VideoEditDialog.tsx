@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 
 import Box from '@mui/material/Box'
 import TextField from '@mui/material/TextField'
@@ -370,7 +370,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   // Active segment at current scrubber position
   const activeLiveSegment = useMemo(() => {
     return liveSegments.find(
-      s => playerCurrentTime >= s.timestamp_start && playerCurrentTime <= s.timestamp_end
+      (s: any) => playerCurrentTime >= s.timestamp_start && playerCurrentTime <= s.timestamp_end
     ) || liveSegments[0]
   }, [liveSegments, playerCurrentTime])
 
