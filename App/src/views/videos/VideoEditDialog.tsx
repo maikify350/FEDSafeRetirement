@@ -766,8 +766,8 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
         return
       }
 
-      // Wrap in {{emphasis}}
-      const bolded = `{{emphasis}}${selected}{{/emphasis}}`
+      // Wrap in **word**
+      const bolded = `**${selected}**`
       const newScript = script.substring(0, start) + bolded + script.substring(end)
       setScript(newScript)
       setDirty(true)
@@ -778,14 +778,14 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
       return
     }
 
-    // Default: Insert {{emphasis}}word{{/emphasis}} placeholder
-    const placeholder = '{{emphasis}}important{{/emphasis}}'
+    // Default: Insert **emphasis** placeholder
+    const placeholder = '**emphasis**'
     const newScript = script.substring(0, start) + placeholder + script.substring(end)
     setScript(newScript)
     setDirty(true)
     setTimeout(() => {
       textarea.focus()
-      textarea.setSelectionRange(start + 12, start + placeholder.length - 13)
+      textarea.setSelectionRange(start + 2, start + placeholder.length - 2)
     }, 50)
   }
 
@@ -2027,9 +2027,9 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                         />
                       </Tooltip>
 
-                      <Tooltip title='Wrap selected word/phrase in {{emphasis}} for vocal stress & acoustic punch'>
+                      <Tooltip title='Bold selected word/phrase for vocal emphasis (**word**). Click again to unbold/undo.'>
                         <Chip
-                          label='𝐁 {{emphasis}}'
+                          label='𝐁 Bold Emphasis'
                           size='small'
                           onClick={handleToggleBold}
                           sx={{ height: 22, fontSize: 11, cursor: 'pointer', fontWeight: 800 }}
