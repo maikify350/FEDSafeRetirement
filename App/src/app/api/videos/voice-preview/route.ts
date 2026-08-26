@@ -24,48 +24,57 @@ export async function POST(request: NextRequest) {
     const similarityBoost = typeof body.similarity_boost === 'number' ? Math.max(0, Math.min(1, body.similarity_boost)) : 0.75
     const useSpeakerBoost = body.use_speaker_boost !== undefined ? Boolean(body.use_speaker_boost) : true
 
-    // Preprocess text for ElevenLabs speech generation
-    // IMPORTANT: We translate pauses into SSML <break time="Xs" /> and emphasis into UPPERCASE words,
-    // and strip all meta-tags completely so ElevenLabs NEVER speaks words like "pause" or "emphasis"!
+    const modelId = body.model_id || 'eleven_v3'
+    const isV3 = modelId === 'eleven_v3'
+
+    // Preprocess text based on ElevenLabs Model Version (v3 vs v2/Turbo)
     let processedText = rawPreviewText
 
-    // 1. Slashes -> SSML break tags (e.g. '/' -> <break time="1.0s" />, '///' -> <break time="3.0s" />)
-    processedText = processedText.replace(/\/+/g, (match: string) => {
-      const sec = Math.min(3, Math.max(1, match.length))
-      return ` <break time="${sec}.0s" /> `
-    })
-
-    // 2. Custom pause markers -> SSML break tags
-    processedText = processedText
-      .replace(/\{\{pause:([\d.]+)\}\}/gi, (_: string, p1: string) => ` <break time="${parseFloat(p1) || 1.0}s" /> `)
-      .replace(/\[(short pause|pause:[^\]]*)\]/gi, ' <break time="1.0s" /> ')
-      .replace(/\[long pause\]/gi, ' <break time="2.5s" /> ')
-
-    // 3. Bold / Emphasis -> Convert to UPPERCASE for vocal punch without leaving tag words in text
-    processedText = processedText
-      .replace(/\{\{emphasis\}\}([\s\S]*?)\{\{\/emphasis\}\}/gi, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
-      .replace(/<emphasis>([\s\S]*?)<\/emphasis>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
-      .replace(/<loud>([\s\S]*?)<\/loud>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
-      .replace(/\*\*([^*]+)\*\*/g, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
-      .replace(/<b>(.*?)<\/b>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
-
-    // 4. Emotional / Pacing tag wrappers -> Strip tag wrappers, preserve inner text
-    processedText = processedText
-      .replace(/\{\{whisper\}\}([\s\S]*?)\{\{\/whisper\}\}/gi, '$1')
-      .replace(/\{\{slow\}\}([\s\S]*?)\{\{\/slow\}\}/gi, '$1')
-      .replace(/\{\{excited\}\}([\s\S]*?)\{\{\/excited\}\}/gi, '$1')
-      .replace(/<whisper>([\s\S]*?)<\/whisper>/gi, '$1')
-      .replace(/<slow>([\s\S]*?)<\/slow>/gi, '$1')
-      .replace(/<excited>([\s\S]*?)<\/excited>/gi, '$1')
-      .replace(/<fast>([\s\S]*?)<\/fast>/gi, '$1')
-      .replace(/<dramatically>([\s\S]*?)<\/dramatically>/gi, '$1')
-      .replace(/<thoughtful>([\s\S]*?)<\/thoughtful>/gi, '$1')
-      .replace(/<spell>(.*?)<\/spell>/gi, (_: string, p1: string) => p1.split('').join(' '))
-
-    // 5. Bracket direction markers -> Strip completely so ElevenLabs never speaks "[thoughtful]" or "[sighs]"
-    processedText = processedText
-      .replace(/\[(dramatically|thoughtful|excited|whispers|whisper|sighs|exhales|laughs|chuckles|giggles|appalled|annoyed|sad|happy|clears throat)\]/gi, '')
-      .replace(/\{\{[^}]*\}\}/g, '')
+    if (isV3) {
+      // --- ElevenLabs v3 Engine: Native Audio Tag & Natural Pause Syntax ---
+      // 1. Slashes -> v3 audio pause markers
+      processedText = processedText.replace(/\/+/g, (match: string) => {
+        const sec = match.length
+        return sec === 1 ? ' [short pause] ... ' : ' [long pause] ... ... '
+      })
+      // 2. Custom pause markers -> v3 pauses
+      processedText = processedText
+        .replace(/\{\{pause:([\d.]+)\}\}/gi, (_: string, p1: string) => (parseFloat(p1) >= 2 ? ' [long pause] ' : ' [short pause] '))
+        .replace(/\[pause:([\d.]+)s?\]/gi, (_: string, p1: string) => (parseFloat(p1) >= 2 ? ' [long pause] ' : ' [short pause] '))
+      // 3. Bold / Emphasis -> Upper case stress tokens
+      processedText = processedText
+        .replace(/\*\*([^*]+)\*\*/g, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
+        .replace(/<b>(.*?)<\/b>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
+        .replace(/\{\{emphasis\}\}([\s\S]*?)\{\{\/emphasis\}\}/gi, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
+        .replace(/<emphasis>([\s\S]*?)<\/emphasis>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
+      // 4. Transform double curly tag wrappers to v3 bracket tags
+      processedText = processedText
+        .replace(/\{\{whisper\}\}([\s\S]*?)\{\{\/whisper\}\}/gi, ' [whispers] $1 ')
+        .replace(/\{\{excited\}\}([\s\S]*?)\{\{\/excited\}\}/gi, ' [excited] $1 ')
+        .replace(/\{\{slow\}\}([\s\S]*?)\{\{\/slow\}\}/gi, ' $1 ')
+        .replace(/<whisper>([\s\S]*?)<\/whisper>/gi, ' [whispers] $1 ')
+        .replace(/<excited>([\s\S]*?)<\/excited>/gi, ' [excited] $1 ')
+        .replace(/<dramatically>([\s\S]*?)<\/dramatically>/gi, ' [dramatically] $1 ')
+        .replace(/<thoughtful>([\s\S]*?)<\/thoughtful>/gi, ' [thoughtful] $1 ')
+        .replace(/<spell>(.*?)<\/spell>/gi, (_: string, p1: string) => p1.split('').join(' '))
+        .replace(/<[^>]*>/g, '')
+        .replace(/\{\{[^}]*\}\}/g, '')
+    } else {
+      // --- Legacy v2 / Turbo 2.5: SSML Break tags & Strip All Bracket Tags ---
+      processedText = processedText.replace(/\/+/g, (match: string) => {
+        const sec = Math.min(3, Math.max(1, match.length))
+        return ` <break time="${sec}.0s" /> `
+      })
+      processedText = processedText
+        .replace(/\{\{pause:([\d.]+)\}\}/gi, (_: string, p1: string) => ` <break time="${parseFloat(p1) || 1.0}s" /> `)
+        .replace(/\[(short pause|pause:[^\]]*)\]/gi, ' <break time="1.0s" /> ')
+        .replace(/\[long pause\]/gi, ' <break time="2.5s" /> ')
+        .replace(/\*\*([^*]+)\*\*/g, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
+        .replace(/<b>(.*?)<\/b>/gi, (_: string, p1: string) => ` ${p1.toUpperCase()} `)
+        .replace(/\{\{[^}]*\}\}/g, '')
+        .replace(/\[(dramatically|thoughtful|excited|whispers|whisper|sighs|exhales|laughs|chuckles|giggles|appalled|annoyed|sad|happy|clears throat)\]/gi, '')
+        .replace(/<[^>]*>/g, '')
+    }
 
     // 4. Financial, IRS, Tax Forms & Federal Account Normalization
     const normalizedText = processedText
@@ -112,6 +121,19 @@ export async function POST(request: NextRequest) {
 
     if (engine === 'elevenlabs' && apiKey) {
       try {
+        const requestPayload: any = {
+          text: normalizedText,
+          model_id: modelId,
+          voice_settings: isV3
+            ? { stability }
+            : {
+                stability,
+                similarity_boost: similarityBoost,
+                style,
+                use_speaker_boost: useSpeakerBoost,
+              },
+        }
+
         const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
           method: 'POST',
           headers: {
@@ -119,16 +141,7 @@ export async function POST(request: NextRequest) {
             'Content-Type': 'application/json',
             'xi-api-key': apiKey,
           },
-          body: JSON.stringify({
-            text: normalizedText,
-            model_id: 'eleven_turbo_v2_5',
-            voice_settings: {
-              stability,
-              similarity_boost: similarityBoost,
-              style,
-              use_speaker_boost: useSpeakerBoost,
-            },
-          }),
+          body: JSON.stringify(requestPayload),
         })
 
         if (response.ok) {

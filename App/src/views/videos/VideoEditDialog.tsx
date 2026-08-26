@@ -1183,6 +1183,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
         signal: controller.signal,
         body: JSON.stringify({
           engine: ttsEngine,
+          model_id: 'eleven_v3',
           voice_id: selectedVoice.id,
           voice_name: selectedVoice.name,
           speed: tempo,
