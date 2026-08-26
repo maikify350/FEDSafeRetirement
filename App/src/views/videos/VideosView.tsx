@@ -74,6 +74,32 @@ export default function VideosView() {
   // Audio preview playback state
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null)
   const activeAudioRef = useRef<HTMLAudioElement | null>(null)
+  const activeAbortRef = useRef<AbortController | null>(null)
+
+  // Cleanly and immediately stop ALL in-flight or playing voice audio
+  const stopAllVoicePlayback = useCallback(() => {
+    if (activeAbortRef.current) {
+      activeAbortRef.current.abort()
+      activeAbortRef.current = null
+    }
+    if (activeAudioRef.current) {
+      activeAudioRef.current.pause()
+      activeAudioRef.current.currentTime = 0
+      activeAudioRef.current.src = ''
+      activeAudioRef.current = null
+    }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+    }
+    setPlayingVoiceId(null)
+  }, [])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopAllVoicePlayback()
+    }
+  }, [stopAllVoicePlayback])
 
   // Delete state
   const [deleteTarget, setDeleteTarget] = useState<VideoRecord | null>(null)
@@ -147,36 +173,32 @@ export default function VideosView() {
     })
   }, [videos, sourceFilter, batchFilter, search])
 
-  // Play voice sample
+  // Play voice sample — strictly single instance, immediately halts previous
   const handlePlayVoice = async (video: VideoRecord, e: React.MouseEvent) => {
     e.stopPropagation()
 
+    // 1. If clicking currently playing row, toggle pause and stop
     if (playingVoiceId === video.id) {
-      if (activeAudioRef.current) {
-        activeAudioRef.current.pause()
-      }
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel()
-      }
-      setPlayingVoiceId(null)
+      stopAllVoicePlayback()
       return
     }
 
-    if (activeAudioRef.current) {
-      activeAudioRef.current.pause()
-    }
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel()
-    }
+    // 2. Instantly cancel and stop any existing playback or pending network request
+    stopAllVoicePlayback()
 
+    // 3. Mark active playing ID
     setPlayingVoiceId(video.id)
 
-    const sampleText = video.script ? video.script.substring(0, 120) : `Hello! This is a preview of the ${video.voice_name || 'Kai'} voice.`
+    const controller = new AbortController()
+    activeAbortRef.current = controller
+
+    const sampleText = video.script ? video.script.substring(0, 140) : `Hello! This is a preview of the ${video.voice_name || 'Adam'} voice.`
 
     try {
       const res = await fetch('/api/videos/voice-preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           voice_id: video.voice_id,
           voice_name: video.voice_name,
@@ -185,24 +207,43 @@ export default function VideosView() {
         }),
       })
 
+      // If user switched or canceled during fetch, do not start audio
+      if (controller.signal.aborted) return
+
       if (res.ok) {
         const blob = await res.blob()
+        if (controller.signal.aborted) return
+
         const url = URL.createObjectURL(blob)
         const audio = new Audio(url)
         activeAudioRef.current = audio
 
-        audio.onended = () => setPlayingVoiceId(null)
-        audio.onerror = () => setPlayingVoiceId(null)
+        audio.onended = () => {
+          if (activeAudioRef.current === audio) {
+            setPlayingVoiceId(null)
+            activeAudioRef.current = null
+          }
+        }
+        audio.onerror = () => {
+          if (activeAudioRef.current === audio) {
+            setPlayingVoiceId(null)
+            activeAudioRef.current = null
+          }
+        }
+
         await audio.play()
         return
       }
-    } catch {
-      // Fallback
+    } catch (err: any) {
+      if (err.name === 'AbortError') return
     }
 
-    // Fallback to browser SpeechSynthesis
+    // Fallback to browser SpeechSynthesis only if not aborted
+    if (controller.signal.aborted) return
+
     try {
       if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel()
         const utterance = new SpeechSynthesisUtterance(sampleText)
         utterance.rate = video.tempo || 1.0
         utterance.onend = () => setPlayingVoiceId(null)

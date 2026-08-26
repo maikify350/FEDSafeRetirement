@@ -300,6 +300,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   const [isPlayingPreview, setIsPlayingPreview] = useState(false)
   const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const previewAbortRef = useRef<AbortController | null>(null)
   const scriptInputRef = useRef<HTMLTextAreaElement | null>(null)
 
   // Template Menu anchor
@@ -311,9 +312,15 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   const [showPlayerOverlay, setShowPlayerOverlay] = useState(true)
 
   const stopAllAudio = () => {
+    if (previewAbortRef.current) {
+      previewAbortRef.current.abort()
+      previewAbortRef.current = null
+    }
     if (audioRef.current) {
       audioRef.current.pause()
       audioRef.current.currentTime = 0
+      audioRef.current.src = ''
+      audioRef.current = null
     }
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel()
@@ -850,21 +857,25 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
     }
   }
 
-  // Play / generate voice preview
+  // Play / generate voice preview — single instance, mutually exclusive
   const handlePlayVoicePreview = async () => {
-    if (isPlayingPreview && audioRef.current) {
-      audioRef.current.pause()
-      setIsPlayingPreview(false)
+    if (isPlayingPreview) {
+      stopAllAudio()
       return
     }
 
+    stopAllAudio()
     setPreviewLoading(true)
     setError('')
+
+    const controller = new AbortController()
+    previewAbortRef.current = controller
 
     try {
       const res = await fetch('/api/videos/voice-preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           engine: ttsEngine,
           voice_id: selectedVoice.id,
@@ -874,31 +885,44 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         }),
       })
 
+      if (controller.signal.aborted) return
+
       if (res.ok) {
         const blob = await res.blob()
+        if (controller.signal.aborted) return
+
         const audioUrl = URL.createObjectURL(blob)
         setGeneratedAudioUrl(audioUrl)
 
-        if (audioRef.current) {
-          audioRef.current.pause()
-        }
-
         const audio = new Audio(audioUrl)
         audioRef.current = audio
-        audio.onended = () => setIsPlayingPreview(false)
-        audio.onerror = () => setIsPlayingPreview(false)
+        audio.onended = () => {
+          if (audioRef.current === audio) {
+            setIsPlayingPreview(false)
+            audioRef.current = null
+          }
+        }
+        audio.onerror = () => {
+          if (audioRef.current === audio) {
+            setIsPlayingPreview(false)
+            audioRef.current = null
+          }
+        }
         await audio.play()
         setIsPlayingPreview(true)
         setPreviewLoading(false)
         return
       }
-    } catch {
-      // Fallback to browser SpeechSynthesis
+    } catch (err: any) {
+      if (err.name === 'AbortError') return
     }
+
+    if (controller.signal.aborted) return
 
     // Fallback to browser SpeechSynthesis
     try {
       if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel()
         const sampleText = script.trim() || `Hello! This is a preview of the ${selectedVoice.name} voice.`
         const utterance = new SpeechSynthesisUtterance(sampleText)
         utterance.rate = tempo || 1.0
