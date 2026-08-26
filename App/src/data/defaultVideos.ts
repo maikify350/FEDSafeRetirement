@@ -12,7 +12,7 @@ export const EXPERIMENTAL_VIDEOS: VideoRecord[] = [
     script: 'Are you a postal employee planning your retirement? Between the new Postal Service Health Benefits Program, Medicare Part B requirements, and FERS supplement rules, postal retirement has its own unique playbook. We help USPS carriers and clerks protect their pension and health benefits. Visit FedSafe Retirement dot com to schedule your postal retirement review.',
     ai_directive: 'Visual: Mail carrier walking at sunset, transition to PSHB document review, highlight Medicare Part B requirement badge. Pacing: 45s brisk.',
     cta_text: 'Call (774) 273-8473 | FedSafeRetirement.com', cta_on_every_frame: true,
-    tts_engine: 'elevenlabs', voice_id: 'pNInz6obpgDQGcFmaJgB', voice_name: 'Adam', tempo: 1.00,
+    tts_engine: 'elevenlabs', voice_id: 'GGRMgbKfr7QscdcrvWga', voice_name: 'Kai', tempo: 1.00,
     status: 'ready',
     video_url: 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/01_Video_Postal_Retirement_Reel.mp4',
     audio_url: null, thumbnail_url: null,
@@ -34,7 +34,7 @@ export const EXPERIMENTAL_VIDEOS: VideoRecord[] = [
     script: 'Attention federal employees over fifty: Your FEGLI Option B life insurance premiums double every five years, and at age sixty-five, the cost jumps by over five hundred percent. Thousands of retirees are forced to drop coverage when they need it most. Discover private alternatives before the rate hike hits. Visit FedSafe Retirement dot com today.',
     ai_directive: 'Visual: Red alert rate shock graph, comparison chart between FEGLI age brackets vs fixed private term. Pacing: urgent.',
     cta_text: 'Call 771-FEDSAFE | FedSafeRetirement.com', cta_on_every_frame: true,
-    tts_engine: 'elevenlabs', voice_id: 'EXAVITQu4vr4xnSDxMaL', voice_name: 'Sarah', tempo: 1.00,
+    tts_engine: 'elevenlabs', voice_id: 'JSWO6cw2AyFE324d5kEr', voice_name: 'Carolyn', tempo: 1.00,
     status: 'ready',
     video_url: 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/videos/02_Video_FEGLI_Shock_Alert_Reel.mp4',
     audio_url: null, thumbnail_url: null, hyperframes: [], continuity_references: [], media_assets: [],
@@ -48,7 +48,7 @@ export const EXPERIMENTAL_VIDEOS: VideoRecord[] = [
     format: 'short', generation_mode: 'motion', video_model: 'remotion-kinetic', duration_sec: 30,
     script: 'Are you retiring under FERS before age sixty-two? You might qualify for the FERS Special Annuity Supplement, a bridge payment worth thousands before Social Security begins.',
     ai_directive: '', cta_text: 'Call (774) 273-8473 | FedSafeRetirement.com', cta_on_every_frame: false,
-    tts_engine: 'elevenlabs', voice_id: 'pNInz6obpgDQGcFmaJgB', voice_name: 'Adam', tempo: 1.00,
+    tts_engine: 'elevenlabs', voice_id: 'GGRMgbKfr7QscdcrvWga', voice_name: 'Kai', tempo: 1.00,
     status: 'draft', video_url: null, audio_url: null, thumbnail_url: null,
     hyperframes: [], continuity_references: [], media_assets: [], metadata: {},
     video_source: 'experimental', is_deleted: false,
@@ -68,14 +68,14 @@ const BATCH_NAMES: Record<number, string> = {
   6: 'Rule Changes, Benefits Transition & Agency/HR',
 }
 
-// Voice rotation by batch (can be overridden per video)
+// Voice rotation by batch using approved voices
 const BATCH_VOICES: Record<number, { id: string; name: string }> = {
-  1: { id: 'JBFqnCBsd6RMkjVDRZzb', name: 'George' },  // Warm storyteller — Core Traps
-  2: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam' },    // Dominant/firm — ORA Process
-  3: { id: 'nPczCjzI2devNBz1zQrb', name: 'Brian' },   // Authoritative — FERS/Pension
-  4: { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah' },   // Reassuring/confident — Insurance/Health
-  5: { id: 'onwK4e9ZLuTAKqWW03F9', name: 'Daniel' },  // Formal trustworthy — TSP/Income
-  6: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam' },    // Firm — Agency/HR/Rules
+  1: { id: 'GGRMgbKfr7QscdcrvWga', name: 'Kai' },      // Dynamic, clear male — Core Traps
+  2: { id: 'UXrpoYalpW5MpGiFHq3z', name: 'Brock' },    // Confident, authoritative male — ORA Process
+  3: { id: 'Gfpl8Yo74Is0W6cPUWWT', name: 'Max' },      // Deep, trusted male — FERS/Pension
+  4: { id: 'JSWO6cw2AyFE324d5kEr', name: 'Carolyn' },  // Reassuring, polished female — Insurance/Health
+  5: { id: 'dtVZnErhiiosqofxDzSH', name: 'Havoc' },    // Strong, commanding male — TSP/Income
+  6: { id: 'dXtC3XhB9GtPusIpNtQx', name: 'Hale' },     // Articulate, professional male — Agency/HR/Rules
 }
 
 type ScriptInput = {

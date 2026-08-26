@@ -13,8 +13,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const engine = body.engine || 'elevenlabs'
-    const voiceId = body.voice_id || 'pNInz6obpgDQGcFmaJgB' // default Adam
-    const voiceName = body.voice_name || 'Adam'
+    const voiceId = body.voice_id || 'GGRMgbKfr7QscdcrvWga' // default Kai (Approved Voice)
+    const voiceName = body.voice_name || 'Kai'
     const speed = Math.min(2.0, Math.max(0.5, Number(body.speed) || 1.0))
     const rawPreviewText = body.text || `Hello! This is a preview of the ${voiceName} voice for your FEDSafe Retirement video.`
 
