@@ -16,6 +16,7 @@ import {
 } from "./FedSafeReelCollection";
 
 import {FederalQuestionsVideo} from "./FederalQuestionsVideo";
+import {DynamicScriptReel} from "./DynamicScriptReel";
 
 export const FPS = 30;
 export const DURATION_SECONDS = 79.224;
@@ -154,11 +155,11 @@ export const RemotionRoot = () => {
         height={1920}
       />
 
-      {/* ── Long-form & Webinars ── */}
+      {/* ── Dynamic Script Library V2 Reel (Parameterized) ── */}
       <Composition
-        id="WebinarReel"
-        component={WebinarReel}
-        durationInFrames={DURATION_FRAMES}
+        id="DynamicScriptReel"
+        component={DynamicScriptReel}
+        durationInFrames={35 * FPS}
         fps={FPS}
         width={1080}
         height={1920}

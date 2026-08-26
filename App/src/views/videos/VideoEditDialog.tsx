@@ -833,6 +833,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
   const selectedVoice = activeVoicesList.find(v => v.id === voiceId) || activeVoicesList[0]
 
   const REMOTION_COMPOSITIONS = [
+    { id: 'DynamicScriptReel',       label: '🎬 Dynamic Script Reel (Full Imagery & Audio)', output: `${video?.id || 'reel'}_Dynamic_Rendered.mp4` },
     { id: 'PostalRetirementReel',    label: 'USPS Postal Retirement Reel',     output: '01_Video_Postal_Retirement_Reel.mp4' },
     { id: 'FegliShockReel',          label: 'FEGLI Rate Shock Alert',          output: '02_Video_FEGLI_Shock_Alert_Reel.mp4' },
     { id: 'FersSupplementReel',      label: 'FERS Supplement Reel',            output: '03_Video_FERS_Supplement_Reel.mp4' },
@@ -881,7 +882,8 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
         setGeneratedAudioUrl(audioUrl)
       }
 
-      // 2. Auto-sync Hyperframes
+      // 2. Auto-sync Hyperframes and attach photographic scene imagery
+      const pool = SCENE_IMAGE_POOLS[batchNo || 1] || SCENE_IMAGE_POOLS[1]
       let updatedHyperframes = hyperframes
       try {
         const hfRes = await fetch('/api/videos/script-validate', {
@@ -896,13 +898,35 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
 
         if (hfRes.ok) {
           const hfData = await hfRes.json()
-          if (Array.isArray(hfData.hyperframes)) {
+          if (Array.isArray(hfData.hyperframes) && hfData.hyperframes.length > 0) {
             updatedHyperframes = hfData.hyperframes
-            setHyperframes(updatedHyperframes)
           }
         }
       } catch {
         // ignore
+      }
+
+      // Build rich hyperframes with visual scene image URLs
+      const richHyperframes = (updatedHyperframes && updatedHyperframes.length > 0 ? updatedHyperframes : liveSegments).map((hf: any, idx: number) => ({
+        ...hf,
+        visual_prompt: hf.visual_prompt || `Photographic federal scene: "${hf.text_segment?.substring(0, 50)}..."`,
+        scene_image: pool[idx % pool.length],
+      }))
+
+      const autoMediaAssets = richHyperframes.map((hf: any, idx: number) => ({
+        id: `asset_${idx + 1}`,
+        type: 'image' as const,
+        label: `Scene #${idx + 1} Visual`,
+        url: hf.scene_image,
+        order: idx + 1,
+      }))
+
+      const newThumbnail = richHyperframes[0]?.scene_image || pool[0]
+      setHyperframes(richHyperframes)
+      setMediaAssets(autoMediaAssets)
+      setThumbnailUrl(newThumbnail)
+      if (!remotionComposition) {
+        setRemotionComposition('DynamicScriptReel')
       }
 
       // 3. Save / update video record with status = 'ready'
@@ -921,10 +945,10 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
         voice_name: selectedVoice.name,
         tempo,
         status: 'ready',
-        thumbnail_url: thumbnailUrl,
-        hyperframes: updatedHyperframes,
+        thumbnail_url: newThumbnail,
+        hyperframes: richHyperframes,
         continuity_references: continuityReferences,
-        media_assets: mediaAssets,
+        media_assets: autoMediaAssets,
         version_no: versionCount + 1,
 
         // Script Library V2 & Production Fields
@@ -944,6 +968,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
 
         metadata: {
           ...(video?.metadata || {}),
+          remotion_composition: remotionComposition || 'DynamicScriptReel',
           show_shield_logo: showShieldLogo,
           shield_logo_position: shieldLogoPosition,
           show_sam_badge: showSamBadge,
@@ -4060,68 +4085,49 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                     </Box>
                   </Box>
 
-                  {/* Center: Live Kinetic Typography with Synchronized Highlighting */}
+                  {/* Center/Lower-Third: Sleek Kinetic Subtitle Overlay (Image-First Composition) */}
                   <Box sx={{
-                    my: 'auto',
+                    mt: 'auto',
+                    mb: 1.5,
                     zIndex: 3,
-                    p: 2,
-                    borderRadius: 2,
-                    bgcolor: 'rgba(15, 23, 42, 0.75)',
-                    backdropFilter: 'blur(8px)',
-                    border: '1px solid rgba(255,255,255,0.15)',
+                    px: 1.5,
+                    py: 1,
                     textAlign: 'center',
-                    boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
                   }}>
-                    <Typography variant='caption' sx={{ color: '#38bdf8', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 0.75 }}>
-                      {batchName || 'Federal Retirement Reel'}
-                    </Typography>
+                    {/* Scene Tag Pill */}
+                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, mb: 0.75, bgcolor: 'rgba(6, 29, 50, 0.85)', px: 1.25, py: 0.25, borderRadius: 999, border: '1px solid rgba(244, 201, 93, 0.3)' }}>
+                      <Typography variant='caption' sx={{ color: '#f4c95d', fontWeight: 800, fontSize: 9.5, letterSpacing: 0.75, textTransform: 'uppercase' }}>
+                        {batchName || 'Federal Retirement'} · Scene {activeLiveSegment ? activeLiveSegment.order : 1}/{liveSegments.length}
+                      </Typography>
+                    </Box>
 
+                    {/* Active Spoken Sentence (1-2 lines kinetic typography) */}
                     <Typography sx={{
-                      color: '#facc15',
+                      color: '#ffffff',
                       fontWeight: 800,
-                      fontSize: format === 'short' ? '15px' : '18px',
-                      lineHeight: 1.4,
-                      textShadow: '0 2px 10px rgba(0,0,0,0.9)',
-                      transition: 'all 0.2s ease',
+                      fontSize: format === 'short' ? '16px' : '19px',
+                      lineHeight: 1.35,
+                      textShadow: '0 2px 12px rgba(0,0,0,0.95), 0 4px 24px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,1)',
+                      letterSpacing: -0.2,
                     }}>
                       "{activeLiveSegment?.text_segment || title}"
                     </Typography>
-
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1, mt: 1 }}>
-                      <Chip
-                        label={`Segment ${activeLiveSegment ? activeLiveSegment.order : 1} of ${liveSegments.length}`}
-                        size='small'
-                        sx={{ height: 16, fontSize: 8.5, bgcolor: 'rgba(255,255,255,0.1)', color: 'white' }}
-                      />
-                      <Typography sx={{ fontSize: 9, color: '#94a3b8' }}>
-                        Transition: <span style={{ color: '#c084fc' }}>{activeLiveSegment?.transition || 'fade'}</span>
-                      </Typography>
-                    </Box>
                   </Box>
 
                   {/* Bottom: Spoken CTA & Brand Lockup */}
-                  <Box sx={{ zIndex: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ zIndex: 3, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                     {spokenCta && (
-                      <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)', textAlign: 'center' }}>
-                        <Typography variant='caption' sx={{ color: '#c7d2fe', fontWeight: 700, fontSize: 10, display: 'block' }}>
-                          📢 Closing Spoken CTA:
-                        </Typography>
-                        <Typography variant='caption' sx={{ color: 'white', fontWeight: 600, fontSize: 11 }}>
-                          "{spokenCta}"
+                      <Box sx={{ py: 0.5, px: 1, borderRadius: 1, bgcolor: 'rgba(6, 29, 50, 0.85)', border: '1px solid rgba(99,102,241,0.3)', textAlign: 'center' }}>
+                        <Typography variant='caption' sx={{ color: '#c7d2fe', fontWeight: 700, fontSize: 10 }}>
+                          📢 {spokenCta}
                         </Typography>
                       </Box>
                     )}
 
                     {ctaText && (
-                      <Box sx={{ bgcolor: 'primary.main', color: 'white', py: 0.75, px: 1.5, borderRadius: 1, textAlign: 'center', fontWeight: 700, fontSize: 11 }}>
+                      <Box sx={{ bgcolor: '#c1260d', color: 'white', py: 0.6, px: 1.5, borderRadius: 1, textAlign: 'center', fontWeight: 800, fontSize: 11, letterSpacing: 0.5, boxShadow: '0 4px 15px rgba(193,38,13,0.4)' }}>
                         {ctaText}
                       </Box>
-                    )}
-
-                    {endScreenText && (
-                      <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.6)', textAlign: 'center', fontSize: 9.5 }}>
-                        {endScreenText}
-                      </Typography>
                     )}
                   </Box>
                 </Box>

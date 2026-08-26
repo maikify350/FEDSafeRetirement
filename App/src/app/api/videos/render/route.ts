@@ -48,6 +48,7 @@ const REMOTION_PROJECT = path.resolve(
 )
 
 const ALLOWED_COMPOSITIONS = [
+  'DynamicScriptReel',
   'PostalRetirementReel',
   'FegliShockReel',
   'FersSupplementReel',
