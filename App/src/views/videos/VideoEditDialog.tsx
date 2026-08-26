@@ -1519,9 +1519,6 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
       setShowSuccess(true)
       setDirty(false)
       onSaved(data)
-      setTimeout(() => {
-        onClose()
-      }, 500)
     } catch (err: any) {
       setError(err.message || 'Save failed')
     } finally {
