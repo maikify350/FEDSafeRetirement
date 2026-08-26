@@ -87,6 +87,21 @@ export async function PUT(
     if (body.media_assets !== undefined) updatePayload.media_assets = Array.isArray(body.media_assets) ? body.media_assets : []
     if (body.metadata !== undefined) updatePayload.metadata = body.metadata
 
+    // Script Library V2 & Production Fields
+    if (body.script_no !== undefined) updatePayload.script_no = body.script_no ? Number(body.script_no) : null
+    if (body.batch_no !== undefined) updatePayload.batch_no = body.batch_no ? Number(body.batch_no) : null
+    if (body.batch_name !== undefined) updatePayload.batch_name = body.batch_name
+    if (body.target_length_min !== undefined) updatePayload.target_length_min = body.target_length_min ? Number(body.target_length_min) : null
+    if (body.target_length_max !== undefined) updatePayload.target_length_max = body.target_length_max ? Number(body.target_length_max) : null
+    if (body.spoken_cta !== undefined) updatePayload.spoken_cta = body.spoken_cta
+    if (body.onscreen_structure !== undefined) updatePayload.onscreen_structure = body.onscreen_structure
+    if (body.end_screen_text !== undefined) updatePayload.end_screen_text = body.end_screen_text
+    if (body.broll_notes !== undefined) updatePayload.broll_notes = body.broll_notes
+    if (body.lead_capture_destination !== undefined) updatePayload.lead_capture_destination = body.lead_capture_destination
+    if (body.cta_type !== undefined) updatePayload.cta_type = body.cta_type
+    if (body.platforms !== undefined) updatePayload.platforms = Array.isArray(body.platforms) ? body.platforms : []
+    if (body.video_source !== undefined) updatePayload.video_source = body.video_source
+
     // If ID is not a UUID (e.g. seeded demo template), insert it as a real record in videos
     if (!isUUID(id)) {
       const insertPayload = {

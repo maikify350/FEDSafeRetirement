@@ -20,6 +20,8 @@ import { downloadBlob, downloadJson } from '@/utils/exportDownload'
 import VideoEditDialog, { type VideoRecord } from './VideoEditDialog'
 import VoiceCloneStudioDialog from './VoiceCloneStudioDialog'
 import ProTimelineStudioDialog from './ProTimelineStudioDialog'
+import VideoBrandSettingsDialog from './VideoBrandSettingsDialog'
+import { DEFAULT_PREGENERATED_VIDEOS, LIBRARY_V2_VIDEOS, EXPERIMENTAL_VIDEOS } from '@/data/defaultVideos'
 
 const columnHelper = createColumnHelper<VideoRecord>()
 
@@ -35,7 +37,21 @@ const formatDate = (v: string | null) => {
   })
 }
 
-import { DEFAULT_PREGENERATED_VIDEOS } from '@/data/defaultVideos'
+const BATCH_COLORS: Record<number, 'primary' | 'secondary' | 'info' | 'success' | 'warning' | 'error'> = {
+  1: 'primary',
+  2: 'info',
+  3: 'success',
+  4: 'warning',
+  5: 'secondary',
+  6: 'error',
+}
+
+const CTA_TYPE_LABELS: Record<string, { label: string; color: 'primary' | 'secondary' | 'info' | 'success' }> = {
+  direct_review: { label: '🎯 Direct Review', color: 'primary' },
+  lead_magnet: { label: '🧲 Lead Magnet', color: 'secondary' },
+  website_traffic: { label: '🌐 Website Traffic', color: 'info' },
+  agency: { label: '🏛️ Agency Briefing', color: 'success' },
+}
 
 export default function VideosView() {
   const [videos, setVideos] = useState<VideoRecord[]>(DEFAULT_PREGENERATED_VIDEOS)
@@ -43,12 +59,17 @@ export default function VideosView() {
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
 
+  // Filter states
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'library_v2' | 'experimental' | 'custom'>('library_v2')
+  const [batchFilter, setBatchFilter] = useState<'all' | number>('all')
+
   // Dialog states
   const [createOpen, setCreateOpen] = useState(false)
   const [editVideo, setEditVideo] = useState<VideoRecord | null>(null)
   const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null)
   const [previewVideoRecord, setPreviewVideoRecord] = useState<VideoRecord | null>(null)
   const [voiceCloneOpen, setVoiceCloneOpen] = useState(false)
+  const [brandSettingsOpen, setBrandSettingsOpen] = useState(false)
 
   // Audio preview playback state
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null)
@@ -83,6 +104,48 @@ export default function VideosView() {
   useEffect(() => {
     fetchVideos()
   }, [fetchVideos])
+
+  // Counts for pills
+  const counts = useMemo(() => {
+    const libCount = videos.filter(v => v.video_source === 'library_v2').length
+    const expCount = videos.filter(v => v.video_source === 'experimental').length
+    const customCount = videos.filter(v => v.video_source === 'custom').length
+    return {
+      all: videos.length,
+      library_v2: libCount,
+      experimental: expCount,
+      custom: customCount,
+    }
+  }, [videos])
+
+  // Filtered dataset
+  const filteredVideos = useMemo(() => {
+    return videos.filter(v => {
+      // Source filter
+      if (sourceFilter !== 'all') {
+        const src = v.video_source || (v.script_no ? 'library_v2' : 'experimental')
+        if (src !== sourceFilter) return false
+      }
+
+      // Batch filter
+      if (batchFilter !== 'all') {
+        if (v.batch_no !== batchFilter) return false
+      }
+
+      // Search filter
+      if (search && search.trim()) {
+        const q = search.toLowerCase().trim()
+        const matchTitle = v.title?.toLowerCase().includes(q)
+        const matchScript = v.script?.toLowerCase().includes(q)
+        const matchSpoken = v.spoken_cta?.toLowerCase().includes(q)
+        const matchBatch = v.batch_name?.toLowerCase().includes(q)
+        const matchBroll = v.broll_notes?.toLowerCase().includes(q)
+        if (!matchTitle && !matchScript && !matchSpoken && !matchBatch && !matchBroll) return false
+      }
+
+      return true
+    })
+  }, [videos, sourceFilter, batchFilter, search])
 
   // Play voice sample
   const handlePlayVoice = async (video: VideoRecord, e: React.MouseEvent) => {
@@ -137,7 +200,7 @@ export default function VideosView() {
       // Fallback
     }
 
-    // Fallback to browser SpeechSynthesis so voice preview always plays
+    // Fallback to browser SpeechSynthesis
     try {
       if ('speechSynthesis' in window) {
         const utterance = new SpeechSynthesisUtterance(sampleText)
@@ -178,6 +241,8 @@ export default function VideosView() {
       title: clonedTitle,
       status: 'draft',
       version_no: 1,
+      script_no: null,
+      video_source: 'custom',
     }
     delete (payload as any).id
     delete (payload as any).cre_dt
@@ -201,6 +266,8 @@ export default function VideosView() {
           title: clonedTitle,
           status: 'draft',
           version_no: 1,
+          script_no: null,
+          video_source: 'custom',
           cre_dt: new Date().toISOString(),
         }
         setVideos(prev => [clientClone, ...prev])
@@ -213,6 +280,8 @@ export default function VideosView() {
         title: clonedTitle,
         status: 'draft',
         version_no: 1,
+        script_no: null,
+        video_source: 'custom',
         cre_dt: new Date().toISOString(),
       }
       setVideos(prev => [clientClone, ...prev])
@@ -222,10 +291,11 @@ export default function VideosView() {
 
   const columns = useMemo(() => [
     columnHelper.accessor('title', {
-      header: 'Video & Thumbnail',
-      size: 280,
+      header: 'Video & Script Brief',
+      size: 320,
       cell: ({ row }) => {
         const v = row.original
+        const isLib = v.video_source === 'library_v2' || Boolean(v.script_no)
 
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -238,8 +308,8 @@ export default function VideosView() {
               sx={{
                 position: 'relative',
                 cursor: 'pointer',
-                width: 44,
-                height: v.format === 'short' ? 58 : 36,
+                width: 46,
+                height: v.format === 'short' ? 62 : 38,
                 borderRadius: 1,
                 overflow: 'hidden',
                 border: '1px solid',
@@ -284,26 +354,48 @@ export default function VideosView() {
             </Box>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
-              <Typography className='text-sm font-semibold' color='text.primary' noWrap title={v.title}>
-                {v.title || 'Untitled Video'}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center', flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                {v.script_no !== null && v.script_no !== undefined && (
+                  <Chip
+                    label={`#${String(v.script_no).padStart(2, '0')}`}
+                    size='small'
+                    color='primary'
+                    sx={{ height: 18, fontSize: 10, fontWeight: 800, px: 0.25 }}
+                  />
+                )}
+                <Typography className='text-sm font-semibold' color='text.primary' noWrap title={v.title}>
+                  {v.title || 'Untitled Video'}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', flexWrap: 'wrap' }}>
+                {v.batch_no && (
+                  <Chip
+                    label={`B${v.batch_no}`}
+                    title={v.batch_name || `Batch ${v.batch_no}`}
+                    size='small'
+                    color={BATCH_COLORS[v.batch_no] || 'default'}
+                    variant='tonal'
+                    sx={{ height: 16, fontSize: 9, fontWeight: 700 }}
+                  />
+                )}
                 <Chip
                   label={v.format === 'long' ? '16:9 Long' : '9:16 Short'}
                   size='small'
                   color={v.format === 'long' ? 'info' : 'primary'}
                   variant='tonal'
-                  sx={{ height: 18, fontSize: 10, fontWeight: 700 }}
+                  sx={{ height: 16, fontSize: 9, fontWeight: 700 }}
                 />
-                <Typography variant='caption' color='text.secondary'>
-                  {v.duration_sec}s
+                <Typography variant='caption' color='text.secondary' sx={{ fontSize: 10 }}>
+                  {v.target_length_min && v.target_length_max ? `${v.target_length_min}–${v.target_length_max}s` : `${v.duration_sec}s`}
                 </Typography>
-                {v.tempo !== 1 && (
+                {v.video_source === 'experimental' && (
                   <Chip
-                    label={`${Number(v.tempo).toFixed(1)}×`}
+                    label='🧪 Exp'
                     size='small'
+                    color='warning'
                     variant='outlined'
-                    sx={{ height: 18, fontSize: 10 }}
+                    sx={{ height: 16, fontSize: 9 }}
                   />
                 )}
               </Box>
@@ -314,7 +406,7 @@ export default function VideosView() {
     }),
     columnHelper.accessor('voice_name', {
       header: 'Voice (ElevenLabs)',
-      size: 190,
+      size: 175,
       cell: ({ row }) => {
         const v = row.original
         const isPlaying = playingVoiceId === v.id
@@ -338,7 +430,7 @@ export default function VideosView() {
                 />
               </Box>
               <Typography variant='caption' color='text.disabled' sx={{ fontSize: 10 }}>
-                {v.voice_id?.substring(0, 8)}…
+                {v.tempo && v.tempo !== 1 ? `${v.tempo}× speed` : '1.0× default'}
               </Typography>
             </Box>
 
@@ -361,14 +453,15 @@ export default function VideosView() {
       },
     }),
     columnHelper.accessor('script', {
-      header: 'Narration Script',
-      size: 240,
+      header: 'Narration Script & Spoken Hook',
+      size: 260,
       cell: ({ row }) => {
         const scriptText = row.original.script || ''
+        const spokenCta = row.original.spoken_cta || ''
         const wordCount = scriptText.trim() ? scriptText.trim().split(/\s+/).length : 0
 
         return (
-          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
             <Typography
               variant='caption'
               color='text.secondary'
@@ -382,8 +475,24 @@ export default function VideosView() {
             >
               {scriptText || <span style={{ fontStyle: 'italic', color: '#999' }}>No script set</span>}
             </Typography>
+            {spokenCta && (
+              <Typography
+                variant='caption'
+                sx={{
+                  color: 'primary.main',
+                  fontSize: 10,
+                  fontWeight: 600,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 1,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                📢 {spokenCta}
+              </Typography>
+            )}
             {wordCount > 0 && (
-              <Typography variant='caption' color='text.disabled' sx={{ fontSize: 10, mt: 0.25 }}>
+              <Typography variant='caption' color='text.disabled' sx={{ fontSize: 9 }}>
                 {wordCount} words
               </Typography>
             )}
@@ -393,49 +502,55 @@ export default function VideosView() {
     }),
     columnHelper.accessor('cta_text', {
       header: 'Call To Action (CTA)',
-      size: 200,
+      size: 210,
       cell: ({ row }) => {
         const v = row.original
+        const ctaTypeInfo = v.cta_type ? CTA_TYPE_LABELS[v.cta_type] : null
 
         return (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
             <Typography variant='caption' noWrap title={v.cta_text}>
               {v.cta_text || '—'}
             </Typography>
-            {v.cta_text && (
-              <Chip
-                label={v.cta_on_every_frame ? 'Visible Throughout' : 'End Frame'}
-                size='small'
-                color={v.cta_on_every_frame ? 'secondary' : 'default'}
-                variant='outlined'
-                sx={{ height: 18, fontSize: 10, width: 'fit-content' }}
-              />
-            )}
+            <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', flexWrap: 'wrap' }}>
+              {ctaTypeInfo && (
+                <Chip
+                  label={ctaTypeInfo.label}
+                  size='small'
+                  color={ctaTypeInfo.color}
+                  variant='tonal'
+                  sx={{ height: 16, fontSize: 9, fontWeight: 700 }}
+                />
+              )}
+              {v.lead_capture_destination && (
+                <Chip
+                  label={v.lead_capture_destination.replace(/ landing page| lead magnet/gi, '')}
+                  size='small'
+                  variant='outlined'
+                  sx={{ height: 16, fontSize: 9 }}
+                />
+              )}
+            </Box>
           </Box>
         )
       },
     }),
-    columnHelper.accessor('media_assets', {
-      header: 'Assets & Sequence',
-      size: 150,
+    columnHelper.accessor('batch_name', {
+      header: 'Batch & Topic',
+      size: 190,
       cell: ({ row }) => {
-        const assets = row.original.media_assets || []
-
-        if (assets.length === 0) {
-          return <Typography variant='caption' color='text.disabled'>No assets</Typography>
+        const v = row.original
+        if (!v.batch_no) {
+          return <Typography variant='caption' color='text.disabled'>Individual Video</Typography>
         }
 
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <AvatarGroup max={3} sx={{ '& .MuiAvatar-root': { width: 26, height: 26, fontSize: 11 } }}>
-              {assets.map((a, i) => (
-                <Avatar key={i} src={a.url} alt={a.name}>
-                  {a.type === 'video' ? '▶' : '🖼'}
-                </Avatar>
-              ))}
-            </AvatarGroup>
-            <Typography variant='caption' fontWeight={600} color='text.secondary'>
-              ({assets.length})
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+            <Typography variant='caption' fontWeight={700} color='text.primary' noWrap>
+              Batch {v.batch_no}
+            </Typography>
+            <Typography variant='caption' color='text.secondary' noWrap sx={{ fontSize: 10 }}>
+              {v.batch_name}
             </Typography>
           </Box>
         )
@@ -443,7 +558,7 @@ export default function VideosView() {
     }),
     columnHelper.accessor('status', {
       header: 'Status',
-      size: 110,
+      size: 100,
       cell: ({ row }) => {
         const s = row.original.status || 'draft'
         const colorMap: Record<string, 'default' | 'info' | 'success' | 'error'> = {
@@ -465,24 +580,12 @@ export default function VideosView() {
     }),
     columnHelper.accessor('cre_dt', {
       header: 'Created',
-      size: 150,
+      size: 130,
       cell: ({ row }) => (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant='caption'>{formatDate(row.original.cre_dt)}</Typography>
           <Typography variant='caption' color='text.disabled' sx={{ fontSize: 10 }}>
             {row.original.cre_by || 'System'}
-          </Typography>
-        </Box>
-      ),
-    }),
-    columnHelper.accessor('mod_dt', {
-      header: 'Modified',
-      size: 150,
-      cell: ({ row }) => (
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Typography variant='caption'>{formatDate(row.original.mod_dt)}</Typography>
-          <Typography variant='caption' color='text.disabled' sx={{ fontSize: 10 }}>
-            {row.original.mod_by || '—'}
           </Typography>
         </Box>
       ),
@@ -556,8 +659,7 @@ export default function VideosView() {
   ], [playingVoiceId])
 
   const defaultColVisibility = {
-    mod_dt: false,
-    mod_by: false,
+    batch_name: true,
   }
 
   const handleSaved = (saved: VideoRecord) => {
@@ -584,64 +686,156 @@ export default function VideosView() {
 
   return (
     <>
-      <EntityListView<VideoRecord>
-        columns={columns as any}
-        data={videos}
-        storageKey='fs-videos-grid'
-        defaultColVisibility={defaultColVisibility}
-        title='Video Production & Assets'
-        searchValue={search}
-        onSearchChange={setSearch}
-        searchPlaceholder='Search videos by title, script, directive...'
-        toolbarActions={
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            <Button
-              size='small'
-              variant='contained'
-              color='secondary'
-              startIcon={<i className='tabler-microphone' />}
-              onClick={() => setVoiceCloneOpen(true)}
-              sx={{ fontWeight: 700 }}
-            >
-              🎙️ Record Mike's Voice
-            </Button>
-            <Button
-              size='small'
-              variant='outlined'
-              color='secondary'
-              startIcon={<i className='tabler-book' />}
-              href='https://docs.google.com/document/d/1sKs7udDUjNi-W1YudE5PY9nlWEvfC9447nDU0VAT4fo/edit'
-              target='_blank'
-              rel='noopener noreferrer'
-            >
-              Brand Bible (Google Doc)
-            </Button>
-            <Button
-              size='small'
-              variant='outlined'
-              color='primary'
-              startIcon={<i className='tabler-brand-google-drive' />}
-              href='https://drive.google.com/drive/folders/1BrTO9rFFgLbLJQI1NhXWtblQ8EcA2Cis'
-              target='_blank'
-              rel='noopener noreferrer'
-            >
-              Drive Folder
-            </Button>
-          </Box>
-        }
-        newButtonLabel='+ Create Video'
-        onNewClick={() => setCreateOpen(true)}
-        onExportCsv={(rows) => {
-          const csv = ['ID,Title,Format,DurationSec,Voice,Tempo,Status,CTA,CreatedBy,CreatedDate'].concat(
-            rows.map(r => `"${r.id}","${r.title.replace(/"/g, '""')}","${r.format}",${r.duration_sec},"${r.voice_name}",${r.tempo},"${r.status}","${r.cta_text.replace(/"/g, '""')}","${r.cre_by}","${r.cre_dt}"`)
-          ).join('\n')
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        {/* Top Filter Strip: Source Filters & Batch Lanes */}
+        <Box sx={{
+          p: 1.5,
+          borderRadius: 2,
+          bgcolor: 'background.paper',
+          border: '1px solid',
+          borderColor: 'divider',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1.25,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+        }}>
+          {/* Row 1: Source Filter Pills */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+              <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ mr: 0.5 }}>
+                COLLECTION:
+              </Typography>
+              <Chip
+                label={`📚 Script Library V2 (${counts.library_v2})`}
+                clickable
+                color={sourceFilter === 'library_v2' ? 'primary' : 'default'}
+                variant={sourceFilter === 'library_v2' ? 'filled' : 'outlined'}
+                onClick={() => setSourceFilter('library_v2')}
+                sx={{ fontWeight: 700, height: 28 }}
+              />
+              <Chip
+                label={`🧪 Experimental (${counts.experimental})`}
+                clickable
+                color={sourceFilter === 'experimental' ? 'warning' : 'default'}
+                variant={sourceFilter === 'experimental' ? 'filled' : 'outlined'}
+                onClick={() => setSourceFilter('experimental')}
+                sx={{ fontWeight: 700, height: 28 }}
+              />
+              <Chip
+                label={`✨ All Videos (${counts.all})`}
+                clickable
+                color={sourceFilter === 'all' ? 'secondary' : 'default'}
+                variant={sourceFilter === 'all' ? 'filled' : 'outlined'}
+                onClick={() => setSourceFilter('all')}
+                sx={{ fontWeight: 700, height: 28 }}
+              />
+            </Box>
 
-          downloadBlob(csv, 'fedsafe_videos.csv', 'text/csv')
-        }}
-        onExportJson={(rows) => downloadJson(rows, 'fedsafe_videos.json')}
-        emptyMessage='No videos created yet. Click "+ Create Video" to configure your first video script and voice narration.'
-        onRowDoubleClick={(row) => setEditVideo(row)}
-      />
+            <Typography variant='caption' color='text.secondary'>
+              Showing <strong>{filteredVideos.length}</strong> of {videos.length} videos
+            </Typography>
+          </Box>
+
+          {/* Row 2: Batch Filter Pills (when looking at Library V2 or All) */}
+          {(sourceFilter === 'library_v2' || sourceFilter === 'all') && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', pt: 0.5, borderTop: '1px dashed', borderColor: 'divider' }}>
+              <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ mr: 0.5, fontSize: 10 }}>
+                BATCH LANES:
+              </Typography>
+              <Chip
+                label='All Batches'
+                size='small'
+                clickable
+                color={batchFilter === 'all' ? 'primary' : 'default'}
+                variant={batchFilter === 'all' ? 'filled' : 'outlined'}
+                onClick={() => setBatchFilter('all')}
+                sx={{ height: 22, fontSize: 10, fontWeight: 700 }}
+              />
+              {[
+                { no: 1, label: 'B1: Core Traps (10)' },
+                { no: 2, label: 'B2: ORA Process (10)' },
+                { no: 3, label: 'B3: FERS & Dates (10)' },
+                { no: 4, label: 'B4: Insurance & Medicare (10)' },
+                { no: 5, label: 'B5: TSP & Income (10)' },
+                { no: 6, label: 'B6: Agency & Rules (10)' },
+              ].map(b => (
+                <Chip
+                  key={b.no}
+                  label={b.label}
+                  size='small'
+                  clickable
+                  color={batchFilter === b.no ? (BATCH_COLORS[b.no] || 'primary') : 'default'}
+                  variant={batchFilter === b.no ? 'filled' : 'outlined'}
+                  onClick={() => setBatchFilter(b.no)}
+                  sx={{ height: 22, fontSize: 10, fontWeight: 600 }}
+                />
+              ))}
+            </Box>
+          )}
+        </Box>
+
+        {/* Entity List View */}
+        <EntityListView<VideoRecord>
+          columns={columns as any}
+          data={filteredVideos}
+          storageKey='fs-videos-grid'
+          defaultColVisibility={defaultColVisibility}
+          title='Video Production & Assets'
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder='Search 60 scripts by title, spoken hook, topic, b-roll...'
+          toolbarActions={
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              {/* Brand Bible & Production Rules Panel Button */}
+              <Button
+                size='small'
+                variant='contained'
+                color='primary'
+                startIcon={<i className='tabler-book-2' />}
+                onClick={() => setBrandSettingsOpen(true)}
+                sx={{ fontWeight: 700, bgcolor: 'primary.main', '&:hover': { bgcolor: 'primary.dark' } }}
+              >
+                📋 Brand Bible & Production Rules
+              </Button>
+
+              <Button
+                size='small'
+                variant='contained'
+                color='secondary'
+                startIcon={<i className='tabler-microphone' />}
+                onClick={() => setVoiceCloneOpen(true)}
+                sx={{ fontWeight: 700 }}
+              >
+                🎙️ Record Mike's Voice
+              </Button>
+
+              <Button
+                size='small'
+                variant='outlined'
+                color='primary'
+                startIcon={<i className='tabler-brand-google-drive' />}
+                href='https://drive.google.com/drive/folders/1BrTO9rFFgLbLJQI1NhXWtblQ8EcA2Cis'
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                Drive Folder
+              </Button>
+            </Box>
+          }
+          newButtonLabel='+ Create Video'
+          onNewClick={() => setCreateOpen(true)}
+          onExportCsv={(rows) => {
+            const csv = ['ScriptNo,BatchNo,Title,Format,DurationSec,Voice,Status,SpokenCTA,OnScreenCTA,LeadDestination,CreatedBy'].concat(
+              rows.map(r => `"${r.script_no ?? ''}","${r.batch_no ?? ''}","${(r.title || '').replace(/"/g, '""')}","${r.format}",${r.duration_sec},"${r.voice_name}","${r.status}","${(r.spoken_cta || '').replace(/"/g, '""')}","${(r.cta_text || '').replace(/"/g, '""')}","${(r.lead_capture_destination || '').replace(/"/g, '""')}","${r.cre_by}"`)
+            ).join('\n')
+
+            downloadBlob(csv, 'fedsafe_60_video_scripts.csv', 'text/csv')
+          }}
+          onExportJson={(rows) => downloadJson(rows, 'fedsafe_60_video_scripts.json')}
+          emptyMessage='No videos match your current filter. Try selecting "All Videos" or clearing the search.'
+          onRowDoubleClick={(row) => setEditVideo(row)}
+        />
+      </Box>
 
       {/* Create / Edit Dialog */}
       <VideoEditDialog
@@ -652,6 +846,12 @@ export default function VideosView() {
         }}
         video={editVideo}
         onSaved={handleSaved}
+      />
+
+      {/* Brand Bible & Global Production Rules Dialog */}
+      <VideoBrandSettingsDialog
+        open={brandSettingsOpen}
+        onClose={() => setBrandSettingsOpen(false)}
       />
 
       {/* Confirmation Dialog for Soft Deletion */}
@@ -709,7 +909,7 @@ export default function VideosView() {
                   sx={{ height: 18, fontSize: 10, fontWeight: 700 }}
                 />
                 <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.6)' }}>
-                  {previewVideoRecord?.duration_sec}s Duration · Voice: {previewVideoRecord?.voice_name || 'Kai'}
+                  {previewVideoRecord?.duration_sec}s Duration · Voice: {previewVideoRecord?.voice_name || 'Adam'}
                 </Typography>
               </Box>
             </Box>

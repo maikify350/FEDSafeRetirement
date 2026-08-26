@@ -104,6 +104,22 @@ export interface VideoRecord {
   continuity_references: ContinuityReference[]
   media_assets: MediaAsset[]
   metadata?: Record<string, any>
+
+  // Script Library V2 & Production Fields
+  script_no?: number | null
+  batch_no?: number | null
+  batch_name?: string
+  target_length_min?: number | null
+  target_length_max?: number | null
+  spoken_cta?: string
+  onscreen_structure?: string
+  end_screen_text?: string
+  broll_notes?: string
+  lead_capture_destination?: string
+  cta_type?: 'direct_review' | 'lead_magnet' | 'website_traffic' | 'agency' | ''
+  platforms?: string[]
+  video_source?: 'library_v2' | 'experimental' | 'custom'
+
   is_deleted: boolean
   cre_dt: string
   cre_by: string
@@ -230,6 +246,21 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   const currentVoiceName = ELEVENLABS_VOICES.find(v => v.id === voiceId)?.name || 'Adam'
   const [status, setStatus] = useState<'draft' | 'generating' | 'ready' | 'failed'>('draft')
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
+
+  // Script Library V2 & Production Fields
+  const [scriptNo, setScriptNo] = useState<number | null>(null)
+  const [batchNo, setBatchNo] = useState<number | null>(null)
+  const [batchName, setBatchName] = useState<string>('')
+  const [targetLengthMin, setTargetLengthMin] = useState<number | null>(null)
+  const [targetLengthMax, setTargetLengthMax] = useState<number | null>(null)
+  const [spokenCta, setSpokenCta] = useState<string>('')
+  const [onscreenStructure, setOnscreenStructure] = useState<string>('')
+  const [endScreenText, setEndScreenText] = useState<string>('')
+  const [brollNotes, setBrollNotes] = useState<string>('')
+  const [leadCaptureDestination, setLeadCaptureDestination] = useState<string>('')
+  const [ctaType, setCtaType] = useState<'direct_review' | 'lead_magnet' | 'website_traffic' | 'agency' | ''>('')
+  const [platforms, setPlatforms] = useState<string[]>(['facebook', 'instagram', 'tiktok', 'youtube_shorts'])
+  const [videoSource, setVideoSource] = useState<'library_v2' | 'experimental' | 'custom'>('custom')
   
   // Advanced features
   const [hyperframes, setHyperframes] = useState<Hyperframe[]>([])
@@ -346,6 +377,21 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         setLogoSize(video.metadata?.logo_size || 'medium')
         setLogoOpacity(typeof video.metadata?.logo_opacity === 'number' ? video.metadata.logo_opacity : 0.9)
         setRemotionComposition(video.metadata?.remotion_composition || '')
+
+        // Script Library V2 fields
+        setScriptNo(video.script_no ?? null)
+        setBatchNo(video.batch_no ?? null)
+        setBatchName(video.batch_name || '')
+        setTargetLengthMin(video.target_length_min ?? null)
+        setTargetLengthMax(video.target_length_max ?? null)
+        setSpokenCta(video.spoken_cta || '')
+        setOnscreenStructure(video.onscreen_structure || '')
+        setEndScreenText(video.end_screen_text || '')
+        setBrollNotes(video.broll_notes || '')
+        setLeadCaptureDestination(video.lead_capture_destination || '')
+        setCtaType(video.cta_type || '')
+        setPlatforms(Array.isArray(video.platforms) && video.platforms.length > 0 ? video.platforms : ['facebook', 'instagram', 'tiktok', 'youtube_shorts'])
+        setVideoSource(video.video_source || 'custom')
       } else {
         setTitle('')
         setFormat('short')
@@ -376,6 +422,21 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         setLogoSize('medium')
         setLogoOpacity(0.9)
         setRemotionComposition('')
+
+        // Script Library V2 fields reset
+        setScriptNo(null)
+        setBatchNo(null)
+        setBatchName('')
+        setTargetLengthMin(null)
+        setTargetLengthMax(null)
+        setSpokenCta('')
+        setOnscreenStructure('')
+        setEndScreenText('')
+        setBrollNotes('')
+        setLeadCaptureDestination('')
+        setCtaType('')
+        setPlatforms(['facebook', 'instagram', 'tiktok', 'youtube_shorts'])
+        setVideoSource('custom')
       }
       setTab('script')
       setDirty(false)
@@ -656,6 +717,22 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         continuity_references: continuityReferences,
         media_assets: mediaAssets,
         version_no: versionCount + 1,
+
+        // Script Library V2 & Production Fields
+        script_no: scriptNo,
+        batch_no: batchNo,
+        batch_name: batchName,
+        target_length_min: targetLengthMin,
+        target_length_max: targetLengthMax,
+        spoken_cta: spokenCta,
+        onscreen_structure: onscreenStructure,
+        end_screen_text: endScreenText,
+        broll_notes: brollNotes,
+        lead_capture_destination: leadCaptureDestination,
+        cta_type: ctaType,
+        platforms: platforms,
+        video_source: videoSource,
+
         metadata: {
           ...(video?.metadata || {}),
           show_shield_logo: showShieldLogo,
@@ -1079,6 +1156,22 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
       hyperframes,
       continuity_references: continuityReferences,
       media_assets: mediaAssets,
+
+      // Script Library V2 & Production Fields
+      script_no: scriptNo,
+      batch_no: batchNo,
+      batch_name: batchName,
+      target_length_min: targetLengthMin,
+      target_length_max: targetLengthMax,
+      spoken_cta: spokenCta,
+      onscreen_structure: onscreenStructure,
+      end_screen_text: endScreenText,
+      broll_notes: brollNotes,
+      lead_capture_destination: leadCaptureDestination,
+      cta_type: ctaType,
+      platforms: platforms,
+      video_source: videoSource,
+
       metadata: {
         ...(video?.metadata || {}),
         show_shield_logo: showShieldLogo,
@@ -1146,6 +1239,21 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
       continuity_references: continuityReferences,
       media_assets: mediaAssets,
       version_no: 1,
+
+      // Script Library V2 & Production Fields
+      script_no: null,
+      batch_no: batchNo,
+      batch_name: batchName,
+      target_length_min: targetLengthMin,
+      target_length_max: targetLengthMax,
+      spoken_cta: spokenCta,
+      onscreen_structure: onscreenStructure,
+      end_screen_text: endScreenText,
+      broll_notes: brollNotes,
+      lead_capture_destination: leadCaptureDestination,
+      cta_type: ctaType,
+      platforms: platforms,
+      video_source: 'custom',
     }
 
     try {
@@ -1346,11 +1454,61 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
         }
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 0.5 }}>
-          {/* Row 1: Title, Format & Duration */}
+          {/* Header Metadata Strip: Script #, Batch #, Source & Target Length */}
+          {(batchNo || scriptNo || videoSource || targetLengthMin || targetLengthMax) && (
+            <Box sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 1,
+              p: 1.25,
+              px: 1.5,
+              borderRadius: 1.5,
+              bgcolor: 'primary.lightOpacity',
+              border: '1px solid',
+              borderColor: 'primary.lighter',
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                {scriptNo !== null && (
+                  <Chip
+                    label={`Script #${scriptNo}`}
+                    size='small'
+                    color='primary'
+                    sx={{ fontWeight: 800, height: 22, fontSize: 11 }}
+                  />
+                )}
+                {batchNo !== null && (
+                  <Chip
+                    label={`Batch ${batchNo}: ${batchName || `Batch ${batchNo}`}`}
+                    size='small'
+                    color='secondary'
+                    variant='tonal'
+                    sx={{ fontWeight: 700, height: 22, fontSize: 11 }}
+                  />
+                )}
+                <Chip
+                  label={videoSource === 'library_v2' ? '📚 Script Library V2' : videoSource === 'experimental' ? '🧪 Experimental' : '✨ Custom Project'}
+                  size='small'
+                  variant='outlined'
+                  color={videoSource === 'library_v2' ? 'success' : videoSource === 'experimental' ? 'warning' : 'default'}
+                  sx={{ height: 22, fontSize: 10, fontWeight: 700 }}
+                />
+              </Box>
+
+              {(targetLengthMin || targetLengthMax) && (
+                <Typography variant='caption' fontWeight={700} color='primary.main' sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <i className='tabler-clock text-[14px]' /> Target Range: {targetLengthMin || 30}–{targetLengthMax || 40}s (Midpoint: {durationSec}s)
+                </Typography>
+              )}
+            </Box>
+          )}
+
+          {/* Row 1: Title, Format & Duration / Target Length Range */}
           <Box sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '2fr auto auto' },
-            gap: 2,
+            gridTemplateColumns: { xs: '1fr', md: '2fr auto auto auto auto' },
+            gap: 1.5,
             alignItems: 'center',
           }}>
             <TextField
@@ -1381,20 +1539,44 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
               />
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <TextField
-                label='Duration'
-                type='number'
-                size='small'
-                value={durationSec}
-                onChange={e => { setDurationSec(Math.max(5, Math.min(300, Number(e.target.value) || 30))); setDirty(true) }}
-                InputProps={{
-                  endAdornment: <InputAdornment position='end'>sec</InputAdornment>,
-                  inputProps: { min: 5, max: 300, step: 5 }
-                }}
-                sx={{ width: 120 }}
-              />
-            </Box>
+            <TextField
+              label='Target Duration'
+              type='number'
+              size='small'
+              value={durationSec}
+              onChange={e => { setDurationSec(Math.max(5, Math.min(300, Number(e.target.value) || 30))); setDirty(true) }}
+              InputProps={{
+                endAdornment: <InputAdornment position='end'>sec</InputAdornment>,
+                inputProps: { min: 5, max: 300, step: 5 }
+              }}
+              sx={{ width: 120 }}
+            />
+
+            <TextField
+              label='Min Length'
+              type='number'
+              size='small'
+              value={targetLengthMin ?? ''}
+              onChange={e => { setTargetLengthMin(e.target.value ? Number(e.target.value) : null); setDirty(true) }}
+              InputProps={{
+                endAdornment: <InputAdornment position='end'>s</InputAdornment>,
+                inputProps: { min: 5, max: 300, step: 5 }
+              }}
+              sx={{ width: 105 }}
+            />
+
+            <TextField
+              label='Max Length'
+              type='number'
+              size='small'
+              value={targetLengthMax ?? ''}
+              onChange={e => { setTargetLengthMax(e.target.value ? Number(e.target.value) : null); setDirty(true) }}
+              InputProps={{
+                endAdornment: <InputAdornment position='end'>s</InputAdornment>,
+                inputProps: { min: 5, max: 300, step: 5 }
+              }}
+              sx={{ width: 105 }}
+            />
           </Box>
 
           {/* Row 2: Generation Mode (Static vs Motion) & Video Model Selection */}
@@ -1612,63 +1794,210 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                     />
                   </Box>
 
-                  {/* AI Directive */}
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-                    <Typography variant='subtitle2' fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <i className='tabler-sparkles text-[18px] text-primary' />
-                      AI Generation Directive & Visual Rules
+                  {/* Spoken CTA & Conversion Destination Box */}
+                  <Box sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    bgcolor: 'action.hover',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1.5,
+                  }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                      <Typography variant='subtitle2' fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <i className='tabler-speakerphone text-[18px] text-primary' />
+                        Spoken Call to Action (Audible Speech) & Strategy
+                      </Typography>
+                      <FormControl size='small' sx={{ minWidth: 180 }}>
+                        <InputLabel id='cta-type-label'>CTA Purpose</InputLabel>
+                        <Select
+                          labelId='cta-type-label'
+                          value={ctaType}
+                          label='CTA Purpose'
+                          onChange={e => { setCtaType(e.target.value as any); setDirty(true) }}
+                        >
+                          <MenuItem value=''><em>None / Standard</em></MenuItem>
+                          <MenuItem value='direct_review'>🎯 Direct Review (High Intent)</MenuItem>
+                          <MenuItem value='lead_magnet'>🧲 Lead Magnet (Checklist/Guide)</MenuItem>
+                          <MenuItem value='website_traffic'>🌐 Website Traffic (Awareness)</MenuItem>
+                          <MenuItem value='agency'>🏛️ Agency / Workforce Briefing</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Box>
+
+                    <TextField
+                      fullWidth
+                      size='small'
+                      label='Spoken CTA (Voiceover Closing Line)'
+                      placeholder='e.g. Before you choose a retirement date, schedule a federal retirement readiness review.'
+                      value={spokenCta}
+                      onChange={e => { setSpokenCta(e.target.value); setDirty(true) }}
+                    />
+
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
+                      <TextField
+                        fullWidth
+                        size='small'
+                        label='Lead Capture / Landing Page Destination'
+                        placeholder='e.g. Retirement Readiness Review landing page'
+                        value={leadCaptureDestination}
+                        onChange={e => { setLeadCaptureDestination(e.target.value); setDirty(true) }}
+                      />
+
+                      <TextField
+                        fullWidth
+                        size='small'
+                        label='On-Screen CTA Overlay Banner'
+                        placeholder='e.g. Call (774) 273-8473 | FedSafeRetirement.com'
+                        value={ctaText}
+                        onChange={e => { setCtaText(e.target.value); setDirty(true) }}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position='end'>
+                              <Tooltip title={ctaOnEveryFrame ? 'Overlay visible on every frame' : 'Overlay only on final CTA frame'}>
+                                <FormControlLabel
+                                  control={
+                                    <Switch
+                                      size='small'
+                                      checked={ctaOnEveryFrame}
+                                      onChange={e => { setCtaOnEveryFrame(e.target.checked); setDirty(true) }}
+                                      color='primary'
+                                    />
+                                  }
+                                  label={<Typography variant='caption' sx={{ fontSize: 9 }}>All Frames</Typography>}
+                                  sx={{ m: 0 }}
+                                />
+                              </Tooltip>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Box>
+                  </Box>
+
+                  {/* On-Screen Structure & End-Screen Credibility Card */}
+                  <Box sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    bgcolor: 'background.paper',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1.5,
+                  }}>
+                    <Typography variant='subtitle2' fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      <i className='tabler-layout-grid text-[18px] text-primary' />
+                      On-Screen Structure & End-Screen Credibility
+                    </Typography>
+
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={2}
+                      size='small'
+                      label='On-Screen Structure (Opening / Middle / Final CTA layout notes)'
+                      placeholder='Opening: Deductions change the number. | Middle: Gross vs Net | Final CTA: Know what you keep.'
+                      value={onscreenStructure}
+                      onChange={e => { setOnscreenStructure(e.target.value); setDirty(true) }}
+                    />
+
+                    <TextField
+                      fullWidth
+                      size='small'
+                      label='End-Screen Credibility Footer Text'
+                      placeholder='e.g. FedSafe Retirement | Registered Federal Contractor | Net Retirement Income Review'
+                      value={endScreenText}
+                      onChange={e => { setEndScreenText(e.target.value); setDirty(true) }}
+                    />
+                  </Box>
+
+                  {/* Suggested B-Roll, Graphics & AI Directives */}
+                  <Box sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    bgcolor: 'action.hover',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1.5,
+                  }}>
+                    <Typography variant='subtitle2' fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      <i className='tabler-video text-[18px] text-primary' />
+                      Suggested B-Roll & Visual Asset Notes (Human Director Guidance)
                     </Typography>
                     <TextField
                       fullWidth
                       multiline
-                      rows={3}
-                      placeholder='Visual cues, pacing, lighting, b-roll recommendations...'
+                      rows={2}
+                      placeholder='e.g. Calendar date circled, employee reviewing benefits packet, gross-to-net graphic...'
+                      value={brollNotes}
+                      onChange={e => { setBrollNotes(e.target.value); setDirty(true) }}
+                      size='small'
+                    />
+
+                    <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                      <i className='tabler-sparkles text-[14px] text-primary' />
+                      AI Motion Prompt / Generative Directives (Optional Model Prompts):
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={2}
+                      placeholder='Specific prompts for Higgsfield / Sora / Kling AI generation...'
                       value={aiDirective}
                       onChange={e => { setAiDirective(e.target.value); setDirty(true) }}
                       size='small'
                     />
                   </Box>
 
-                  {/* CTA Message */}
+                  {/* Target Social Platforms Selector */}
                   <Box sx={{
                     p: 1.5,
                     borderRadius: 1.5,
-                    bgcolor: 'action.hover',
+                    bgcolor: 'background.paper',
                     border: '1px solid',
                     borderColor: 'divider',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 1,
                   }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant='subtitle2' fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                        <i className='tabler-flag text-[16px] text-primary' />
-                        Call to Action (CTA)
-                      </Typography>
-                      <FormControlLabel
-                        control={
-                          <Switch
+                    <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      <i className='tabler-share text-[16px] text-primary' />
+                      Target Distribution Platforms
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      {[
+                        { id: 'facebook', label: 'Facebook', icon: 'tabler-brand-facebook' },
+                        { id: 'instagram', label: 'Instagram Reels', icon: 'tabler-brand-instagram' },
+                        { id: 'tiktok', label: 'TikTok', icon: 'tabler-brand-tiktok' },
+                        { id: 'youtube_shorts', label: 'YouTube Shorts', icon: 'tabler-brand-youtube' },
+                        { id: 'linkedin', label: 'LinkedIn', icon: 'tabler-brand-linkedin' },
+                      ].map(p => {
+                        const active = platforms.includes(p.id)
+                        return (
+                          <Chip
+                            key={p.id}
+                            label={p.label}
                             size='small'
-                            checked={ctaOnEveryFrame}
-                            onChange={e => { setCtaOnEveryFrame(e.target.checked); setDirty(true) }}
-                            color='primary'
+                            icon={<i className={p.icon} />}
+                            clickable
+                            color={active ? 'primary' : 'default'}
+                            variant={active ? 'filled' : 'outlined'}
+                            onClick={() => {
+                              setPlatforms(prev =>
+                                active ? prev.filter(x => x !== p.id) : [...prev, p.id]
+                              )
+                              setDirty(true)
+                            }}
+                            sx={{ fontWeight: 600, height: 26, fontSize: 11 }}
                           />
-                        }
-                        label={
-                          <Typography variant='caption' fontWeight={600}>
-                            {ctaOnEveryFrame ? 'On Every Frame' : 'End Frame Only'}
-                          </Typography>
-                        }
-                        sx={{ m: 0 }}
-                      />
+                        )
+                      })}
                     </Box>
-                    <TextField
-                      fullWidth
-                      size='small'
-                      placeholder='e.g. Call (774) 273-8473 | FedSafeRetirement.com'
-                      value={ctaText}
-                      onChange={e => { setCtaText(e.target.value); setDirty(true) }}
-                    />
                   </Box>
                 </Box>
 

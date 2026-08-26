@@ -22,12 +22,15 @@ export async function GET(request: NextRequest) {
     const format = params.get('format')
     const mode = params.get('mode')
     const status = params.get('status')
+    const source = params.get('source')
+    const batch = params.get('batch')
     const search = params.get('search')
 
     let query = admin
       .from('videos')
       .select('*')
       .eq('is_deleted', false)
+      .order('script_no', { ascending: true, nullsFirst: false })
       .order('cre_dt', { ascending: false })
 
     if (format && format !== 'all') {
@@ -42,8 +45,16 @@ export async function GET(request: NextRequest) {
       query = query.eq('status', status)
     }
 
+    if (source && source !== 'all') {
+      query = query.eq('video_source', source)
+    }
+
+    if (batch && batch !== 'all') {
+      query = query.eq('batch_no', parseInt(batch, 10))
+    }
+
     if (search && search.trim()) {
-      query = query.or(`title.ilike.%${search.trim()}%,script.ilike.%${search.trim()}%,ai_directive.ilike.%${search.trim()}%`)
+      query = query.or(`title.ilike.%${search.trim()}%,script.ilike.%${search.trim()}%,ai_directive.ilike.%${search.trim()}%,broll_notes.ilike.%${search.trim()}%,batch_name.ilike.%${search.trim()}%`)
     }
 
     const { data, error } = await query
@@ -98,6 +109,22 @@ export async function POST(request: NextRequest) {
       continuity_references: Array.isArray(body.continuity_references) ? body.continuity_references : [],
       media_assets: Array.isArray(body.media_assets) ? body.media_assets : [],
       metadata: body.metadata || {},
+
+      // Script Library V2 & Production Fields
+      script_no: body.script_no !== undefined && body.script_no !== null ? Number(body.script_no) : null,
+      batch_no: body.batch_no !== undefined && body.batch_no !== null ? Number(body.batch_no) : null,
+      batch_name: body.batch_name ?? '',
+      target_length_min: body.target_length_min !== undefined && body.target_length_min !== null ? Number(body.target_length_min) : null,
+      target_length_max: body.target_length_max !== undefined && body.target_length_max !== null ? Number(body.target_length_max) : null,
+      spoken_cta: body.spoken_cta ?? '',
+      onscreen_structure: body.onscreen_structure ?? '',
+      end_screen_text: body.end_screen_text ?? '',
+      broll_notes: body.broll_notes ?? '',
+      lead_capture_destination: body.lead_capture_destination ?? '',
+      cta_type: body.cta_type ?? '',
+      platforms: Array.isArray(body.platforms) ? body.platforms : [],
+      video_source: body.video_source || 'custom',
+
       is_deleted: false,
       cre_by: userIdentifier,
       cre_dt: new Date().toISOString(),
