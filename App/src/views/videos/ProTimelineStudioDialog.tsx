@@ -142,7 +142,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
   // Find active hyperframe at current playhead time
   const currentHyperframe = useMemo(() => {
     return activeHyperframes.find(
-      hf => currentTime >= hf.timestamp_start && currentTime <= hf.timestamp_end
+      (hf: any) => currentTime >= hf.timestamp_start && currentTime <= hf.timestamp_end
     ) || activeHyperframes[0]
   }, [activeHyperframes, currentTime])
 
@@ -789,7 +789,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                   position: 'relative',
                   overflow: 'hidden',
                 }}>
-                  {activeHyperframes.map((hf, i) => {
+                  {activeHyperframes.map((hf: any, i: number) => {
                     const left = (hf.timestamp_start / totalDuration) * 100
                     const width = ((hf.timestamp_end - hf.timestamp_start) / totalDuration) * 100
                     const isActive = currentTime >= hf.timestamp_start && currentTime <= hf.timestamp_end
@@ -855,7 +855,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                   position: 'relative',
                   overflow: 'hidden',
                 }}>
-                  {activeHyperframes.map((hf, i) => {
+                  {activeHyperframes.map((hf: any, i: number) => {
                     const left = (hf.timestamp_start / totalDuration) * 100
                     const width = ((hf.timestamp_end - hf.timestamp_start) / totalDuration) * 100
                     const isActive = currentTime >= hf.timestamp_start && currentTime <= hf.timestamp_end
