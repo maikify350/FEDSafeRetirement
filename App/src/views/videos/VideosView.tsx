@@ -53,6 +53,45 @@ const CTA_TYPE_LABELS: Record<string, { label: string; color: 'primary' | 'secon
   agency: { label: '🏛️ Agency Briefing', color: 'success' },
 }
 
+const SCENE_IMAGE_POOLS: Record<number, string[]> = {
+  1: [
+    '/images/scenes/federal-advisor-consultation.jpg',
+    '/images/scenes/federal-couple-happy.jpg',
+    '/images/scenes/who-retired-vet.webp',
+    '/images/scenes/who-decision-background.webp',
+  ],
+  2: [
+    '/images/scenes/advisor-classroom.png',
+    '/images/scenes/advisor-session.png',
+    '/images/scenes/who-workshop.webp',
+    '/images/scenes/who-mike-podium.webp',
+  ],
+  3: [
+    '/images/scenes/military-buyback-desk.jpg',
+    '/images/scenes/who-retired-mail.webp',
+    '/images/scenes/seminar-hero.webp',
+    '/images/scenes/federal-couple-happy.jpg',
+  ],
+  4: [
+    '/images/scenes/fegli-rate-spike-shock.jpg',
+    '/images/scenes/pshb-healthcare-review.jpg',
+    '/images/scenes/federal-advisor-consultation.jpg',
+    '/images/scenes/federal-couple-happy.jpg',
+  ],
+  5: [
+    '/images/scenes/tsp-retirement-growth.jpg',
+    '/images/scenes/who-home-hero.webp',
+    '/images/scenes/federal-couple-happy.jpg',
+    '/images/scenes/federal-advisor-consultation.jpg',
+  ],
+  6: [
+    '/images/scenes/agency-benefits.png',
+    '/images/scenes/agency-education.png',
+    '/images/scenes/usps-mail-carrier-sunset.jpg',
+    '/images/scenes/who-mike-podium.webp',
+  ],
+}
+
 export default function VideosView() {
   const [videos, setVideos] = useState<VideoRecord[]>(DEFAULT_PREGENERATED_VIDEOS)
   const [studioTargetVideo, setStudioTargetVideo] = useState<VideoRecord | null>(null)
@@ -986,80 +1025,127 @@ export default function VideosView() {
           bgcolor: '#030712',
           minHeight: 460,
         }}>
-          {previewVideoRecord?.video_url ? (
-            <video
-              src={previewVideoRecord.video_url}
-              controls
-              autoPlay
-              style={{
+          {(() => {
+            if (previewVideoRecord?.video_url) {
+              return (
+                <video
+                  src={previewVideoRecord.video_url}
+                  controls
+                  autoPlay
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '68vh',
+                    borderRadius: 12,
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.8)',
+                    outline: 'none',
+                  }}
+                />
+              )
+            }
+
+            if (!previewVideoRecord) return null
+
+            const pool = SCENE_IMAGE_POOLS[previewVideoRecord.batch_no || 1] || SCENE_IMAGE_POOLS[1]
+            const bgImage = previewVideoRecord.media_assets?.[0]?.url || pool[0]
+
+            return (
+              <Box sx={{
+                width: previewVideoRecord.format === 'short' ? 320 : 600,
+                height: previewVideoRecord.format === 'short' ? 520 : 340,
                 maxWidth: '100%',
-                maxHeight: '68vh',
-                borderRadius: 12,
-                boxShadow: '0 12px 40px rgba(0,0,0,0.8)',
-                outline: 'none',
-              }}
-            />
-          ) : previewVideoRecord ? (
-            <Box sx={{
-              width: previewVideoRecord.format === 'short' ? 320 : 600,
-              height: previewVideoRecord.format === 'short' ? 520 : 340,
-              maxWidth: '100%',
-              bgcolor: '#0f172a',
-              borderRadius: 3,
-              border: '2px solid #312e81',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.8)',
-              position: 'relative',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              p: 3,
-              overflow: 'hidden',
-              background: 'linear-gradient(180deg, #0b1329 0%, #030712 100%)',
-            }}>
-              {/* Header Badges */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <Box sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)' }}>
-                  <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='FEDSafe' style={{ height: 18, display: 'block' }} />
-                </Box>
-                <Box sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)' }}>
-                  <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM.gov' style={{ height: 16, display: 'block' }} />
-                </Box>
-              </Box>
-
-              {/* Center Script Content (100% Match) */}
-              <Box sx={{ my: 'auto', textAlign: 'center' }}>
-                <Typography variant='caption' sx={{ color: 'primary.light', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 1 }}>
-                  {previewVideoRecord.batch_name || 'Federal Retirement Script'}
-                </Typography>
-                <Typography variant='h6' sx={{ color: 'white', fontWeight: 800, lineHeight: 1.3, mb: 1.5 }}>
-                  "{previewVideoRecord.title}"
-                </Typography>
-                <Typography variant='body2' sx={{ color: '#cbd5e1', fontSize: 13, lineHeight: 1.5, px: 1, fontStyle: 'italic' }}>
-                  "{previewVideoRecord.script ? previewVideoRecord.script.substring(0, 200) + (previewVideoRecord.script.length > 200 ? '…' : '') : 'No script configured'}"
-                </Typography>
-              </Box>
-
-              {/* Footer CTA */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {previewVideoRecord.spoken_cta && (
-                  <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.4)', textAlign: 'center' }}>
-                    <Typography variant='caption' sx={{ color: '#c7d2fe', fontWeight: 700, fontSize: 10, display: 'block' }}>
-                      📢 Closing Spoken CTA:
-                    </Typography>
-                    <Typography variant='caption' sx={{ color: 'white', fontWeight: 600, fontSize: 11 }}>
-                      "{previewVideoRecord.spoken_cta}"
-                    </Typography>
-                  </Box>
+                bgcolor: '#040711',
+                borderRadius: 3.5,
+                border: '2px solid #3b82f6',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.8), 0 0 25px rgba(59,130,246,0.25)',
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                p: 3,
+                overflow: 'hidden',
+              }}>
+                {/* Real Cinematic Topic B-Roll Scene Background Image */}
+                {bgImage && (
+                  <Box
+                    component='img'
+                    src={bgImage}
+                    alt='Scene Background'
+                    sx={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      transform: playingVoiceId === previewVideoRecord.id ? 'scale(1.12) translate(-2%, -2%)' : 'scale(1.0)',
+                      transition: 'transform 6s ease-out',
+                      zIndex: 1,
+                    }}
+                  />
                 )}
 
-                {previewVideoRecord.cta_text && (
-                  <Box sx={{ bgcolor: 'primary.main', color: 'white', py: 0.75, px: 1.5, borderRadius: 1, textAlign: 'center', fontWeight: 700, fontSize: 11 }}>
-                    {previewVideoRecord.cta_text}
+                {/* Dark Vignette & Gradient Overlay */}
+                <Box sx={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'linear-gradient(180deg, rgba(3, 7, 18, 0.78) 0%, rgba(3, 7, 18, 0.40) 35%, rgba(3, 7, 18, 0.88) 100%)',
+                  zIndex: 2,
+                }} />
+
+                {/* Header Badges */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 3 }}>
+                  <Box sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)' }}>
+                    <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='FEDSafe' style={{ height: 18, display: 'block' }} />
                   </Box>
-                )}
+                  <Box sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)' }}>
+                    <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM.gov' style={{ height: 16, display: 'block' }} />
+                  </Box>
+                </Box>
+
+                {/* Center Script Content (100% Match) */}
+                <Box sx={{
+                  my: 'auto',
+                  textAlign: 'center',
+                  zIndex: 3,
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: 'rgba(15, 23, 42, 0.75)',
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
+                }}>
+                  <Typography variant='caption' sx={{ color: '#38bdf8', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 0.75 }}>
+                    {previewVideoRecord.batch_name || 'Federal Retirement Script'}
+                  </Typography>
+                  <Typography variant='h6' sx={{ color: '#facc15', fontWeight: 800, lineHeight: 1.3, mb: 1, textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}>
+                    "{previewVideoRecord.title}"
+                  </Typography>
+                  <Typography variant='body2' sx={{ color: '#e2e8f0', fontSize: 13, lineHeight: 1.5, px: 1, fontStyle: 'italic' }}>
+                    "{previewVideoRecord.script ? previewVideoRecord.script.substring(0, 180) + (previewVideoRecord.script.length > 180 ? '…' : '') : 'No script configured'}"
+                  </Typography>
+                </Box>
+
+                {/* Footer CTA */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, zIndex: 3 }}>
+                  {previewVideoRecord.spoken_cta && (
+                    <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.4)', textAlign: 'center' }}>
+                      <Typography variant='caption' sx={{ color: '#c7d2fe', fontWeight: 700, fontSize: 10, display: 'block' }}>
+                        📢 Closing Spoken CTA:
+                      </Typography>
+                      <Typography variant='caption' sx={{ color: 'white', fontWeight: 600, fontSize: 11 }}>
+                        "{previewVideoRecord.spoken_cta}"
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {previewVideoRecord.cta_text && (
+                    <Box sx={{ bgcolor: 'primary.main', color: 'white', py: 0.75, px: 1.5, borderRadius: 1, textAlign: 'center', fontWeight: 700, fontSize: 11 }}>
+                      {previewVideoRecord.cta_text}
+                    </Box>
+                  )}
+                </Box>
               </Box>
-            </Box>
-          ) : null}
+            )
+          })()}
         </Box>
 
         {/* Footer / Script snippet & Action Controls */}

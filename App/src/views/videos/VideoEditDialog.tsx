@@ -342,6 +342,46 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
     }
   }, [])
 
+// Topic-matched background B-Roll scene image pools
+const SCENE_IMAGE_POOLS: Record<number, string[]> = {
+  1: [
+    '/images/scenes/federal-advisor-consultation.jpg',
+    '/images/scenes/federal-couple-happy.jpg',
+    '/images/scenes/who-retired-vet.webp',
+    '/images/scenes/who-decision-background.webp',
+  ],
+  2: [
+    '/images/scenes/advisor-classroom.png',
+    '/images/scenes/advisor-session.png',
+    '/images/scenes/who-workshop.webp',
+    '/images/scenes/who-mike-podium.webp',
+  ],
+  3: [
+    '/images/scenes/military-buyback-desk.jpg',
+    '/images/scenes/who-retired-mail.webp',
+    '/images/scenes/seminar-hero.webp',
+    '/images/scenes/federal-couple-happy.jpg',
+  ],
+  4: [
+    '/images/scenes/fegli-rate-spike-shock.jpg',
+    '/images/scenes/pshb-healthcare-review.jpg',
+    '/images/scenes/federal-advisor-consultation.jpg',
+    '/images/scenes/federal-couple-happy.jpg',
+  ],
+  5: [
+    '/images/scenes/tsp-retirement-growth.jpg',
+    '/images/scenes/who-home-hero.webp',
+    '/images/scenes/federal-couple-happy.jpg',
+    '/images/scenes/federal-advisor-consultation.jpg',
+  ],
+  6: [
+    '/images/scenes/agency-benefits.png',
+    '/images/scenes/agency-education.png',
+    '/images/scenes/usps-mail-carrier-sunset.jpg',
+    '/images/scenes/who-mike-podium.webp',
+  ],
+}
+
   // Live Animated Video Player state for modal
   const [playerIsPlaying, setPlayerIsPlaying] = useState(false)
   const [playerCurrentTime, setPlayerCurrentTime] = useState(0)
@@ -350,11 +390,19 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   const playerAnimRef = useRef<number | null>(null)
   const playerStartRef = useRef<number>(0)
 
-  // Segments for live kinetic preview
+  // Segments for live kinetic preview with real background scene imagery
   const liveSegments = useMemo(() => {
-    if (hyperframes && hyperframes.length > 0) return hyperframes
-    const sentences = script.split(/(?<=[.?!])\s+/).filter(Boolean)
     const dur = Math.max(5, durationSec || 35)
+    const pool = SCENE_IMAGE_POOLS[batchNo || 1] || SCENE_IMAGE_POOLS[1]
+
+    if (hyperframes && hyperframes.length > 0) {
+      return hyperframes.map((hf, idx) => ({
+        ...hf,
+        scene_image: mediaAssets[idx]?.url || pool[idx % pool.length],
+      }))
+    }
+
+    const sentences = script.split(/(?<=[.?!])\s+/).filter(Boolean)
     const segDur = dur / Math.max(1, sentences.length)
     return sentences.map((s, idx) => ({
       id: `live_hf_${idx}`,
@@ -364,8 +412,9 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
       text_segment: s.replace(/\/\//g, '').replace(/<[^>]*>/g, '').trim(),
       transition: idx % 2 === 0 ? 'slide_left' : 'zoom_in',
       camera_motion: idx % 2 === 0 ? 'push_forward' : 'pan_slow_right',
+      scene_image: mediaAssets[idx]?.url || pool[idx % pool.length],
     }))
-  }, [hyperframes, script, durationSec])
+  }, [hyperframes, script, durationSec, batchNo, mediaAssets])
 
   // Active segment at current scrubber position
   const activeLiveSegment = useMemo(() => {
@@ -3956,14 +4005,32 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
                   p: 2.5,
                   overflow: 'hidden',
                 }}>
-                  {/* Dynamic Motion Background */}
+                  {/* Real Cinematic Topic B-Roll / Scene Background Image */}
+                  {activeLiveSegment?.scene_image && (
+                    <Box
+                      component='img'
+                      key={activeLiveSegment?.scene_image || 'bg'}
+                      src={activeLiveSegment.scene_image}
+                      alt='Scene Background'
+                      sx={{
+                        position: 'absolute',
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        transform: playerIsPlaying ? 'scale(1.12) translate(-2%, -2%)' : 'scale(1.0)',
+                        transition: 'transform 6s ease-out, opacity 0.5s ease-in-out',
+                        zIndex: 1,
+                      }}
+                    />
+                  )}
+
+                  {/* Dark Cinematic Vignette & Gradient for ultra-crisp text readability */}
                   <Box sx={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'radial-gradient(circle at center, rgba(30, 58, 138, 0.45) 0%, rgba(3, 7, 18, 0.95) 100%)',
-                    transform: playerIsPlaying ? 'scale(1.05)' : 'scale(1.0)',
-                    transition: 'transform 4s ease-out',
-                    zIndex: 1,
+                    background: 'linear-gradient(180deg, rgba(3, 7, 18, 0.75) 0%, rgba(3, 7, 18, 0.40) 35%, rgba(3, 7, 18, 0.88) 100%)',
+                    zIndex: 2,
                   }} />
 
                   {/* Top Row: Brand Watermarks & Camera Tag */}

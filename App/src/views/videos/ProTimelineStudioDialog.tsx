@@ -72,9 +72,55 @@ export default function ProTimelineStudioDialog({
   const audioInstanceRef = useRef<HTMLAudioElement | null>(null)
   const timelineContainerRef = useRef<HTMLDivElement | null>(null)
 
+const SCENE_IMAGE_POOLS: Record<number, string[]> = {
+  1: [
+    '/images/scenes/federal-advisor-consultation.jpg',
+    '/images/scenes/federal-couple-happy.jpg',
+    '/images/scenes/who-retired-vet.webp',
+    '/images/scenes/who-decision-background.webp',
+  ],
+  2: [
+    '/images/scenes/advisor-classroom.png',
+    '/images/scenes/advisor-session.png',
+    '/images/scenes/who-workshop.webp',
+    '/images/scenes/who-mike-podium.webp',
+  ],
+  3: [
+    '/images/scenes/military-buyback-desk.jpg',
+    '/images/scenes/who-retired-mail.webp',
+    '/images/scenes/seminar-hero.webp',
+    '/images/scenes/federal-couple-happy.jpg',
+  ],
+  4: [
+    '/images/scenes/fegli-rate-spike-shock.jpg',
+    '/images/scenes/pshb-healthcare-review.jpg',
+    '/images/scenes/federal-advisor-consultation.jpg',
+    '/images/scenes/federal-couple-happy.jpg',
+  ],
+  5: [
+    '/images/scenes/tsp-retirement-growth.jpg',
+    '/images/scenes/who-home-hero.webp',
+    '/images/scenes/federal-couple-happy.jpg',
+    '/images/scenes/federal-advisor-consultation.jpg',
+  ],
+  6: [
+    '/images/scenes/agency-benefits.png',
+    '/images/scenes/agency-education.png',
+    '/images/scenes/usps-mail-carrier-sunset.jpg',
+    '/images/scenes/who-mike-podium.webp',
+  ],
+}
+
   // Auto-generate hyperframes if empty
   const activeHyperframes = useMemo(() => {
-    if (hyperframes && hyperframes.length > 0) return hyperframes
+    const pool = SCENE_IMAGE_POOLS[video?.batch_no || 1] || SCENE_IMAGE_POOLS[1]
+
+    if (hyperframes && hyperframes.length > 0) {
+      return hyperframes.map((hf, idx) => ({
+        ...hf,
+        scene_image: (hf as any).scene_image || video?.media_assets?.[idx]?.url || pool[idx % pool.length],
+      })) as Hyperframe[]
+    }
 
     // Fallback split sentences
     const sentences = script.split(/(?<=[.?!])\s+/).filter(Boolean)
@@ -89,8 +135,9 @@ export default function ProTimelineStudioDialog({
       visual_prompt: `Cinematic visualization: "${s.substring(0, 45)}..."`,
       transition: idx === 0 ? 'fade' : idx % 2 === 0 ? 'slide_left' : 'zoom_in',
       camera_motion: idx % 2 === 0 ? 'pan_slow_right' : 'push_forward',
-    })) as Hyperframe[]
-  }, [hyperframes, script, totalDuration])
+      scene_image: video?.media_assets?.[idx]?.url || pool[idx % pool.length],
+    })) as any
+  }, [hyperframes, script, totalDuration, video])
 
   // Find active hyperframe at current playhead time
   const currentHyperframe = useMemo(() => {
@@ -492,11 +539,30 @@ export default function ProTimelineStudioDialog({
                     </Box>
                   </Box>
 
-                  {/* Background Ambient Glow */}
+                  {/* Background Scene Image with Smooth Animation */}
+                  {(currentHyperframe as any)?.scene_image && (
+                    <Box
+                      component='img'
+                      src={(currentHyperframe as any).scene_image}
+                      alt='Scene'
+                      sx={{
+                        position: 'absolute',
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        transform: isPlaying ? 'scale(1.12) translate(-1%, -1%)' : 'scale(1.0)',
+                        transition: 'transform 4s ease-out',
+                        zIndex: 1,
+                      }}
+                    />
+                  )}
+
+                  {/* Dark Vignette Overlay for High Text Readability */}
                   <Box sx={{
                     position: 'absolute',
                     top: 0, left: 0, right: 0, bottom: 0,
-                    background: 'radial-gradient(circle at center, rgba(99,102,241,0.2) 0%, rgba(0,0,0,0.8) 100%)',
+                    background: 'linear-gradient(180deg, rgba(3, 7, 18, 0.72) 0%, rgba(3, 7, 18, 0.35) 35%, rgba(3, 7, 18, 0.88) 100%)',
                     zIndex: 1,
                   }} />
                 </Box>
