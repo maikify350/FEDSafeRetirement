@@ -342,6 +342,159 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
     }
   }, [])
 
+  // Live Animated Video Player state for modal
+  const [playerIsPlaying, setPlayerIsPlaying] = useState(false)
+  const [playerCurrentTime, setPlayerCurrentTime] = useState(0)
+  const [playerLoadingAudio, setPlayerLoadingAudio] = useState(false)
+  const playerAudioRef = useRef<HTMLAudioElement | null>(null)
+  const playerAnimRef = useRef<number | null>(null)
+  const playerStartRef = useRef<number>(0)
+
+  // Segments for live kinetic preview
+  const liveSegments = useMemo(() => {
+    if (hyperframes && hyperframes.length > 0) return hyperframes
+    const sentences = script.split(/(?<=[.?!])\s+/).filter(Boolean)
+    const dur = Math.max(5, durationSec || 35)
+    const segDur = dur / Math.max(1, sentences.length)
+    return sentences.map((s, idx) => ({
+      id: `live_hf_${idx}`,
+      order: idx + 1,
+      timestamp_start: Number((idx * segDur).toFixed(1)),
+      timestamp_end: Number(((idx + 1) * segDur).toFixed(1)),
+      text_segment: s.replace(/\/\//g, '').replace(/<[^>]*>/g, '').trim(),
+      transition: idx % 2 === 0 ? 'slide_left' : 'zoom_in',
+      camera_motion: idx % 2 === 0 ? 'push_forward' : 'pan_slow_right',
+    }))
+  }, [hyperframes, script, durationSec])
+
+  // Active segment at current scrubber position
+  const activeLiveSegment = useMemo(() => {
+    return liveSegments.find(
+      s => playerCurrentTime >= s.timestamp_start && playerCurrentTime <= s.timestamp_end
+    ) || liveSegments[0]
+  }, [liveSegments, playerCurrentTime])
+
+  // Clean stop for player modal audio
+  const stopPlayerAudio = () => {
+    if (playerAnimRef.current) {
+      cancelAnimationFrame(playerAnimRef.current)
+      playerAnimRef.current = null
+    }
+    if (playerAudioRef.current) {
+      playerAudioRef.current.pause()
+      playerAudioRef.current.currentTime = 0
+    }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+    }
+    setPlayerIsPlaying(false)
+    setPlayerLoadingAudio(false)
+  }
+
+  // Toggle Play/Pause on Live Animated Player
+  const handleTogglePlayer = async () => {
+    if (playerIsPlaying) {
+      stopPlayerAudio()
+      return
+    }
+
+    const dur = Math.max(5, durationSec || 35)
+    if (playerCurrentTime >= dur) {
+      setPlayerCurrentTime(0)
+    }
+
+    setPlayerLoadingAudio(true)
+
+    let audio = playerAudioRef.current
+    if (!audio || !audio.src) {
+      if (generatedAudioUrl) {
+        audio = new Audio(generatedAudioUrl)
+        playerAudioRef.current = audio
+      } else {
+        try {
+          const res = await fetch('/api/videos/voice-preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              engine: ttsEngine,
+              voice_id: selectedVoice.id,
+              voice_name: selectedVoice.name,
+              speed: tempo,
+              text: script.trim() || undefined,
+            }),
+          })
+          if (res.ok) {
+            const blob = await res.blob()
+            const url = URL.createObjectURL(blob)
+            setGeneratedAudioUrl(url)
+            audio = new Audio(url)
+            playerAudioRef.current = audio
+          }
+        } catch {
+          // fallback
+        }
+      }
+    }
+
+    setPlayerLoadingAudio(false)
+    setPlayerIsPlaying(true)
+
+    const startTime = performance.now() - (playerCurrentTime * 1000)
+    playerStartRef.current = startTime
+
+    if (audio) {
+      audio.currentTime = playerCurrentTime
+      audio.onended = () => {
+        setPlayerIsPlaying(false)
+        setPlayerCurrentTime(0)
+      }
+      audio.onerror = () => setPlayerIsPlaying(false)
+      audio.play().catch(() => {})
+    } else if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const sampleText = script.trim() || `Hello! This is a preview of the ${selectedVoice.name} voice.`
+      const utterance = new SpeechSynthesisUtterance(sampleText)
+      utterance.rate = tempo || 1.0
+      utterance.onend = () => {
+        setPlayerIsPlaying(false)
+        setPlayerCurrentTime(0)
+      }
+      window.speechSynthesis.speak(utterance)
+    }
+
+    const loop = () => {
+      const elapsed = (performance.now() - playerStartRef.current) / 1000
+      if (elapsed >= dur) {
+        setPlayerCurrentTime(dur)
+        setPlayerIsPlaying(false)
+        return
+      }
+      setPlayerCurrentTime(elapsed)
+      playerAnimRef.current = requestAnimationFrame(loop)
+    }
+    playerAnimRef.current = requestAnimationFrame(loop)
+  }
+
+  // Handle scrubber drag
+  const handleScrubberChange = (_: any, val: number | number[]) => {
+    const newTime = typeof val === 'number' ? val : val[0]
+    setPlayerCurrentTime(newTime)
+    playerStartRef.current = performance.now() - (newTime * 1000)
+    if (playerAudioRef.current) {
+      playerAudioRef.current.currentTime = newTime
+    }
+  }
+
+  // Auto start/stop live player on dialog open/close
+  useEffect(() => {
+    if (videoPlayerOpen && !video?.video_url) {
+      setPlayerCurrentTime(0)
+      handleTogglePlayer()
+    } else {
+      stopPlayerAudio()
+      setPlayerCurrentTime(0)
+    }
+  }, [videoPlayerOpen])
+
   // Gallery Picker dialog state
   const [galleryOpen, setGalleryOpen] = useState(false)
   const [galleryTarget, setGalleryTarget] = useState<'media' | 'thumbnail' | 'continuity'>('media')
@@ -3777,81 +3930,212 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
               )
             }
 
-            // Live Script Preview Canvas when MP4 is not rendered yet
+            // Live Animated Kinetic Video Player when MP4 is not rendered yet
+            const totalDur = Math.max(5, durationSec || 35)
+            const formatTime = (sec: number) => {
+              const m = Math.floor(sec / 60)
+              const s = Math.floor(sec % 60)
+              return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+            }
+
             return (
-              <Box sx={{
-                width: format === 'short' ? 320 : 640,
-                height: format === 'short' ? 540 : 360,
-                maxWidth: '100%',
-                bgcolor: '#0f172a',
-                borderRadius: 3,
-                border: '2px solid #312e81',
-                boxShadow: '0 20px 50px rgba(0,0,0,0.8)',
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                p: 3,
-                overflow: 'hidden',
-                background: 'linear-gradient(180deg, #0b1329 0%, #030712 100%)',
-              }}>
-                {/* Header Badge */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    {showShieldLogo && (
-                      <Box sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)' }}>
-                        <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='FEDSafe' style={{ height: 18, display: 'block' }} />
-                      </Box>
-                    )}
-                    {scriptNo !== null && (
-                      <Chip label={`Script #${scriptNo}`} size='small' color='primary' sx={{ height: 20, fontSize: 10, fontWeight: 800 }} />
-                    )}
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, width: '100%', maxWidth: format === 'short' ? 360 : 700 }}>
+                {/* 1. Live Animated Video Screen Canvas */}
+                <Box sx={{
+                  width: format === 'short' ? 320 : 640,
+                  height: format === 'short' ? 480 : 360,
+                  maxWidth: '100%',
+                  bgcolor: '#040711',
+                  borderRadius: 3.5,
+                  border: '2px solid #3b82f6',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.9), 0 0 25px rgba(59,130,246,0.25)',
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  p: 2.5,
+                  overflow: 'hidden',
+                }}>
+                  {/* Dynamic Motion Background */}
+                  <Box sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'radial-gradient(circle at center, rgba(30, 58, 138, 0.45) 0%, rgba(3, 7, 18, 0.95) 100%)',
+                    transform: playerIsPlaying ? 'scale(1.05)' : 'scale(1.0)',
+                    transition: 'transform 4s ease-out',
+                    zIndex: 1,
+                  }} />
+
+                  {/* Top Row: Brand Watermarks & Camera Tag */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      {showShieldLogo && (
+                        <Box sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)' }}>
+                          <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='FEDSafe' style={{ height: 18, display: 'block' }} />
+                        </Box>
+                      )}
+                      {scriptNo !== null && (
+                        <Chip label={`#${String(scriptNo).padStart(2, '0')}`} size='small' color='primary' sx={{ height: 20, fontSize: 10, fontWeight: 800 }} />
+                      )}
+                    </Box>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      {showSamBadge && (
+                        <Box sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)' }}>
+                          <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM.gov' style={{ height: 16, display: 'block' }} />
+                        </Box>
+                      )}
+                      <Chip
+                        label={activeLiveSegment?.camera_motion || 'motion'}
+                        size='small'
+                        sx={{ height: 18, fontSize: 9, fontWeight: 700, bgcolor: 'rgba(6,182,212,0.25)', color: '#22d3ee' }}
+                      />
+                    </Box>
                   </Box>
 
-                  {showSamBadge && (
-                    <Box sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)' }}>
-                      <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM.gov' style={{ height: 16, display: 'block' }} />
-                    </Box>
-                  )}
-                </Box>
-
-                {/* Center Script Display matching exact text 100% */}
-                <Box sx={{ my: 'auto', textAlign: 'center', zIndex: 3 }}>
-                  <Typography variant='caption' sx={{ color: 'primary.light', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 1 }}>
-                    {batchName || 'Federal Retirement Script'}
-                  </Typography>
-                  <Typography variant='h6' sx={{ color: 'white', fontWeight: 800, lineHeight: 1.3, mb: 1.5, textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
-                    "{title}"
-                  </Typography>
-                  <Typography variant='body2' sx={{ color: '#cbd5e1', fontSize: 13, lineHeight: 1.5, px: 1, fontStyle: 'italic' }}>
-                    "{script ? script.substring(0, 180) + (script.length > 180 ? '…' : '') : 'No script configured'}"
-                  </Typography>
-                </Box>
-
-                {/* Footer Spoken CTA & Voice Banner */}
-                <Box sx={{ zIndex: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  {spokenCta && (
-                    <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.4)', textAlign: 'center' }}>
-                      <Typography variant='caption' sx={{ color: '#c7d2fe', fontWeight: 700, fontSize: 11, display: 'block' }}>
-                        📢 Closing Spoken CTA:
-                      </Typography>
-                      <Typography variant='caption' sx={{ color: 'white', fontWeight: 600, fontSize: 11 }}>
-                        "{spokenCta}"
-                      </Typography>
-                    </Box>
-                  )}
-
-                  {ctaText && (
-                    <Box sx={{ bgcolor: 'primary.main', color: 'white', py: 0.75, px: 1.5, borderRadius: 1, textAlign: 'center', fontWeight: 700, fontSize: 11 }}>
-                      {ctaText}
-                    </Box>
-                  )}
-
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 0.5 }}>
-                    <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.5)', fontSize: 10 }}>
-                      🎙️ Voice: {currentVoiceName} · {durationSec}s target
+                  {/* Center: Live Kinetic Typography with Synchronized Highlighting */}
+                  <Box sx={{
+                    my: 'auto',
+                    zIndex: 3,
+                    p: 2,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(15, 23, 42, 0.75)',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    textAlign: 'center',
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
+                  }}>
+                    <Typography variant='caption' sx={{ color: '#38bdf8', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 0.75 }}>
+                      {batchName || 'Federal Retirement Reel'}
                     </Typography>
-                    <Chip label='⚡ Ready to Render' size='small' color='success' variant='tonal' sx={{ height: 18, fontSize: 9, fontWeight: 700 }} />
+
+                    <Typography sx={{
+                      color: '#facc15',
+                      fontWeight: 800,
+                      fontSize: format === 'short' ? '15px' : '18px',
+                      lineHeight: 1.4,
+                      textShadow: '0 2px 10px rgba(0,0,0,0.9)',
+                      transition: 'all 0.2s ease',
+                    }}>
+                      "{activeLiveSegment?.text_segment || title}"
+                    </Typography>
+
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1, mt: 1 }}>
+                      <Chip
+                        label={`Segment ${activeLiveSegment ? activeLiveSegment.order : 1} of ${liveSegments.length}`}
+                        size='small'
+                        sx={{ height: 16, fontSize: 8.5, bgcolor: 'rgba(255,255,255,0.1)', color: 'white' }}
+                      />
+                      <Typography sx={{ fontSize: 9, color: '#94a3b8' }}>
+                        Transition: <span style={{ color: '#c084fc' }}>{activeLiveSegment?.transition || 'fade'}</span>
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* Bottom: Spoken CTA & Brand Lockup */}
+                  <Box sx={{ zIndex: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {spokenCta && (
+                      <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)', textAlign: 'center' }}>
+                        <Typography variant='caption' sx={{ color: '#c7d2fe', fontWeight: 700, fontSize: 10, display: 'block' }}>
+                          📢 Closing Spoken CTA:
+                        </Typography>
+                        <Typography variant='caption' sx={{ color: 'white', fontWeight: 600, fontSize: 11 }}>
+                          "{spokenCta}"
+                        </Typography>
+                      </Box>
+                    )}
+
+                    {ctaText && (
+                      <Box sx={{ bgcolor: 'primary.main', color: 'white', py: 0.75, px: 1.5, borderRadius: 1, textAlign: 'center', fontWeight: 700, fontSize: 11 }}>
+                        {ctaText}
+                      </Box>
+                    )}
+
+                    {endScreenText && (
+                      <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.6)', textAlign: 'center', fontSize: 9.5 }}>
+                        {endScreenText}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+
+                {/* 2. Interactive Audio Scrubber & Playback Controls Deck */}
+                <Box sx={{
+                  width: '100%',
+                  bgcolor: '#0f172a',
+                  borderRadius: 2,
+                  p: 1.5,
+                  px: 2,
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1,
+                }}>
+                  {/* Scrubber Slider */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Typography variant='caption' sx={{ color: '#38bdf8', fontWeight: 700, minWidth: 40, fontFamily: 'monospace' }}>
+                      {formatTime(playerCurrentTime)}
+                    </Typography>
+                    <Slider
+                      size='small'
+                      value={playerCurrentTime}
+                      min={0}
+                      max={totalDur}
+                      step={0.1}
+                      onChange={handleScrubberChange}
+                      sx={{
+                        color: 'primary.main',
+                        '& .MuiSlider-thumb': { width: 12, height: 12 },
+                        '& .MuiSlider-track': { bgcolor: '#38bdf8' },
+                      }}
+                    />
+                    <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.6)', minWidth: 40, fontFamily: 'monospace' }}>
+                      {formatTime(totalDur)}
+                    </Typography>
+                  </Box>
+
+                  {/* Playback Controls Row */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Button
+                        size='small'
+                        variant='contained'
+                        color='primary'
+                        startIcon={playerLoadingAudio ? <CircularProgress size={14} color='inherit' /> : <i className={playerIsPlaying ? 'tabler-player-pause' : 'tabler-player-play'} />}
+                        onClick={handleTogglePlayer}
+                        sx={{ fontWeight: 700, minWidth: 100 }}
+                      >
+                        {playerLoadingAudio ? 'Loading…' : playerIsPlaying ? 'Pause' : 'Play Audio'}
+                      </Button>
+
+                      <IconButton
+                        size='small'
+                        onClick={() => {
+                          setPlayerCurrentTime(0)
+                          if (playerAudioRef.current) playerAudioRef.current.currentTime = 0
+                          playerStartRef.current = performance.now()
+                        }}
+                        sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.08)' }}
+                        title='Replay from start'
+                      >
+                        <i className='tabler-reload text-[16px]' />
+                      </IconButton>
+
+                      <Chip
+                        label={`🎙️ Voice: ${currentVoiceName} (${tempo}×)`}
+                        size='small'
+                        variant='outlined'
+                        sx={{ height: 22, fontSize: 10, color: '#c7d2fe', borderColor: 'rgba(99,102,241,0.4)' }}
+                      />
+                    </Box>
+
+                    <Chip
+                      label={playerIsPlaying ? '⚡ Live Narration Playing' : '⏸️ Paused'}
+                      size='small'
+                      color={playerIsPlaying ? 'success' : 'default'}
+                      variant='tonal'
+                      sx={{ height: 22, fontSize: 10, fontWeight: 700 }}
+                    />
                   </Box>
                 </Box>
               </Box>
@@ -3883,10 +4167,28 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
             )}
           </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button size='small' variant='outlined' color='inherit' onClick={() => setVideoPlayerOpen(false)}>
+            <Button
+              size='small'
+              variant='outlined'
+              color='inherit'
+              onClick={() => {
+                stopPlayerAudio()
+                setVideoPlayerOpen(false)
+              }}
+            >
               Close
             </Button>
-            <Button size='small' variant='contained' color='primary' startIcon={<i className='tabler-movie' />} onClick={() => { setVideoPlayerOpen(false); setTimelineStudioOpen(true) }}>
+            <Button
+              size='small'
+              variant='contained'
+              color='primary'
+              startIcon={<i className='tabler-movie' />}
+              onClick={() => {
+                stopPlayerAudio()
+                setVideoPlayerOpen(false)
+                setTimelineStudioOpen(true)
+              }}
+            >
               Open Timeline Studio
             </Button>
           </Box>
