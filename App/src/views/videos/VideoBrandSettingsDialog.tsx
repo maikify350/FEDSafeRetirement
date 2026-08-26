@@ -59,6 +59,8 @@ export default function VideoBrandSettingsDialog({ open, onClose }: VideoBrandSe
   const [activeTab, setActiveTab] = useState('production_rules')
   const [editingKey, setEditingKey] = useState<string | null>(null)
   const [editText, setEditText] = useState('')
+  const [editJson, setEditJson] = useState('')
+  const [showJsonMode, setShowJsonMode] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -95,12 +97,24 @@ export default function VideoBrandSettingsDialog({ open, onClose }: VideoBrandSe
   const handleStartEdit = (setting: BrandSetting) => {
     setEditingKey(setting.key)
     setEditText(setting.value_text)
+    setEditJson(JSON.stringify(setting.value_json || {}, null, 2))
   }
 
   const handleSaveEdit = async (setting: BrandSetting) => {
     setSaving(true)
     setError('')
     setSuccess('')
+
+    let parsedJson = setting.value_json || {}
+    if (editJson.trim()) {
+      try {
+        parsedJson = JSON.parse(editJson)
+      } catch (e: any) {
+        setError(`Invalid JSON in Settings field: ${e.message}`)
+        setSaving(false)
+        return
+      }
+    }
 
     try {
       const res = await fetch('/api/video-brand-settings', {
@@ -109,6 +123,7 @@ export default function VideoBrandSettingsDialog({ open, onClose }: VideoBrandSe
         body: JSON.stringify({
           key: setting.key,
           value_text: editText,
+          value_json: parsedJson,
         }),
       })
 
@@ -341,28 +356,69 @@ export default function VideoBrandSettingsDialog({ open, onClose }: VideoBrandSe
                 </Alert>
               )}
 
-              <Divider sx={{ my: 0.5 }} />
+              {/* Sub-toggle: Formatted Text vs JSON Settings */}
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid', borderColor: 'divider', pb: 0.5 }}>
+                <Tabs
+                  value={showJsonMode ? 'json' : 'text'}
+                  onChange={(_, val) => setShowJsonMode(val === 'json')}
+                  sx={{ minHeight: 32 }}
+                >
+                  <Tab value='text' label='📝 Text Guidance' sx={{ minHeight: 32, py: 0.5, fontSize: 12, fontWeight: 600 }} />
+                  <Tab value='json' label='⚙️ JSON Settings' sx={{ minHeight: 32, py: 0.5, fontSize: 12, fontWeight: 600 }} />
+                </Tabs>
+
+                {showJsonMode && (
+                  <Typography variant='caption' color='text.secondary'>
+                    Custom JSON configuration payload (stored in <code style={{ color: '#818cf8' }}>settings / value_json</code>)
+                  </Typography>
+                )}
+              </Box>
 
               {/* Content Display or Editor */}
               {editingKey === currentSetting.key ? (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, flex: 1 }}>
-                  <Typography variant='caption' color='text.secondary'>
-                    Edit the guidance text for all video production prompts and creator references.
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    multiline
-                    minRows={14}
-                    value={editText}
-                    onChange={e => setEditText(e.target.value)}
-                    sx={{
-                      '& .MuiInputBase-root': {
-                        fontFamily: 'monospace',
-                        fontSize: '13px',
-                        lineHeight: 1.6,
-                      },
-                    }}
-                  />
+                  {!showJsonMode ? (
+                    <>
+                      <Typography variant='caption' color='text.secondary'>
+                        Edit the guidance text for all video production prompts and creator references.
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        multiline
+                        minRows={14}
+                        value={editText}
+                        onChange={e => setEditText(e.target.value)}
+                        sx={{
+                          '& .MuiInputBase-root': {
+                            fontFamily: 'monospace',
+                            fontSize: '13px',
+                            lineHeight: 1.6,
+                          },
+                        }}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <Typography variant='caption' color='text.secondary'>
+                        Edit extensible JSON parameters (e.g. platform targeting, keyword rules, model parameters).
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        multiline
+                        minRows={14}
+                        value={editJson}
+                        onChange={e => setEditJson(e.target.value)}
+                        placeholder='{\n  "custom_parameter": "value"\n}'
+                        sx={{
+                          '& .MuiInputBase-root': {
+                            fontFamily: 'monospace',
+                            fontSize: '13px',
+                            lineHeight: 1.6,
+                          },
+                        }}
+                      />
+                    </>
+                  )}
                 </Box>
               ) : (
                 <Box
@@ -376,20 +432,37 @@ export default function VideoBrandSettingsDialog({ open, onClose }: VideoBrandSe
                     overflowY: 'auto',
                   }}
                 >
-                  <Typography
-                    component='pre'
-                    sx={{
-                      fontFamily: 'inherit',
-                      fontSize: '13.5px',
-                      lineHeight: 1.7,
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      color: 'text.primary',
-                      m: 0,
-                    }}
-                  >
-                    {currentSetting.value_text}
-                  </Typography>
+                  {!showJsonMode ? (
+                    <Typography
+                      component='pre'
+                      sx={{
+                        fontFamily: 'inherit',
+                        fontSize: '13.5px',
+                        lineHeight: 1.7,
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        color: 'text.primary',
+                        m: 0,
+                      }}
+                    >
+                      {currentSetting.value_text}
+                    </Typography>
+                  ) : (
+                    <Typography
+                      component='pre'
+                      sx={{
+                        fontFamily: 'monospace',
+                        fontSize: '13px',
+                        lineHeight: 1.6,
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        color: '#818cf8',
+                        m: 0,
+                      }}
+                    >
+                      {JSON.stringify(currentSetting.value_json || {}, null, 2)}
+                    </Typography>
+                  )}
                 </Box>
               )}
 
