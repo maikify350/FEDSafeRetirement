@@ -156,6 +156,10 @@ function footerLegalLinks(prefix) {
   <a href="${prefix}privacy-policy/">Privacy Policy</a>
   <span aria-hidden="true">|</span>
   <a href="${prefix}terms-of-service/">Terms of Service</a>
+  <span aria-hidden="true">|</span>
+  <a href="https://www.facebook.com/profile.php?id=61593743613868" target="_blank" rel="noopener noreferrer">Facebook</a>
+  <span aria-hidden="true">|</span>
+  <a href="https://www.instagram.com/fedsaferetirement/" target="_blank" rel="noopener noreferrer">Instagram</a>
 </div>`;
 }
 
@@ -406,7 +410,7 @@ function footerLegalStyle() {
 </style>`;
 }
 
-function responsiveHeaderStyle() {
+function responsiveHeaderStyle(includeHomepageMobile = false) {
   return `<style id="fedsafe-responsive-header-css">
 #header-outer .fedsafe-nav-red,
 #slide-out-widget-area .fedsafe-nav-red {
@@ -509,7 +513,27 @@ function responsiveHeaderStyle() {
     justify-content: flex-end;
   }
 }
-</style>`;
+${includeHomepageMobile ? `/* ── Mobile: reduce header pill height by ~8px (4px top + 4px bottom) ── */
+@media only screen and (max-width: 690px) {
+  #header-outer {
+    height: 68px !important;
+    min-height: 68px !important;
+    max-height: 68px !important;
+    top: 15px !important;
+  }
+  #header-outer header#top {
+    height: 68px !important;
+    min-height: 68px !important;
+  }
+  #header-outer #logo img {
+    max-height: 54px !important;
+    height: 54px !important;
+  }
+  body .container-wrap {
+    padding-top: 68px;
+  }
+}
+` : ''}</style>`;
 }
 
 function applySharedNavLabels(html) {
@@ -596,7 +620,7 @@ function ensureHeadStyle(html, styleBlock) {
 function applyFooterLinks(html, prefix) {
   let next = applySharedNavLabels(html);
   next = ensureHeadStyle(next, footerLegalStyle());
-  next = ensureHeadStyle(next, responsiveHeaderStyle());
+  next = ensureHeadStyle(next, responsiveHeaderStyle(prefix === ''));
   next = applyCanonicalFooter(next, prefix);
   const block = footerLegalLinks(prefix);
   const existing = /<div id="fedsafe-legal-footer-links"[\s\S]*?<\/div>/;
