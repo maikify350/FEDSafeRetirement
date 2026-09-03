@@ -239,6 +239,110 @@ interface VideoEditDialogProps {
   onNavigate?: (video: VideoRecord) => void
 }
 
+export const SUPABASE_GALLERY_CDN = 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/gallery'
+export const toGalleryUrl = (filename: string) => `${SUPABASE_GALLERY_CDN}/${encodeURIComponent(filename)}`
+
+export const resolveImageUrl = (url?: string | null): string | null => {
+  if (!url) return null
+  if (url.startsWith('/images/scenes/')) {
+    const raw = url.replace('/images/scenes/', '')
+    const fname = decodeURIComponent(raw)
+    return toGalleryUrl(fname)
+  }
+  if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('blob:') && !url.startsWith('data:')) {
+    return toGalleryUrl(url)
+  }
+  return url
+}
+
+// Topic-matched background B-Roll scene image pools (served directly via Supabase Storage CDN)
+const SCENE_IMAGE_POOLS: Record<number, string[]> = {
+  1: [
+    toGalleryUrl('federal-advisor-consultation.jpg'),
+    toGalleryUrl('federal-couple-happy.jpg'),
+    toGalleryUrl('who-retired-vet.webp'),
+    toGalleryUrl('who-decision-background.webp'),
+    toGalleryUrl('Couple at Desk.png'),
+    toGalleryUrl('Black Couple at Desk.png'),
+    toGalleryUrl('FS - 008 Couple with Advisor.png'),
+    toGalleryUrl('FS - 012 Couple at Table.png'),
+    toGalleryUrl('Mixed Couple at Desk.png'),
+    toGalleryUrl('FS - 014 Couple Talking Outdoors.png'),
+    toGalleryUrl('Older Man at Desk.png'),
+    toGalleryUrl('advisor-session.png'),
+  ],
+  2: [
+    toGalleryUrl('advisor-classroom.png'),
+    toGalleryUrl('advisor-session.png'),
+    toGalleryUrl('who-workshop.webp'),
+    toGalleryUrl('who-mike-podium.webp'),
+    toGalleryUrl('Seminar - 1.png'),
+    toGalleryUrl('Seminar -2.png'),
+    toGalleryUrl('Seminar - 3.png'),
+    toGalleryUrl('Seminar - 4.png'),
+    toGalleryUrl('FedSafeRetirement Seminar.png'),
+    toGalleryUrl('FedSafeRetirement Seminar - 2.png'),
+    toGalleryUrl('Accountant at Desk.png'),
+    toGalleryUrl('FS - 007 Attorney at Desk.png'),
+  ],
+  3: [
+    toGalleryUrl('military-buyback-desk.jpg'),
+    toGalleryUrl('who-retired-mail.webp'),
+    toGalleryUrl('seminar-hero.webp'),
+    toGalleryUrl('Flag Salute - 2.png'),
+    toGalleryUrl('Flag Salute - 3.png'),
+    toGalleryUrl('FS - 017 Flag Salute.png'),
+    toGalleryUrl('Ship Waiving.png'),
+    toGalleryUrl('Ship Waiving - 2.png'),
+    toGalleryUrl('FS - 018 Ship Waiving - 3.png'),
+    toGalleryUrl('Graduation-1.png'),
+    toGalleryUrl('Graduation-2.png'),
+    toGalleryUrl('who-retired-vet.webp'),
+  ],
+  4: [
+    toGalleryUrl('fegli-rate-spike-shock.jpg'),
+    toGalleryUrl('pshb-healthcare-review.jpg'),
+    toGalleryUrl('federal-advisor-consultation.jpg'),
+    toGalleryUrl('Older Black Reviewing at Desk.png'),
+    toGalleryUrl('Latino Reviewing at Desk.png'),
+    toGalleryUrl('White Reviewing at Desk.png'),
+    toGalleryUrl('Oriental Reviewing at Desk.png'),
+    toGalleryUrl('FS - 010 Asian Man Thinking at Desk.png'),
+    toGalleryUrl('Woman at Desk.png'),
+    toGalleryUrl('FS - 004 Black Fellow at Desk.png'),
+    toGalleryUrl('Mulato Reviewing at Desk.png'),
+    toGalleryUrl('Black Woman Reviewing at Table.png'),
+  ],
+  5: [
+    toGalleryUrl('tsp-retirement-growth.jpg'),
+    toGalleryUrl('who-home-hero.webp'),
+    toGalleryUrl('federal-couple-happy.jpg'),
+    toGalleryUrl('Granfather with Daughter.png'),
+    toGalleryUrl('Granfather with Daughter - 2.png'),
+    toGalleryUrl('Granfather with Daughter - 3.png'),
+    toGalleryUrl('FS - 013 Granmother with Daughter - 2.png'),
+    toGalleryUrl('Graduation-3.png'),
+    toGalleryUrl('Graduation-4.png'),
+    toGalleryUrl('Hero_Partners_Page_FInal.png'),
+    toGalleryUrl('New_Hero_DC.png'),
+    toGalleryUrl('Lack Granfather with Grandaughter.png'),
+  ],
+  6: [
+    toGalleryUrl('agency-benefits.png'),
+    toGalleryUrl('agency-education.png'),
+    toGalleryUrl('usps-mail-carrier-sunset.jpg'),
+    toGalleryUrl('who-mike-podium.webp'),
+    toGalleryUrl('Black Mailman at Truck.png'),
+    toGalleryUrl('Black Mailman at Truck - 2.png'),
+    toGalleryUrl('Hispanic Mailman at Truck.png'),
+    toGalleryUrl('White Mailman at Truck.png'),
+    toGalleryUrl('FS - 002 Mailman at Truck.png'),
+    toGalleryUrl('mail-carrier.webp'),
+    toGalleryUrl('who-mail-carrier.webp'),
+    toGalleryUrl('Plane With Banner.png'),
+  ],
+}
+
 export default function VideoEditDialog({ open, onClose, video, onSaved, allVideos, onNavigate }: VideoEditDialogProps) {
   const isUUID = (str?: string | null) => Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str))
   const isEditing = Boolean(video?.id && isUUID(video.id))
@@ -454,94 +558,6 @@ export default function VideoEditDialog({ open, onClose, video, onSaved, allVide
     }
   }, [])
 
-// Topic-matched background B-Roll scene image pools (expanded with imported artwork)
-const SCENE_IMAGE_POOLS: Record<number, string[]> = {
-  1: [
-    '/images/scenes/federal-advisor-consultation.jpg',
-    '/images/scenes/federal-couple-happy.jpg',
-    '/images/scenes/who-retired-vet.webp',
-    '/images/scenes/who-decision-background.webp',
-    '/images/scenes/Couple%20at%20Desk.png',
-    '/images/scenes/Black%20Couple%20at%20Desk.png',
-    '/images/scenes/FS%20-%20008%20Couple%20with%20Advisor.png',
-    '/images/scenes/FS%20-%20012%20Couple%20at%20Table.png',
-    '/images/scenes/Mixed%20Couple%20at%20Desk.png',
-    '/images/scenes/FS%20-%20014%20Couple%20Talking%20Outdoors.png',
-    '/images/scenes/Older%20Man%20at%20Desk.png',
-    '/images/scenes/advisor-session.png',
-  ],
-  2: [
-    '/images/scenes/advisor-classroom.png',
-    '/images/scenes/advisor-session.png',
-    '/images/scenes/who-workshop.webp',
-    '/images/scenes/who-mike-podium.webp',
-    '/images/scenes/Seminar%20-%201.png',
-    '/images/scenes/Seminar%20-2.png',
-    '/images/scenes/Seminar%20-%203.png',
-    '/images/scenes/Seminar%20-%204.png',
-    '/images/scenes/FedSafeRetirement%20Seminar.png',
-    '/images/scenes/FedSafeRetirement%20Seminar%20-%202.png',
-    '/images/scenes/Accountant%20at%20Desk.png',
-    '/images/scenes/FS%20-%20007%20Attorney%20at%20Desk.png',
-  ],
-  3: [
-    '/images/scenes/military-buyback-desk.jpg',
-    '/images/scenes/who-retired-mail.webp',
-    '/images/scenes/seminar-hero.webp',
-    '/images/scenes/Flag%20Salute%20-%202.png',
-    '/images/scenes/Flag%20Salute%20-%203.png',
-    '/images/scenes/FS%20-%20017%20Flag%20Salute.png',
-    '/images/scenes/Ship%20Waiving.png',
-    '/images/scenes/Ship%20Waiving%20-%202.png',
-    '/images/scenes/FS%20-%20018%20Ship%20Waiving%20-%203.png',
-    '/images/scenes/Graduation-1.png',
-    '/images/scenes/Graduation-2.png',
-    '/images/scenes/who-retired-vet.webp',
-  ],
-  4: [
-    '/images/scenes/fegli-rate-spike-shock.jpg',
-    '/images/scenes/pshb-healthcare-review.jpg',
-    '/images/scenes/federal-advisor-consultation.jpg',
-    '/images/scenes/Older%20Black%20Reviewing%20at%20Desk.png',
-    '/images/scenes/Latino%20Reviewing%20at%20Desk.png',
-    '/images/scenes/White%20Reviewing%20at%20Desk.png',
-    '/images/scenes/Oriental%20Reviewing%20at%20Desk.png',
-    '/images/scenes/FS%20-%20010%20Asian%20Man%20Thinking%20at%20Desk.png',
-    '/images/scenes/Woman%20at%20Desk.png',
-    '/images/scenes/FS%20-%20004%20Black%20Fellow%20at%20Desk.png',
-    '/images/scenes/Mulato%20Reviewing%20at%20Desk.png',
-    '/images/scenes/Black%20Woman%20Reviewing%20at%20Table.png',
-  ],
-  5: [
-    '/images/scenes/tsp-retirement-growth.jpg',
-    '/images/scenes/who-home-hero.webp',
-    '/images/scenes/federal-couple-happy.jpg',
-    '/images/scenes/Granfather%20with%20Daughter.png',
-    '/images/scenes/Granfather%20with%20Daughter%20-%202.png',
-    '/images/scenes/Granfather%20with%20Daughter%20-%203.png',
-    '/images/scenes/FS%20-%20013%20Granmother%20with%20Daughter%20-%202.png',
-    '/images/scenes/Graduation-3.png',
-    '/images/scenes/Graduation-4.png',
-    '/images/scenes/Hero_Partners_Page_FInal.png',
-    '/images/scenes/New_Hero_DC.png',
-    '/images/scenes/Lack%20Granfather%20with%20Grandaughter.png',
-  ],
-  6: [
-    '/images/scenes/agency-benefits.png',
-    '/images/scenes/agency-education.png',
-    '/images/scenes/usps-mail-carrier-sunset.jpg',
-    '/images/scenes/who-mike-podium.webp',
-    '/images/scenes/Black%20Mailman%20at%20Truck.png',
-    '/images/scenes/Black%20Mailman%20at%20Truck%20-%202.png',
-    '/images/scenes/Hispanic%20Mailman%20at%20Truck.png',
-    '/images/scenes/White%20Mailman%20at%20Truck.png',
-    '/images/scenes/FS%20-%20002%20Mailman%20at%20Truck.png',
-    '/images/scenes/mail-carrier.webp',
-    '/images/scenes/who-mail-carrier.webp',
-    '/images/scenes/Plane%20With%20Banner.png',
-  ],
-}
-
   // Live Animated Video Player state for modal
   const [playerIsPlaying, setPlayerIsPlaying] = useState(false)
   const [playerCurrentTime, setPlayerCurrentTime] = useState(0)
@@ -733,13 +749,15 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
         setTtsEngine(video.tts_engine || 'elevenlabs')
         setVoiceId(video.voice_id || 'GGRMgbKfr7QscdcrvWga')
         setTempo(Number(video.tempo) || 1.00)
-        setStatus(video.status || 'draft')
-        const fallbackThumb = video.thumbnail_url
-          || video.hyperframes?.find(hf => hf.scene_image)?.scene_image
+        const fallbackThumb = resolveImageUrl(video.thumbnail_url)
+          || resolveImageUrl(video.hyperframes?.find(hf => hf.scene_image)?.scene_image)
           || (SCENE_IMAGE_POOLS[video.batch_no || 1] || SCENE_IMAGE_POOLS[1])?.[(((video.script_no || 1) - 1) * 3) % (SCENE_IMAGE_POOLS[video.batch_no || 1] || SCENE_IMAGE_POOLS[1])?.length || 1]
           || null
         setThumbnailUrl(fallbackThumb)
-        setHyperframes(video.hyperframes || [])
+        setHyperframes((video.hyperframes || []).map(hf => ({
+          ...hf,
+          scene_image: resolveImageUrl(hf.scene_image) || undefined
+        })))
         setContinuityReferences(video.continuity_references || [])
         setMediaAssets(video.media_assets || [])
         setGeneratedAudioUrl(video.audio_url || null)

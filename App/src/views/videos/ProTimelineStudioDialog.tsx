@@ -72,42 +72,58 @@ export default function ProTimelineStudioDialog({
   const audioInstanceRef = useRef<HTMLAudioElement | null>(null)
   const timelineContainerRef = useRef<HTMLDivElement | null>(null)
 
+const SUPABASE_GALLERY_CDN = 'https://gqarlkfmpgaotbezpkbs.supabase.co/storage/v1/object/public/gallery'
+const toGalleryUrl = (filename: string) => `${SUPABASE_GALLERY_CDN}/${encodeURIComponent(filename)}`
+
+const resolveImageUrl = (url?: string | null): string | null => {
+  if (!url) return null
+  if (url.startsWith('/images/scenes/')) {
+    const raw = url.replace('/images/scenes/', '')
+    const fname = decodeURIComponent(raw)
+    return toGalleryUrl(fname)
+  }
+  if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('blob:') && !url.startsWith('data:')) {
+    return toGalleryUrl(url)
+  }
+  return url
+}
+
 const SCENE_IMAGE_POOLS: Record<number, string[]> = {
   1: [
-    '/images/scenes/federal-advisor-consultation.jpg',
-    '/images/scenes/federal-couple-happy.jpg',
-    '/images/scenes/who-retired-vet.webp',
-    '/images/scenes/who-decision-background.webp',
+    toGalleryUrl('federal-advisor-consultation.jpg'),
+    toGalleryUrl('federal-couple-happy.jpg'),
+    toGalleryUrl('who-retired-vet.webp'),
+    toGalleryUrl('who-decision-background.webp'),
   ],
   2: [
-    '/images/scenes/advisor-classroom.png',
-    '/images/scenes/advisor-session.png',
-    '/images/scenes/who-workshop.webp',
-    '/images/scenes/who-mike-podium.webp',
+    toGalleryUrl('advisor-classroom.png'),
+    toGalleryUrl('advisor-session.png'),
+    toGalleryUrl('who-workshop.webp'),
+    toGalleryUrl('who-mike-podium.webp'),
   ],
   3: [
-    '/images/scenes/military-buyback-desk.jpg',
-    '/images/scenes/who-retired-mail.webp',
-    '/images/scenes/seminar-hero.webp',
-    '/images/scenes/federal-couple-happy.jpg',
+    toGalleryUrl('military-buyback-desk.jpg'),
+    toGalleryUrl('who-retired-mail.webp'),
+    toGalleryUrl('seminar-hero.webp'),
+    toGalleryUrl('federal-couple-happy.jpg'),
   ],
   4: [
-    '/images/scenes/fegli-rate-spike-shock.jpg',
-    '/images/scenes/pshb-healthcare-review.jpg',
-    '/images/scenes/federal-advisor-consultation.jpg',
-    '/images/scenes/federal-couple-happy.jpg',
+    toGalleryUrl('fegli-rate-spike-shock.jpg'),
+    toGalleryUrl('pshb-healthcare-review.jpg'),
+    toGalleryUrl('federal-advisor-consultation.jpg'),
+    toGalleryUrl('federal-couple-happy.jpg'),
   ],
   5: [
-    '/images/scenes/tsp-retirement-growth.jpg',
-    '/images/scenes/who-home-hero.webp',
-    '/images/scenes/federal-couple-happy.jpg',
-    '/images/scenes/federal-advisor-consultation.jpg',
+    toGalleryUrl('tsp-retirement-growth.jpg'),
+    toGalleryUrl('who-home-hero.webp'),
+    toGalleryUrl('federal-couple-happy.jpg'),
+    toGalleryUrl('federal-advisor-consultation.jpg'),
   ],
   6: [
-    '/images/scenes/agency-benefits.png',
-    '/images/scenes/agency-education.png',
-    '/images/scenes/usps-mail-carrier-sunset.jpg',
-    '/images/scenes/who-mike-podium.webp',
+    toGalleryUrl('agency-benefits.png'),
+    toGalleryUrl('agency-education.png'),
+    toGalleryUrl('usps-mail-carrier-sunset.jpg'),
+    toGalleryUrl('who-mike-podium.webp'),
   ],
 }
 
@@ -118,7 +134,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
     if (hyperframes && hyperframes.length > 0) {
       return hyperframes.map((hf, idx) => ({
         ...hf,
-        scene_image: (hf as any).scene_image || video?.media_assets?.[idx]?.url || pool[idx % pool.length],
+        scene_image: resolveImageUrl((hf as any).scene_image) || resolveImageUrl(video?.media_assets?.[idx]?.url) || pool[idx % pool.length],
       })) as Hyperframe[]
     }
 
