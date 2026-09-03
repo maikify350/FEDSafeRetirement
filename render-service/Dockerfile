@@ -24,17 +24,22 @@ ENV CHROME_PATH=/usr/bin/chromium
 
 WORKDIR /app
 
-# 1. Install server dependencies
+# 1. Install server dependencies (including devDeps for tsc)
 COPY render-service/package*.json ./
-RUN npm ci --production
+RUN npm ci
 
-# 2. Copy the compiled server
-COPY render-service/dist/ ./dist/
+# 2. Copy server source and compile TypeScript
+COPY render-service/server.ts ./
+COPY render-service/tsconfig.json ./
+RUN npx tsc
 
-# 3. Copy the Remotion project (compositions + public assets)
+# 3. Remove devDependencies after compiling
+RUN npm prune --production
+
+# 4. Copy the Remotion project (compositions + public assets)
 COPY remotion/ ./remotion/
 
-# 4. Install Remotion project dependencies
+# 5. Install Remotion project dependencies
 WORKDIR /app/remotion
 RUN npm ci --production
 WORKDIR /app
