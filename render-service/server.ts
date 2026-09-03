@@ -37,7 +37,7 @@ const PORT = parseInt(process.env.PORT || '3100', 10)
 const RENDER_SERVICE_KEY = process.env.RENDER_SERVICE_KEY || ''
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://gqarlkfmpgaotbezpkbs.supabase.co'
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxYXJsa2ZtcGdhb3RiZXpwa2JzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTA2NDYzNCwiZXhwIjoyMDkwNjQwNjM0fQ.N8TxFsnqnGUkMK_qmvATDSs-kyneci8ULziUHzpOwq8'
-const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || ''
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || 'sk_e3a4fadf2a1e9513202b6abb89d0167fc5209ae465b207fb'
 
 const REMOTION_PROJECT = path.resolve(__dirname, '..', 'remotion')
 
@@ -150,6 +150,27 @@ async function generateNarrationAudio(video: any, outputPath: string): Promise<b
     console.error('[Render] TTS error:', err.message)
     return false
   }
+}
+
+async function prepareNarrationAudio(video: any, outputPath: string): Promise<boolean> {
+  // If video already has a generated audio URL (e.g. from VideoEditDialog / Supabase), download it directly
+  if (video.audio_url && (video.audio_url.startsWith('http://') || video.audio_url.startsWith('https://'))) {
+    try {
+      console.log(`[Render] Downloading existing voiceover audio from ${video.audio_url}...`)
+      const res = await fetch(video.audio_url)
+      if (res.ok) {
+        const buf = await res.arrayBuffer()
+        fs.writeFileSync(outputPath, Buffer.from(buf))
+        console.log(`[Render] Existing audio downloaded: ${Math.round(buf.byteLength / 1024)}KB`)
+        return true
+      }
+    } catch (e: any) {
+      console.warn(`[Render] Failed to download existing audio_url: ${e.message}`)
+    }
+  }
+
+  // Otherwise generate fresh TTS via ElevenLabs
+  return generateNarrationAudio(video, outputPath)
 }
 
 async function downloadImageToPublic(imageUrl: string, publicDir: string, filename: string): Promise<string | null> {
@@ -287,7 +308,7 @@ async function runRenderJob(jobId: string) {
     // 2. Generate narration audio
     const narrationFilename = `render_narration_${job.video_id.substring(0, 8)}.mp3`
     const narrationPath = path.join(publicDir, narrationFilename)
-    const hasAudio = await generateNarrationAudio(video, narrationPath)
+    const hasAudio = await prepareNarrationAudio(video, narrationPath)
     if (hasAudio) tempFiles.push(narrationPath)
     job.progress = 25
 

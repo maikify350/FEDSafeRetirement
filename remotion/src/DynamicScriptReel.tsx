@@ -176,8 +176,8 @@ export const DynamicScriptReel = ({
 
   return (
     <AbsoluteFill style={{ backgroundColor: palette.deepNavy }}>
-      {narrationAudio && <Audio src={staticFile(narrationAudio)} volume={1.8} />}
-      {backgroundMusic && <Audio src={staticFile(backgroundMusic)} volume={0.06} />}
+      {narrationAudio && <Audio src={staticFile(narrationAudio)} volume={2.4} />}
+      {backgroundMusic && <Audio src={staticFile(backgroundMusic)} volume={0.035} />}
 
       <HeaderBug
         showShieldLogo={showShieldLogo}
