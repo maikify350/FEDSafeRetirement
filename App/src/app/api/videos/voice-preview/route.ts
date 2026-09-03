@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
           // Return explicit quota error so the UI can show a dialog
           try {
             const errJson = JSON.parse(errText)
-            if (errJson?.detail?.status === 'quota_exceeded' || response.status === 401) {
+            if (errJson?.detail?.status === 'quota_exceeded') {
               return NextResponse.json({
                 error: 'ElevenLabs credit quota exceeded. Please switch to OpenAI TTS or purchase more ElevenLabs credits.',
                 code: 'elevenlabs_quota_exceeded',
