@@ -504,13 +504,37 @@ export async function POST(request: NextRequest) {
   const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV != null
 
   if (isVercel) {
-    return NextResponse.json(
-      {
-        error: 'Video rendering requires the local development server.\n\nRun `npm run dev` locally and use the Video Edit dialog from http://localhost:8001/videos to trigger a render.',
-        local_only: true,
-      },
-      { status: 503 }
-    )
+    // Proxy render request to Railway render service
+    const serviceUrl = process.env.RENDER_SERVICE_URL
+    if (!serviceUrl) {
+      return NextResponse.json(
+        {
+          error: 'Video rendering is not configured for production.\n\nSet RENDER_SERVICE_URL environment variable in Vercel to point to the Railway render service.',
+          local_only: true,
+        },
+        { status: 503 }
+      )
+    }
+
+    try {
+      const body = await request.json()
+      const proxyRes = await fetch(`${serviceUrl}/render`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.RENDER_SERVICE_KEY || ''}`,
+        },
+        body: JSON.stringify(body),
+      })
+
+      const data = await proxyRes.json()
+      return NextResponse.json(data, { status: proxyRes.status })
+    } catch (err: any) {
+      return NextResponse.json(
+        { error: `Render service unavailable: ${err.message}` },
+        { status: 502 }
+      )
+    }
   }
 
   try {

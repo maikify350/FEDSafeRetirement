@@ -1,0 +1,16 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "dockerfilePath": "render-service/Dockerfile",
+    "watchPatterns": [
+      "render-service/**",
+      "remotion/src/**",
+      "remotion/public/**",
+      "remotion/package.json"
+    ]
+  },
+  "deploy": {
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  }
+}

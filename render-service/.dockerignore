@@ -1,0 +1,8 @@
+node_modules
+dist
+remotion/node_modules
+remotion/out
+remotion/.remotion
+*.log
+.env
+.env.*
