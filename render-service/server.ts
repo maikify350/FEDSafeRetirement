@@ -24,8 +24,8 @@ app.use(express.json())
 // ── Config ──
 const PORT = parseInt(process.env.PORT || '3100', 10)
 const RENDER_SERVICE_KEY = process.env.RENDER_SERVICE_KEY || ''
-const SUPABASE_URL = process.env.SUPABASE_URL || ''
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://gqarlkfmpgaotbezpkbs.supabase.co'
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxYXJsa2ZtcGdhb3RiZXpwa2JzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTA2NDYzNCwiZXhwIjoyMDkwNjQwNjM0fQ.N8TxFsnqnGUkMK_qmvATDSs-kyneci8ULziUHzpOwq8'
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || ''
 
 const REMOTION_PROJECT = path.resolve(__dirname, '..', 'remotion')
@@ -59,6 +59,9 @@ const jobs = new Map<string, RenderJob>()
 
 // ── Supabase Admin Client ──
 function getSupabase() {
+  if (!SUPABASE_SERVICE_KEY) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is required on the render service.')
+  }
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
