@@ -4473,7 +4473,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
           setGalleryItems(prev => prev.filter(item => !gallerySelected.includes(item.name)))
           setGallerySelected([])
         }}
-        onCancel={() => setGalleryDeleteConfirmOpen(false)}
+        onClose={() => setGalleryDeleteConfirmOpen(false)}
       />
 
       {/* Pro Timeline Studio (Read-Only) Dialog */}

@@ -331,6 +331,7 @@ function FlyerPanel({ event, isAdmin, onChanged }: {
 }) {
   const [busy, setBusy]   = useState<'upload' | 'remove' | 'preview' | 'download' | null>(null)
   const [error, setError] = useState('')
+  const [confirmRemoveFlyer, setConfirmRemoveFlyer] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const hasFlyer = !!event.flyer_path
@@ -397,8 +398,8 @@ return res.json() as Promise<{ download_url: string; view_url: string; filename:
   }
 
   const handleRemove = async () => {
-    if (!confirm('Remove the attached flyer? This cannot be undone.')) return
     setError(''); setBusy('remove')
+    setConfirmRemoveFlyer(false)
 
     try {
       const res = await fetch(`/api/events/${event.id}/flyer`, { method: 'DELETE' })
@@ -526,6 +527,7 @@ function ExplainerPanel({ event, isAdmin, onChanged }: {
   const [speed,        setSpeed]        = useState(1.0)
   const [voice,        setVoice]        = useState('onyx')
   const [provider,     setProvider]     = useState<'openai' | 'elevenlabs'>('openai')
+  const [confirmAction, setConfirmAction] = useState<'reset' | 'generate' | 'remove' | null>(null)
 
   const hasExplainer = !!event.explainer_path
 
@@ -616,7 +618,7 @@ return () => { cancelled = true }
   }
 
   const handleResetScript = async () => {
-    if (!confirm('Reset the script to the default template? Your edits will be lost.')) return
+    setConfirmAction(null)
     setError(''); setBusy('resetScript')
 
     try {
@@ -641,7 +643,7 @@ return () => { cancelled = true }
   }
 
   const handleGenerate = async () => {
-    if (hasExplainer && !confirm('Re-generate the explainer? This will overwrite the existing audio and consume TTS credits.')) return
+    setConfirmAction(null)
     setError(''); setBusy('generate')
 
     try {
@@ -671,7 +673,7 @@ return () => { cancelled = true }
   }
 
   const handleRemove = async () => {
-    if (!confirm('Remove the seminar explainer audio? This cannot be undone.')) return
+    setConfirmAction(null)
     setError(''); setBusy('remove')
 
     try {
