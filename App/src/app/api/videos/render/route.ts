@@ -359,6 +359,24 @@ async function runRenderJob(jobId: string) {
   const tempFiles: string[] = []
 
   try {
+    // 0. CLEAN UP all previous render temp files first
+    const publicDir = path.join(REMOTION_PROJECT, 'public')
+    if (fs.existsSync(publicDir)) {
+      const oldFiles = fs.readdirSync(publicDir).filter(f =>
+        f.startsWith('render_narration_') || f.startsWith('render_scene_')
+      )
+      for (const f of oldFiles) {
+        try { fs.unlinkSync(path.join(publicDir, f)) } catch { /* ignore */ }
+      }
+      if (oldFiles.length > 0) console.log(`[Render] Cleaned ${oldFiles.length} old render temp files`)
+    }
+    // Also clean old props files
+    if (fs.existsSync(outDir)) {
+      const oldProps = fs.readdirSync(outDir).filter(f => f.startsWith('props_') && f.endsWith('.json'))
+      for (const f of oldProps) {
+        try { fs.unlinkSync(path.join(outDir, f)) } catch { /* ignore */ }
+      }
+    }
     // 1. Fetch video record from Supabase
     console.log(`[Render] Fetching video record: ${job.video_id}`)
     const video = await fetchVideoRecord(job.video_id)

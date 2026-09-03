@@ -44,12 +44,22 @@ export interface DynamicScriptReelProps {
   logoOpacity?: number;
 }
 
+const LOGO_SIZE_MAP: Record<string, number> = {
+  xs: 32,
+  small: 44,
+  medium: 56,
+  large: 72,
+  xl: 90,
+};
+
 const HeaderBug = ({
   showShieldLogo = true,
   logoOpacity = 0.9,
+  logoSize = "medium",
 }: {
   showShieldLogo?: boolean;
   logoOpacity?: number;
+  logoSize?: string;
 }) => {
   const frame = useCurrentFrame();
   const opacity = interpolate(frame, [0, 15], [0, 1], {
@@ -58,6 +68,8 @@ const HeaderBug = ({
   });
 
   if (!showShieldLogo) return null;
+
+  const h = LOGO_SIZE_MAP[logoSize] || LOGO_SIZE_MAP.medium;
 
   return (
     <div
@@ -76,7 +88,7 @@ const HeaderBug = ({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "10px 16px",
+          padding: "8px 14px",
           borderRadius: 14,
           backgroundColor: "rgba(6,29,50,0.80)",
           border: "1px solid rgba(255,255,255,0.15)",
@@ -85,7 +97,7 @@ const HeaderBug = ({
       >
         <Img
           src={staticFile("fedsafe-shield-logo-transparent.webp")}
-          style={{ height: 60, width: "auto", objectFit: "contain" }}
+          style={{ height: h, width: "auto", objectFit: "contain" }}
         />
       </div>
     </div>
@@ -170,6 +182,7 @@ export const DynamicScriptReel = ({
       <HeaderBug
         showShieldLogo={showShieldLogo}
         logoOpacity={logoOpacity}
+        logoSize={logoSize}
       />
 
       <SamBadgeOverlay showSamBadge={showSamBadge} logoOpacity={logoOpacity} />

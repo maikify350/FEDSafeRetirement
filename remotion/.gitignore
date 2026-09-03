@@ -4,3 +4,7 @@ out/
 .env
 .env.*
 *.log
+
+# Render temp files (auto-generated and cleaned per render job)
+public/render_narration_*
+public/render_scene_*

@@ -283,7 +283,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved, allVide
   // Brand Watermarks & Multi-Position Branding
   const [showShieldLogo, setShowShieldLogo] = useState<boolean>(true)
   const [shieldLogoPosition, setShieldLogoPosition] = useState<LogoPosition>('top-left')
-  const [showSamBadge, setShowSamBadge] = useState<boolean>(true)
+  const [showSamBadge, setShowSamBadge] = useState<boolean>(false)
   const [samBadgePosition, setSamBadgePosition] = useState<LogoPosition>('top-right')
   const [showDoubleLogo, setShowDoubleLogo] = useState<boolean>(false)
   const [doubleLogoPosition, setDoubleLogoPosition] = useState<LogoPosition>('top-center')
@@ -419,7 +419,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved, allVide
   // Pro Timeline Studio & Video Player state
   const [timelineStudioOpen, setTimelineStudioOpen] = useState(false)
   const [videoPlayerOpen, setVideoPlayerOpen] = useState(false)
-  const [showPlayerOverlay, setShowPlayerOverlay] = useState(true)
+  const [showPlayerOverlay, setShowPlayerOverlay] = useState(false)
 
   const stopAllAudio = () => {
     if (previewAbortRef.current) {
@@ -744,7 +744,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
         setGeneratedAudioUrl(video.audio_url || null)
         setShowShieldLogo(video.metadata?.show_shield_logo ?? true)
         setShieldLogoPosition(video.metadata?.shield_logo_position || 'top-left')
-        setShowSamBadge(video.metadata?.show_sam_badge ?? true)
+        setShowSamBadge(video.metadata?.show_sam_badge ?? false)
         setSamBadgePosition(video.metadata?.sam_badge_position || 'top-right')
         setShowDoubleLogo(Boolean(video.metadata?.show_double_logo))
         setDoubleLogoPosition(video.metadata?.double_logo_position || 'top-center')
@@ -789,7 +789,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
         setGeneratedAudioUrl(null)
         setShowShieldLogo(true)
         setShieldLogoPosition('top-left')
-        setShowSamBadge(true)
+        setShowSamBadge(false)
         setSamBadgePosition('top-right')
         setShowDoubleLogo(false)
         setDoubleLogoPosition('top-center')
@@ -4583,8 +4583,9 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                       maxHeight: '68vh',
                       aspectRatio: format === 'short' ? '9/16' : '16/9',
                       objectFit: 'contain',
-                      borderRadius: 12,
-                      boxShadow: '0 12px 40px rgba(0,0,0,0.8)',
+                      borderRadius: 14,
+                      border: '2px solid #3b82f6',
+                      boxShadow: '0 20px 60px rgba(0,0,0,0.9), 0 0 25px rgba(59,130,246,0.25)',
                       outline: 'none',
                       background: '#000',
                     }}
