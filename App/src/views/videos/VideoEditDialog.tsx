@@ -437,7 +437,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved, allVide
     }
   }
 
-  // Voice Preview states
+  // Voice Preview & Audio Players master state
   const [previewLoading, setPreviewLoading] = useState(false)
   const [isPlayingPreview, setIsPlayingPreview] = useState(false)
   const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(null)
@@ -450,6 +450,14 @@ export default function VideoEditDialog({ open, onClose, video, onSaved, allVide
   const sampleAudioRef = useRef<HTMLAudioElement | null>(null)
   const [quotaExceededOpen, setQuotaExceededOpen] = useState(false)
   const [quotaCreditsRemaining, setQuotaCreditsRemaining] = useState('0')
+
+  // Live Animated Video Player state for modal
+  const [playerIsPlaying, setPlayerIsPlaying] = useState(false)
+  const [playerCurrentTime, setPlayerCurrentTime] = useState(0)
+  const [playerLoadingAudio, setPlayerLoadingAudio] = useState(false)
+  const playerAudioRef = useRef<HTMLAudioElement | null>(null)
+  const playerAnimRef = useRef<number | null>(null)
+  const playerStartRef = useRef<number>(0)
 
   // TTS Credit Balance
   const [ttsCredits, setTtsCredits] = useState<{
@@ -479,25 +487,80 @@ export default function VideoEditDialog({ open, onClose, video, onSaved, allVide
     return `${SUPABASE_URL}/storage/v1/object/public/voice-samples/${fileName}`
   }
 
-  const stopSampleAudio = () => {
+  // ── FOOLPROOF GLOBAL AUDIO KILLER (Stops ALL playing and pending audio everywhere) ──
+  const stopAllAudio = () => {
+    // 1. Abort any in-flight TTS generation
+    if (previewAbortRef.current) {
+      previewAbortRef.current.abort()
+      previewAbortRef.current = null
+    }
+
+    // 2. Stop voice preview audio
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+      audioRef.current.src = ''
+      audioRef.current = null
+    }
+
+    // 3. Stop sample preview audio
     if (sampleAudioRef.current) {
       sampleAudioRef.current.pause()
       sampleAudioRef.current.currentTime = 0
+      sampleAudioRef.current.src = ''
       sampleAudioRef.current = null
     }
+
+    // 4. Stop animated player audio & animation frame
+    if (playerAnimRef.current) {
+      cancelAnimationFrame(playerAnimRef.current)
+      playerAnimRef.current = null
+    }
+    if (playerAudioRef.current) {
+      playerAudioRef.current.pause()
+      playerAudioRef.current.currentTime = 0
+      playerAudioRef.current.src = ''
+      playerAudioRef.current = null
+    }
+
+    // 5. Force pause any HTML5 audio/video tags in the DOM
+    if (typeof document !== 'undefined') {
+      document.querySelectorAll('audio, video').forEach((el: any) => {
+        try {
+          el.pause()
+          if (el.currentTime) el.currentTime = 0
+        } catch { /* ignore */ }
+      })
+    }
+
+    // 6. Stop speech synthesis
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+    }
+
+    // 7. Reset all active states
+    setIsPlayingPreview(false)
+    setPreviewLoading(false)
     setSamplePlaying(false)
+    setPlayerIsPlaying(false)
+    setPlayerLoadingAudio(false)
+  }
+
+  const stopSampleAudio = () => {
+    stopAllAudio()
+  }
+
+  const stopPlayerAudio = () => {
+    stopAllAudio()
   }
 
   const handlePlayVoiceSample = () => {
-    // If already playing, stop
     if (samplePlaying) {
-      stopSampleAudio()
+      stopAllAudio()
       return
     }
 
-    // Stop any other audio first
     stopAllAudio()
-    stopSampleAudio()
 
     const url = getVoiceSampleUrl(voiceId, ttsEngine)
     const audio = new Audio(url)
@@ -526,25 +589,6 @@ export default function VideoEditDialog({ open, onClose, video, onSaved, allVide
   const [videoPlayerOpen, setVideoPlayerOpen] = useState(false)
   const [showPlayerOverlay, setShowPlayerOverlay] = useState(false)
 
-  const stopAllAudio = () => {
-    if (previewAbortRef.current) {
-      previewAbortRef.current.abort()
-      previewAbortRef.current = null
-    }
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
-      audioRef.current.src = ''
-      audioRef.current = null
-    }
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel()
-    }
-    setIsPlayingPreview(false)
-    setPreviewLoading(false)
-    stopSampleAudio()
-  }
-
   // Always stop narration audio whenever video player or timeline studio opens or dialog closes
   useEffect(() => {
     if (videoPlayerOpen || timelineStudioOpen || !open) {
@@ -558,19 +602,10 @@ export default function VideoEditDialog({ open, onClose, video, onSaved, allVide
     }
   }, [])
 
-  // Live Animated Video Player state for modal
-  const [playerIsPlaying, setPlayerIsPlaying] = useState(false)
-  const [playerCurrentTime, setPlayerCurrentTime] = useState(0)
-  const [playerLoadingAudio, setPlayerLoadingAudio] = useState(false)
-  const playerAudioRef = useRef<HTMLAudioElement | null>(null)
-  const playerAnimRef = useRef<number | null>(null)
-  const playerStartRef = useRef<number>(0)
-
   // Segments for live kinetic preview with real background scene imagery
   const liveSegments = useMemo(() => {
     const dur = Math.max(5, durationSec || 35)
     const pool = SCENE_IMAGE_POOLS[batchNo || 1] || SCENE_IMAGE_POOLS[1]
-    // Offset by script_no so each video in the same batch gets different starting images
     const offset = ((scriptNo || 1) - 1) * 3
 
     if (hyperframes && hyperframes.length > 0) {
@@ -601,29 +636,14 @@ export default function VideoEditDialog({ open, onClose, video, onSaved, allVide
     ) || liveSegments[0]
   }, [liveSegments, playerCurrentTime])
 
-  // Clean stop for player modal audio
-  const stopPlayerAudio = () => {
-    if (playerAnimRef.current) {
-      cancelAnimationFrame(playerAnimRef.current)
-      playerAnimRef.current = null
-    }
-    if (playerAudioRef.current) {
-      playerAudioRef.current.pause()
-      playerAudioRef.current.currentTime = 0
-    }
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel()
-    }
-    setPlayerIsPlaying(false)
-    setPlayerLoadingAudio(false)
-  }
-
   // Toggle Play/Pause on Live Animated Player
   const handleTogglePlayer = async () => {
-    if (playerIsPlaying) {
-      stopPlayerAudio()
+    if (playerIsPlaying || playerLoadingAudio) {
+      stopAllAudio()
       return
     }
+
+    stopAllAudio()
 
     const dur = Math.max(5, durationSec || 35)
     if (playerCurrentTime >= dur) {
@@ -632,36 +652,35 @@ export default function VideoEditDialog({ open, onClose, video, onSaved, allVide
 
     setPlayerLoadingAudio(true)
 
-    let audio = playerAudioRef.current
-    if (!audio || !audio.src) {
-      if (generatedAudioUrl) {
-        audio = new Audio(generatedAudioUrl)
-        playerAudioRef.current = audio
-      } else {
-        try {
-          const res = await fetch('/api/videos/voice-preview', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              engine: ttsEngine,
-              voice_id: selectedVoice.id,
-              voice_name: selectedVoice.name,
-              speed: tempo,
-              text: script.trim() || undefined,
-            }),
-          })
-          if (res.ok) {
-            const blob = await res.blob()
-            const url = URL.createObjectURL(blob)
-            setGeneratedAudioUrl(url)
-            audio = new Audio(url)
-            playerAudioRef.current = audio
-          }
-        } catch {
-          // fallback
+    let audio: HTMLAudioElement | null = null
+    if (generatedAudioUrl) {
+      audio = new Audio(generatedAudioUrl)
+    } else {
+      try {
+        const res = await fetch('/api/videos/voice-preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            engine: ttsEngine,
+            voice_id: selectedVoice.id,
+            voice_name: selectedVoice.name,
+            speed: tempo,
+            text: script.trim() || undefined,
+          }),
+        })
+        if (res.ok) {
+          const blob = await res.blob()
+          const url = URL.createObjectURL(blob)
+          setGeneratedAudioUrl(url)
+          audio = new Audio(url)
         }
+      } catch {
+        // fallback
       }
     }
+
+    // Kill any other sound before actually playing
+    stopAllAudio()
 
     setPlayerLoadingAudio(false)
     setPlayerIsPlaying(true)
@@ -670,13 +689,21 @@ export default function VideoEditDialog({ open, onClose, video, onSaved, allVide
     playerStartRef.current = startTime
 
     if (audio) {
+      playerAudioRef.current = audio
       audio.currentTime = playerCurrentTime
       audio.onended = () => {
         setPlayerIsPlaying(false)
         setPlayerCurrentTime(0)
+        playerAudioRef.current = null
       }
-      audio.onerror = () => setPlayerIsPlaying(false)
-      audio.play().catch(() => {})
+      audio.onerror = () => {
+        setPlayerIsPlaying(false)
+        playerAudioRef.current = null
+      }
+      audio.play().catch(() => {
+        setPlayerIsPlaying(false)
+        playerAudioRef.current = null
+      })
     } else if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       const sampleText = script.trim() || `Hello! This is a preview of the ${selectedVoice.name} voice.`
       const utterance = new SpeechSynthesisUtterance(sampleText)
@@ -1412,7 +1439,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved, allVide
 
   // Play / generate voice preview — single instance, mutually exclusive
   const handlePlayVoicePreview = async () => {
-    if (isPlayingPreview) {
+    if (isPlayingPreview || previewLoading) {
       stopAllAudio()
       return
     }
@@ -1444,6 +1471,9 @@ export default function VideoEditDialog({ open, onClose, video, onSaved, allVide
       if (res.ok) {
         const blob = await res.blob()
         if (controller.signal.aborted) return
+
+        // Kill any other sound before starting new audio
+        stopAllAudio()
 
         const audioUrl = URL.createObjectURL(blob)
         setGeneratedAudioUrl(audioUrl)
