@@ -239,6 +239,7 @@ export default function VideosView() {
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
         body: JSON.stringify({
+          engine: video.tts_engine || 'elevenlabs',
           voice_id: video.voice_id,
           voice_name: video.voice_name,
           speed: video.tempo,
@@ -404,16 +405,25 @@ export default function VideosView() {
                 },
               }}
             >
-              {v.thumbnail_url ? (
-                <Box
-                  component='img'
-                  src={v.thumbnail_url}
-                  alt={v.title}
-                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              ) : (
-                <i className='tabler-video text-textSecondary text-[20px]' />
-              )}
+              {(() => {
+                const pool = SCENE_IMAGE_POOLS[v.batch_no || 1] || SCENE_IMAGE_POOLS[1]
+                const poolIdx = ((v.script_no || 0) - 1) % (pool?.length || 1)
+                const thumbSrc = v.thumbnail_url
+                  || v.hyperframes?.find(hf => hf.scene_image)?.scene_image
+                  || pool?.[poolIdx >= 0 ? poolIdx : 0]
+                  || null
+
+                return thumbSrc ? (
+                  <Box
+                    component='img'
+                    src={thumbSrc}
+                    alt={v.title}
+                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <i className='tabler-video text-textSecondary text-[20px]' />
+                )
+              })()}
               {v.video_url && (
                 <Box
                   className='play-overlay'
@@ -743,12 +753,24 @@ export default function VideosView() {
   }
 
   const handleSaved = (saved: VideoRecord) => {
+    // Keep the dialog's video reference in sync with the saved record (new DB-assigned ID)
+    if (editVideo) setEditVideo(saved)
     setVideos(prev => {
+      // Update in-place if already in the list
       const idx = prev.findIndex(v => v.id === saved.id)
       if (idx >= 0) {
         const copy = [...prev]
         copy[idx] = saved
 
+        return copy
+      }
+
+      // For newly-created records, try to replace the matching slot by title+script_no
+      // so the navigation index stays stable (e.g. stays at "5/61" instead of jumping to "1/61")
+      const slotIdx = prev.findIndex(v => v.title === saved.title && v.script_no === saved.script_no)
+      if (slotIdx >= 0) {
+        const copy = [...prev]
+        copy[slotIdx] = saved
         return copy
       }
 
@@ -926,6 +948,8 @@ export default function VideosView() {
         }}
         video={editVideo}
         onSaved={handleSaved}
+        allVideos={filteredVideos}
+        onNavigate={(v) => setEditVideo(v)}
       />
 
       {/* Brand Bible & Global Production Rules Dialog */}

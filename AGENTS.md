@@ -6,7 +6,7 @@ Use this file as the default entrypoint for autonomous work in this workspace.
 
 - `WebSite/` - production static website, deployed to Vercel
 - `WebSite_Designer/` - separate Next.js review app
-- `SocialMedia/June28WebinarReel/` - separate Remotion video project
+- `remotion/` - Remotion video rendering project (compositions → MP4)
 
 Do not assume a change in one folder automatically affects the others.
 

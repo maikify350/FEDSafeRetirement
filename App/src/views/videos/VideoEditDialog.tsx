@@ -26,6 +26,8 @@ import Card from '@mui/material/Card'
 import CardMedia from '@mui/material/CardMedia'
 import CardContent from '@mui/material/CardContent'
 import Divider from '@mui/material/Divider'
+
+import ConfirmDialog from '@/components/ConfirmDialog'
 import Menu from '@mui/material/Menu'
 import Tab from '@mui/material/Tab'
 import Tabs from '@mui/material/Tabs'
@@ -129,7 +131,7 @@ export interface VideoRecord {
 }
 
 export const ELEVENLABS_VOICES = [
-  { id: 'GGRMgbKfr7QscdcrvWga', name: 'Kai', gender: 'm', desc: 'Approved Voice – Dynamic, clear male' },
+  { id: 'GGRMgbKfr7QscdcrvWga', name: 'Kai', gender: 'f', desc: 'Approved Voice – Versatile, warm female' },
   { id: 'dtVZnErhiiosqofxDzSH', name: 'Havoc', gender: 'm', desc: 'Approved Voice – Strong, commanding male' },
   { id: 'a1m16HA3i1rljUsxpKfn', name: 'Aurora', gender: 'f', desc: 'Approved Voice – Warm, clear, expressive female' },
   { id: 'UXrpoYalpW5MpGiFHq3z', name: 'Brock', gender: 'm', desc: 'Approved Voice – Confident, authoritative male' },
@@ -232,9 +234,11 @@ interface VideoEditDialogProps {
   onClose: () => void
   video: VideoRecord | null
   onSaved: (video: VideoRecord) => void
+  allVideos?: VideoRecord[]
+  onNavigate?: (video: VideoRecord) => void
 }
 
-export default function VideoEditDialog({ open, onClose, video, onSaved }: VideoEditDialogProps) {
+export default function VideoEditDialog({ open, onClose, video, onSaved, allVideos, onNavigate }: VideoEditDialogProps) {
   const isUUID = (str?: string | null) => Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str))
   const isEditing = Boolean(video?.id && isUUID(video.id))
 
@@ -304,6 +308,30 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   const [copiedScript, setCopiedScript] = useState(false)
   const [syncingHyperframes, setSyncingHyperframes] = useState(false)
 
+  // Navigation guard
+  const [navConfirmOpen, setNavConfirmOpen] = useState(false)
+  const [pendingNavVideo, setPendingNavVideo] = useState<VideoRecord | null>(null)
+
+  const currentIndex = useMemo(() => {
+    if (!allVideos || !video) return -1
+    // Primary: match by ID
+    const byId = allVideos.findIndex(v => v.id === video.id)
+    if (byId >= 0) return byId
+    // Fallback: match by title + script_no (covers default/unsaved videos)
+    return allVideos.findIndex(v => v.title === video.title && v.script_no === video.script_no)
+  }, [allVideos, video])
+  const prevVideo = currentIndex > 0 ? allVideos![currentIndex - 1] : null
+  const nextVideo = currentIndex >= 0 && currentIndex < (allVideos?.length ?? 0) - 1 ? allVideos![currentIndex + 1] : null
+
+  const handleNavigate = (target: VideoRecord) => {
+    if (dirty || saving || rendering) {
+      setPendingNavVideo(target)
+      setNavConfirmOpen(true)
+    } else {
+      onNavigate?.(target)
+    }
+  }
+
   // Voice Preview states
   const [previewLoading, setPreviewLoading] = useState(false)
   const [isPlayingPreview, setIsPlayingPreview] = useState(false)
@@ -311,6 +339,79 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const previewAbortRef = useRef<AbortController | null>(null)
   const scriptInputRef = useRef<HTMLTextAreaElement | null>(null)
+
+  // Cached Voice Sample Preview (zero-cost, pre-generated clips in Supabase)
+  const [samplePlaying, setSamplePlaying] = useState(false)
+  const sampleAudioRef = useRef<HTMLAudioElement | null>(null)
+  const [quotaExceededOpen, setQuotaExceededOpen] = useState(false)
+  const [quotaCreditsRemaining, setQuotaCreditsRemaining] = useState('0')
+
+  // TTS Credit Balance
+  const [ttsCredits, setTtsCredits] = useState<{
+    elevenlabs: { remaining: number; limit: number; tier: string; resetDate: string | null } | null
+    openai: { status: string; note: string } | null
+  } | null>(null)
+  const [creditsLoading, setCreditsLoading] = useState(false)
+
+  const fetchCredits = async () => {
+    setCreditsLoading(true)
+    try {
+      const res = await fetch('/api/voices/credits')
+      if (res.ok) setTtsCredits(await res.json())
+    } catch { /* ignore */ }
+    setCreditsLoading(false)
+  }
+
+  // Fetch credits on dialog open
+  useEffect(() => {
+    if (open) fetchCredits()
+  }, [open])
+
+  const SUPABASE_URL = 'https://gqarlkfmpgaotbezpkbs.supabase.co'
+
+  const getVoiceSampleUrl = (vId: string, engine: string) => {
+    const fileName = engine === 'openai' ? `openai_${vId}.mp3` : `${vId}.mp3`
+    return `${SUPABASE_URL}/storage/v1/object/public/voice-samples/${fileName}`
+  }
+
+  const stopSampleAudio = () => {
+    if (sampleAudioRef.current) {
+      sampleAudioRef.current.pause()
+      sampleAudioRef.current.currentTime = 0
+      sampleAudioRef.current = null
+    }
+    setSamplePlaying(false)
+  }
+
+  const handlePlayVoiceSample = () => {
+    // If already playing, stop
+    if (samplePlaying) {
+      stopSampleAudio()
+      return
+    }
+
+    // Stop any other audio first
+    stopAllAudio()
+    stopSampleAudio()
+
+    const url = getVoiceSampleUrl(voiceId, ttsEngine)
+    const audio = new Audio(url)
+    sampleAudioRef.current = audio
+    setSamplePlaying(true)
+
+    audio.onended = () => {
+      setSamplePlaying(false)
+      sampleAudioRef.current = null
+    }
+    audio.onerror = () => {
+      setSamplePlaying(false)
+      sampleAudioRef.current = null
+    }
+    audio.play().catch(() => {
+      setSamplePlaying(false)
+      sampleAudioRef.current = null
+    })
+  }
 
   // Template Menu anchor
   const [templateMenuAnchor, setTemplateMenuAnchor] = useState<null | HTMLElement>(null)
@@ -336,6 +437,7 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
     }
     setIsPlayingPreview(false)
     setPreviewLoading(false)
+    stopSampleAudio()
   }
 
   // Always stop narration audio whenever video player or timeline studio opens or dialog closes
@@ -351,43 +453,91 @@ export default function VideoEditDialog({ open, onClose, video, onSaved }: Video
     }
   }, [])
 
-// Topic-matched background B-Roll scene image pools
+// Topic-matched background B-Roll scene image pools (expanded with imported artwork)
 const SCENE_IMAGE_POOLS: Record<number, string[]> = {
   1: [
     '/images/scenes/federal-advisor-consultation.jpg',
     '/images/scenes/federal-couple-happy.jpg',
     '/images/scenes/who-retired-vet.webp',
     '/images/scenes/who-decision-background.webp',
+    '/images/scenes/Couple%20at%20Desk.png',
+    '/images/scenes/Black%20Couple%20at%20Desk.png',
+    '/images/scenes/FS%20-%20008%20Couple%20with%20Advisor.png',
+    '/images/scenes/FS%20-%20012%20Couple%20at%20Table.png',
+    '/images/scenes/Mixed%20Couple%20at%20Desk.png',
+    '/images/scenes/FS%20-%20014%20Couple%20Talking%20Outdoors.png',
+    '/images/scenes/Older%20Man%20at%20Desk.png',
+    '/images/scenes/advisor-session.png',
   ],
   2: [
     '/images/scenes/advisor-classroom.png',
     '/images/scenes/advisor-session.png',
     '/images/scenes/who-workshop.webp',
     '/images/scenes/who-mike-podium.webp',
+    '/images/scenes/Seminar%20-%201.png',
+    '/images/scenes/Seminar%20-2.png',
+    '/images/scenes/Seminar%20-%203.png',
+    '/images/scenes/Seminar%20-%204.png',
+    '/images/scenes/FedSafeRetirement%20Seminar.png',
+    '/images/scenes/FedSafeRetirement%20Seminar%20-%202.png',
+    '/images/scenes/Accountant%20at%20Desk.png',
+    '/images/scenes/FS%20-%20007%20Attorney%20at%20Desk.png',
   ],
   3: [
     '/images/scenes/military-buyback-desk.jpg',
     '/images/scenes/who-retired-mail.webp',
     '/images/scenes/seminar-hero.webp',
-    '/images/scenes/federal-couple-happy.jpg',
+    '/images/scenes/Flag%20Salute%20-%202.png',
+    '/images/scenes/Flag%20Salute%20-%203.png',
+    '/images/scenes/FS%20-%20017%20Flag%20Salute.png',
+    '/images/scenes/Ship%20Waiving.png',
+    '/images/scenes/Ship%20Waiving%20-%202.png',
+    '/images/scenes/FS%20-%20018%20Ship%20Waiving%20-%203.png',
+    '/images/scenes/Graduation-1.png',
+    '/images/scenes/Graduation-2.png',
+    '/images/scenes/who-retired-vet.webp',
   ],
   4: [
     '/images/scenes/fegli-rate-spike-shock.jpg',
     '/images/scenes/pshb-healthcare-review.jpg',
     '/images/scenes/federal-advisor-consultation.jpg',
-    '/images/scenes/federal-couple-happy.jpg',
+    '/images/scenes/Older%20Black%20Reviewing%20at%20Desk.png',
+    '/images/scenes/Latino%20Reviewing%20at%20Desk.png',
+    '/images/scenes/White%20Reviewing%20at%20Desk.png',
+    '/images/scenes/Oriental%20Reviewing%20at%20Desk.png',
+    '/images/scenes/FS%20-%20010%20Asian%20Man%20Thinking%20at%20Desk.png',
+    '/images/scenes/Woman%20at%20Desk.png',
+    '/images/scenes/FS%20-%20004%20Black%20Fellow%20at%20Desk.png',
+    '/images/scenes/Mulato%20Reviewing%20at%20Desk.png',
+    '/images/scenes/Black%20Woman%20Reviewing%20at%20Table.png',
   ],
   5: [
     '/images/scenes/tsp-retirement-growth.jpg',
     '/images/scenes/who-home-hero.webp',
     '/images/scenes/federal-couple-happy.jpg',
-    '/images/scenes/federal-advisor-consultation.jpg',
+    '/images/scenes/Granfather%20with%20Daughter.png',
+    '/images/scenes/Granfather%20with%20Daughter%20-%202.png',
+    '/images/scenes/Granfather%20with%20Daughter%20-%203.png',
+    '/images/scenes/FS%20-%20013%20Granmother%20with%20Daughter%20-%202.png',
+    '/images/scenes/Graduation-3.png',
+    '/images/scenes/Graduation-4.png',
+    '/images/scenes/Hero_Partners_Page_FInal.png',
+    '/images/scenes/New_Hero_DC.png',
+    '/images/scenes/Lack%20Granfather%20with%20Grandaughter.png',
   ],
   6: [
     '/images/scenes/agency-benefits.png',
     '/images/scenes/agency-education.png',
     '/images/scenes/usps-mail-carrier-sunset.jpg',
     '/images/scenes/who-mike-podium.webp',
+    '/images/scenes/Black%20Mailman%20at%20Truck.png',
+    '/images/scenes/Black%20Mailman%20at%20Truck%20-%202.png',
+    '/images/scenes/Hispanic%20Mailman%20at%20Truck.png',
+    '/images/scenes/White%20Mailman%20at%20Truck.png',
+    '/images/scenes/FS%20-%20002%20Mailman%20at%20Truck.png',
+    '/images/scenes/mail-carrier.webp',
+    '/images/scenes/who-mail-carrier.webp',
+    '/images/scenes/Plane%20With%20Banner.png',
   ],
 }
 
@@ -403,11 +553,13 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
   const liveSegments = useMemo(() => {
     const dur = Math.max(5, durationSec || 35)
     const pool = SCENE_IMAGE_POOLS[batchNo || 1] || SCENE_IMAGE_POOLS[1]
+    // Offset by script_no so each video in the same batch gets different starting images
+    const offset = ((scriptNo || 1) - 1) * 3
 
     if (hyperframes && hyperframes.length > 0) {
       return hyperframes.map((hf, idx) => ({
         ...hf,
-        scene_image: mediaAssets[idx]?.url || pool[idx % pool.length],
+        scene_image: hf.scene_image || mediaAssets[idx]?.url || pool[(idx + offset) % pool.length],
       }))
     }
 
@@ -421,9 +573,9 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
       text_segment: cleanSubtitleText(s),
       transition: idx % 2 === 0 ? 'slide_left' : 'zoom_in',
       camera_motion: idx % 2 === 0 ? 'push_forward' : 'pan_slow_right',
-      scene_image: mediaAssets[idx]?.url || pool[idx % pool.length],
+      scene_image: mediaAssets[idx]?.url || pool[(idx + offset) % pool.length],
     }))
-  }, [hyperframes, script, durationSec, batchNo, mediaAssets])
+  }, [hyperframes, script, durationSec, batchNo, scriptNo, mediaAssets])
 
   // Active segment at current scrubber position
   const activeLiveSegment = useMemo(() => {
@@ -558,6 +710,8 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
   const [galleryTarget, setGalleryTarget] = useState<'media' | 'thumbnail' | 'continuity'>('media')
   const [galleryItems, setGalleryItems] = useState<any[]>([])
   const [galleryLoading, setGalleryLoading] = useState(false)
+  const [gallerySelected, setGallerySelected] = useState<string[]>([])
+  const [galleryDeleteConfirmOpen, setGalleryDeleteConfirmOpen] = useState(false)
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const thumbFileInputRef = useRef<HTMLInputElement | null>(null)
@@ -579,7 +733,11 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
         setVoiceId(video.voice_id || 'GGRMgbKfr7QscdcrvWga')
         setTempo(Number(video.tempo) || 1.00)
         setStatus(video.status || 'draft')
-        setThumbnailUrl(video.thumbnail_url || null)
+        const fallbackThumb = video.thumbnail_url
+          || video.hyperframes?.find(hf => hf.scene_image)?.scene_image
+          || (SCENE_IMAGE_POOLS[video.batch_no || 1] || SCENE_IMAGE_POOLS[1])?.[(((video.script_no || 1) - 1) * 3) % (SCENE_IMAGE_POOLS[video.batch_no || 1] || SCENE_IMAGE_POOLS[1])?.length || 1]
+          || null
+        setThumbnailUrl(fallbackThumb)
         setHyperframes(video.hyperframes || [])
         setContinuityReferences(video.continuity_references || [])
         setMediaAssets(video.media_assets || [])
@@ -686,7 +844,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
     : `~${Math.floor(estSec / 60)}m ${String(Math.round(estSec % 60)).padStart(2, '0')}s`
 
   // Voice Director tag insertion helper
-  const handleInsertTag = (tag: string) => {
+  const handleInsertTag = (tag: string, isPause = false) => {
     const textarea = scriptInputRef.current
     if (!textarea) {
       setScript(prev => prev + tag)
@@ -696,6 +854,39 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
 
     const start = textarea.selectionStart || 0
     const end = textarea.selectionEnd || 0
+
+    // Smart pause: append `/` next to existing slashes instead of adding spaces
+    if (isPause) {
+      // Look back for existing pause slashes (possibly preceded by a space)
+      const before = script.substring(0, start)
+      const trailingSlashes = before.match(/(\/+)\s*$/)
+
+      if (trailingSlashes) {
+        // Append one more slash to the existing pause group
+        const slashStart = before.lastIndexOf(trailingSlashes[0])
+        const currentSlashes = trailingSlashes[1]
+        if (currentSlashes.length < 3) {
+          const newScript = script.substring(0, slashStart) + currentSlashes + '/' + script.substring(start)
+          setScript(newScript)
+          setDirty(true)
+          const newPos = slashStart + currentSlashes.length + 1
+          setTimeout(() => { textarea.focus(); textarea.setSelectionRange(newPos, newPos) }, 50)
+          return
+        }
+        // Already at /// max, don't add more
+        return
+      }
+
+      // No existing slash — insert ` / ` with spacing
+      const insertText = (start > 0 && script[start - 1] !== ' ' ? ' ' : '') + '/' + (script[start] !== ' ' && start < script.length ? ' ' : '')
+      const newScript = script.substring(0, start) + insertText + script.substring(end)
+      setScript(newScript)
+      setDirty(true)
+      const newPos = start + insertText.length
+      setTimeout(() => { textarea.focus(); textarea.setSelectionRange(newPos, newPos) }, 50)
+      return
+    }
+
     const newScript = script.substring(0, start) + tag + script.substring(end)
     setScript(newScript)
     setDirty(true)
@@ -941,23 +1132,45 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
     setError('')
 
     try {
-      // 1. Generate Voiceover
-      const ttsRes = await fetch('/api/videos/voice-preview', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          engine: ttsEngine,
-          voice_id: selectedVoice.id,
-          voice_name: selectedVoice.name,
-          speed: tempo,
-          text: script.trim(),
-        }),
-      })
+      // 1. Generate Voiceover (non-blocking: if TTS times out or fails, we still save hyperframes + record)
+      try {
+        const ttsAbort = new AbortController()
+        const ttsTimeout = setTimeout(() => ttsAbort.abort(), 50_000) // 50s safety timeout
 
-      if (ttsRes.ok) {
-        const blob = await ttsRes.blob()
-        const audioUrl = URL.createObjectURL(blob)
-        setGeneratedAudioUrl(audioUrl)
+        const ttsRes = await fetch('/api/videos/voice-preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: ttsAbort.signal,
+          body: JSON.stringify({
+            engine: ttsEngine,
+            voice_id: selectedVoice.id,
+            voice_name: selectedVoice.name,
+            speed: tempo,
+            text: script.trim(),
+          }),
+        })
+
+        clearTimeout(ttsTimeout)
+
+        if (ttsRes.ok) {
+          const blob = await ttsRes.blob()
+          const audioUrl = URL.createObjectURL(blob)
+          setGeneratedAudioUrl(audioUrl)
+        } else if (ttsRes.status === 402) {
+          // ElevenLabs quota exceeded — show dialog
+          try {
+            const errData = await ttsRes.json()
+            if (errData.code === 'elevenlabs_quota_exceeded') {
+              setQuotaCreditsRemaining(errData.credits_remaining || '0')
+              setQuotaExceededOpen(true)
+              setRegenerating(false)
+              return
+            }
+          } catch { /* ignore */ }
+        }
+      } catch (ttsErr: any) {
+        // TTS failed or timed out — log but continue with hyperframes + save
+        console.warn('[Re-Generate] TTS voiceover skipped:', ttsErr.name === 'AbortError' ? 'Request timed out (50s)' : ttsErr.message)
       }
 
       // 2. Auto-sync Hyperframes and attach photographic scene imagery
@@ -985,10 +1198,11 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
       }
 
       // Build rich hyperframes with visual scene image URLs
+      const offset = ((scriptNo || 1) - 1) * 3
       const richHyperframes = (updatedHyperframes && updatedHyperframes.length > 0 ? updatedHyperframes : liveSegments).map((hf: any, idx: number) => ({
         ...hf,
         visual_prompt: hf.visual_prompt || `Photographic federal scene: "${hf.text_segment?.substring(0, 50)}..."`,
-        scene_image: pool[idx % pool.length],
+        scene_image: pool[(idx + offset) % pool.length],
       }))
 
       const autoMediaAssets = richHyperframes.map((hf: any, idx: number) => ({
@@ -1124,9 +1338,24 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
 
       const { job_id } = startData
 
-      // Poll every 2 seconds
+      // Poll every 2 seconds, with a 5-minute safety timeout
       if (renderPollRef.current) clearInterval(renderPollRef.current)
+      const pollStarted = Date.now()
+      const MAX_POLL_MS = 5 * 60 * 1000 // 5 minutes
+
       renderPollRef.current = setInterval(async () => {
+        // Safety timeout — stop polling after 5 minutes
+        if (Date.now() - pollStarted > MAX_POLL_MS) {
+          clearInterval(renderPollRef.current!)
+          renderPollRef.current = null
+          setRendering(false)
+          setRenderStatus('error')
+          const msg = 'Render timed out after 5 minutes. Check the Remotion project and try again.'
+          setRenderError(msg)
+          setError(msg)
+          return
+        }
+
         try {
           const statusRes = await fetch(`/api/videos/render/status?job=${job_id}`)
           const statusData = await statusRes.json()
@@ -1629,7 +1858,41 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
         height='94vh'
         headerActions={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-            {/* Cost Breakdown Tooltip & Chip */}
+            {/* Prev / Next Navigation */}
+            {allVideos && allVideos.length > 1 && onNavigate && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, mr: 0.5 }}>
+                <Tooltip title={prevVideo ? `Previous: ${prevVideo.title}` : 'First video'}>
+                  <span>
+                    <IconButton
+                      size='small'
+                      disabled={!prevVideo}
+                      onClick={() => prevVideo && handleNavigate(prevVideo)}
+                      sx={{ p: 0.5, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+                    >
+                      <i className='tabler-chevron-left text-[18px]' />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+                <Chip
+                  label={`${currentIndex + 1} / ${allVideos.length}`}
+                  size='small'
+                  variant='outlined'
+                  sx={{ height: 22, fontSize: 10, fontWeight: 700, minWidth: 44, justifyContent: 'center' }}
+                />
+                <Tooltip title={nextVideo ? `Next: ${nextVideo.title}` : 'Last video'}>
+                  <span>
+                    <IconButton
+                      size='small'
+                      disabled={!nextVideo}
+                      onClick={() => nextVideo && handleNavigate(nextVideo)}
+                      sx={{ p: 0.5, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+                    >
+                      <i className='tabler-chevron-right text-[18px]' />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              </Box>
+            )}
             <Tooltip
               title={
                 <Box sx={{ p: 0.5 }}>
@@ -1666,11 +1929,70 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
               />
             </Tooltip>
 
+            {/* TTS Credits Pill */}
+            <Tooltip
+              title={
+                <Box sx={{ p: 0.5 }}>
+                  <Typography variant='caption' fontWeight={700} display='block' sx={{ color: 'primary.light', borderBottom: '1px solid rgba(255,255,255,0.2)', pb: 0.5, mb: 0.5 }}>
+                    TTS Provider Credit Balances
+                  </Typography>
+                  {ttsCredits?.elevenlabs && (
+                    <Typography variant='caption' display='block'>
+                      • <strong>ElevenLabs ({ttsCredits.elevenlabs.tier}):</strong>{' '}
+                      {ttsCredits.elevenlabs.remaining.toLocaleString()} / {ttsCredits.elevenlabs.limit.toLocaleString()} chars
+                      {ttsCredits.elevenlabs.resetDate && (
+                        <> · Resets {new Date(ttsCredits.elevenlabs.resetDate).toLocaleDateString()}</>
+                      )}
+                    </Typography>
+                  )}
+                  {ttsCredits?.openai && (
+                    <Typography variant='caption' display='block'>
+                      • <strong>OpenAI TTS:</strong> {ttsCredits.openai.note}
+                    </Typography>
+                  )}
+                  {!ttsCredits && (
+                    <Typography variant='caption' display='block' color='text.secondary'>
+                      Click refresh to load credit balances
+                    </Typography>
+                  )}
+                  <Typography variant='caption' display='block' color='text.secondary' sx={{ mt: 0.5, fontSize: 10 }}>
+                    Click ↻ to refresh
+                  </Typography>
+                </Box>
+              }
+              arrow
+            >
+              <Chip
+                icon={
+                  creditsLoading
+                    ? <CircularProgress size={12} color='inherit' />
+                    : <i className='tabler-credit-card text-[14px]' />
+                }
+                label={
+                  ttsCredits?.elevenlabs
+                    ? `${ttsCredits.elevenlabs.remaining.toLocaleString()} EL chars`
+                    : creditsLoading ? 'Loading…' : 'Credits ?'
+                }
+                deleteIcon={<i className='tabler-refresh text-[12px]' />}
+                onDelete={fetchCredits}
+                size='small'
+                variant='outlined'
+                color={
+                  !ttsCredits?.elevenlabs ? 'warning'
+                    : ttsCredits.elevenlabs.remaining > 5000 ? 'success'
+                    : ttsCredits.elevenlabs.remaining > 500 ? 'warning'
+                    : 'error'
+                }
+                sx={{ height: 26, fontSize: 11, fontWeight: 700, cursor: 'help' }}
+              />
+            </Tooltip>
+
             {/* Watch Video Screen Preview */}
             <Button
               size='small'
               variant='contained'
               color='info'
+              disabled={rendering}
               startIcon={<i className='tabler-player-play' />}
               onClick={() => setVideoPlayerOpen(true)}
               sx={{
@@ -2021,7 +2343,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                         <Chip
                           label='⏱️ / 1s Pause'
                           size='small'
-                          onClick={() => handleInsertTag(' / ')}
+                          onClick={() => handleInsertTag('/', true)}
                           sx={{ height: 22, fontSize: 11, cursor: 'pointer', fontWeight: 700 }}
                           color='primary'
                           variant='outlined'
@@ -2132,6 +2454,109 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                         }
                       }}
                     />
+
+                    {/* Live Annotated Script Preview */}
+                    {script.trim() && (
+                      <Box sx={{
+                        p: 1.5,
+                        borderRadius: 1.5,
+                        bgcolor: 'rgba(0,0,0,0.03)',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        maxHeight: 160,
+                        overflowY: 'auto',
+                        lineHeight: 1.8,
+                        fontSize: 13,
+                      }}>
+                        <Typography variant='caption' sx={{ fontWeight: 700, color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.75, fontSize: 10 }}>
+                          <i className='tabler-eye text-[12px]' /> Annotated Preview (tags render as colored pills)
+                        </Typography>
+                        <Box sx={{ lineHeight: 2.2 }}>
+                          {(() => {
+                            // Tokenize the script into text and tag segments
+                            const tagPattern = /(\{\{(?:emphasis|whisper|slow|excited)\}\}[\s\S]*?\{\/\1?\}\}|\{\{pause:\d+\}\}|\[(?:short pause|long pause|sighs|exhales|laughs|chuckles|dramatically|thoughtful|excited|whispers|pause:\d+)\]|\*\*[^*]+\*\*|<\/?(loud|whisper|fast|slow|spell|emphasis|excited|thoughtful|dramatically)>|\/\/\/|\/\/|\/(?=\s))/gi
+
+                            const parts = script.split(tagPattern).filter(Boolean)
+
+                            return parts.map((part, i) => {
+                              // Single pause /
+                              if (/^\/(?!\/)$/.test(part.trim())) {
+                                return <Chip key={i} label='⏱ 1s' size='small' sx={{ height: 18, fontSize: 9, fontWeight: 700, mx: 0.25, bgcolor: '#6366f1', color: 'white' }} />
+                              }
+                              // Double pause //
+                              if (part.trim() === '//') {
+                                return <Chip key={i} label='⏱ 2s' size='small' sx={{ height: 18, fontSize: 9, fontWeight: 700, mx: 0.25, bgcolor: '#8b5cf6', color: 'white' }} />
+                              }
+                              // Triple pause ///
+                              if (part.trim() === '///') {
+                                return <Chip key={i} label='⏱ 3s' size='small' sx={{ height: 18, fontSize: 9, fontWeight: 700, mx: 0.25, bgcolor: '#a855f7', color: 'white' }} />
+                              }
+                              // {{pause:N}}
+                              const pauseMatch = part.match(/\{\{pause:(\d+)\}\}/i)
+                              if (pauseMatch) {
+                                return <Chip key={i} label={`⏱ ${pauseMatch[1]}s`} size='small' sx={{ height: 18, fontSize: 9, fontWeight: 700, mx: 0.25, bgcolor: '#8b5cf6', color: 'white' }} />
+                              }
+                              // **bold emphasis**
+                              const boldMatch = part.match(/^\*\*(.+)\*\*$/)
+                              if (boldMatch) {
+                                return <Box key={i} component='span' sx={{ fontWeight: 900, color: '#f59e0b', borderBottom: '2px solid #f59e0b' }}>{boldMatch[1]}</Box>
+                              }
+                              // {{emphasis}}text{{/emphasis}}
+                              const emphMatch = part.match(/\{\{emphasis\}\}([\s\S]*?)\{\/emphasis\}\}/i)
+                              if (emphMatch) {
+                                return <Box key={i} component='span' sx={{ fontWeight: 900, color: '#f59e0b', borderBottom: '2px solid #f59e0b', px: 0.25 }}>🔊 {emphMatch[1]}</Box>
+                              }
+                              // {{whisper}}text{{/whisper}}
+                              const whisperMatch = part.match(/\{\{whisper\}\}([\s\S]*?)\{\/whisper\}\}/i)
+                              if (whisperMatch) {
+                                return <Box key={i} component='span' sx={{ fontStyle: 'italic', color: '#94a3b8', fontSize: '0.9em', px: 0.25 }}>🤫 {whisperMatch[1]}</Box>
+                              }
+                              // {{slow}}text{{/slow}}
+                              const slowMatch = part.match(/\{\{slow\}\}([\s\S]*?)\{\/slow\}\}/i)
+                              if (slowMatch) {
+                                return <Box key={i} component='span' sx={{ color: '#22d3ee', letterSpacing: 1.5, px: 0.25 }}>🐢 {slowMatch[1]}</Box>
+                              }
+                              // {{excited}}text{{/excited}}
+                              const excitedMatch = part.match(/\{\{excited\}\}([\s\S]*?)\{\/excited\}\}/i)
+                              if (excitedMatch) {
+                                return <Box key={i} component='span' sx={{ fontWeight: 800, color: '#ef4444', px: 0.25 }}>🔥 {excitedMatch[1]}</Box>
+                              }
+                              // [tag] audio direction tags
+                              const audioTagMatch = part.match(/^\[(short pause|long pause|sighs|exhales|laughs|chuckles|dramatically|thoughtful|excited|whispers|pause:\d+)\]$/i)
+                              if (audioTagMatch) {
+                                const tag = audioTagMatch[1].toLowerCase()
+                                const colors: Record<string, string> = {
+                                  'short pause': '#6366f1', 'long pause': '#8b5cf6',
+                                  'dramatically': '#ec4899', 'thoughtful': '#06b6d4',
+                                  'excited': '#ef4444', 'whispers': '#94a3b8',
+                                  'sighs': '#78716c', 'exhales': '#78716c',
+                                  'laughs': '#22c55e', 'chuckles': '#22c55e',
+                                }
+                                const emojis: Record<string, string> = {
+                                  'short pause': '⏱', 'long pause': '⏱⏱',
+                                  'dramatically': '🎭', 'thoughtful': '🤔',
+                                  'excited': '🔥', 'whispers': '🤫',
+                                  'sighs': '💨', 'exhales': '💨',
+                                  'laughs': '😄', 'chuckles': '😄',
+                                }
+                                return <Chip key={i} label={`${emojis[tag] || '🏷️'} ${tag}`} size='small' sx={{ height: 18, fontSize: 9, fontWeight: 700, mx: 0.25, bgcolor: colors[tag] || '#6b7280', color: 'white' }} />
+                              }
+                              // <loud>text</loud> style XML tags
+                              const xmlMatch = part.match(/^<(loud|whisper|fast|slow|spell|emphasis|excited|thoughtful|dramatically)>$/i)
+                              if (xmlMatch) {
+                                return <Chip key={i} label={`▸ ${xmlMatch[1]}`} size='small' sx={{ height: 16, fontSize: 8, fontWeight: 700, mx: 0.25, bgcolor: '#f97316', color: 'white' }} />
+                              }
+                              const xmlEndMatch = part.match(/^<\/(loud|whisper|fast|slow|spell|emphasis|excited|thoughtful|dramatically)>$/i)
+                              if (xmlEndMatch) {
+                                return <Chip key={i} label={`◂ /${xmlEndMatch[1]}`} size='small' sx={{ height: 16, fontSize: 8, fontWeight: 700, mx: 0.25, bgcolor: '#64748b', color: 'white' }} />
+                              }
+                              // Plain text
+                              return <span key={i}>{part}</span>
+                            })
+                          })()}
+                        </Box>
+                      </Box>
+                    )}
                   </Box>
 
                   {/* Spoken CTA & Conversion Destination Box */}
@@ -2454,16 +2879,6 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                         accept='image/*'
                         onChange={handleThumbnailUpload}
                       />
-                      <Button
-                        size='small'
-                        variant='contained'
-                        color='info'
-                        startIcon={<i className='tabler-player-play' />}
-                        onClick={() => setVideoPlayerOpen(true)}
-                        sx={{ fontSize: 11, flex: 1.2, fontWeight: 700 }}
-                      >
-                        Play Video
-                      </Button>
                       <Button
                         size='small'
                         variant='outlined'
@@ -3254,73 +3669,108 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                       />
                     </Box>
 
-                    {/* Voice Dropdown */}
-                    <FormControl fullWidth size='small'>
-                      <InputLabel id='voice-select-label'>Voice</InputLabel>
-                      <Select
-                        labelId='voice-select-label'
-                        value={voiceId}
-                        label='Voice'
-                        onChange={e => { setVoiceId(e.target.value); setDirty(true) }}
-                      >
-                        {activeVoicesList.map(v => {
-                          const isMale = v.gender === 'm'
-                          const isFemale = v.gender === 'f'
-                          const bgColor = isMale
-                            ? 'rgba(59, 130, 246, 0.12)'
-                            : isFemale
-                              ? 'rgba(236, 72, 153, 0.12)'
-                              : 'transparent'
-                          const hoverBg = isMale
-                            ? 'rgba(59, 130, 246, 0.22)'
-                            : isFemale
-                              ? 'rgba(236, 72, 153, 0.22)'
-                              : 'action.hover'
-                          const selectedBg = isMale
-                            ? 'rgba(59, 130, 246, 0.28) !important'
-                            : 'rgba(236, 72, 153, 0.28) !important'
+                    {/* Voice Dropdown + Sample Preview Button */}
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                      <FormControl fullWidth size='small'>
+                        <InputLabel id='voice-select-label'>Voice</InputLabel>
+                        <Select
+                          labelId='voice-select-label'
+                          value={voiceId}
+                          label='Voice'
+                          onChange={e => { stopSampleAudio(); setVoiceId(e.target.value); setDirty(true) }}
+                        >
+                          {activeVoicesList.map(v => {
+                            const isMale = v.gender === 'm'
+                            const isFemale = v.gender === 'f'
+                            const bgColor = isMale
+                              ? 'rgba(59, 130, 246, 0.12)'
+                              : isFemale
+                                ? 'rgba(236, 72, 153, 0.12)'
+                                : 'transparent'
+                            const hoverBg = isMale
+                              ? 'rgba(59, 130, 246, 0.22)'
+                              : isFemale
+                                ? 'rgba(236, 72, 153, 0.22)'
+                                : 'action.hover'
+                            const selectedBg = isMale
+                              ? 'rgba(59, 130, 246, 0.28) !important'
+                              : 'rgba(236, 72, 153, 0.28) !important'
 
-                          return (
-                            <MenuItem
-                              key={v.id}
-                              value={v.id}
-                              sx={{
-                                bgcolor: bgColor,
-                                borderRadius: 1,
-                                my: 0.3,
-                                mx: 0.5,
-                                transition: 'background-color 0.15s ease',
-                                '&:hover': { bgcolor: hoverBg },
-                                '&.Mui-selected': { bgcolor: selectedBg },
-                              }}
-                            >
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <i
-                                    className={isMale ? 'tabler-gender-male' : isFemale ? 'tabler-gender-female' : 'tabler-user'}
-                                    style={{
-                                      fontSize: 16,
-                                      color: isMale ? '#3b82f6' : isFemale ? '#ec4899' : 'inherit',
-                                    }}
-                                  />
-                                  <span><strong>{v.name}</strong></span>
-                                  <Chip
-                                    label={isMale ? 'Male' : isFemale ? 'Female' : 'Neutral'}
-                                    size='small'
-                                    variant='tonal'
-                                    color={isMale ? 'info' : isFemale ? 'secondary' : 'default'}
-                                    sx={{ height: 18, fontSize: 9, fontWeight: 700 }}
-                                  />
+                            return (
+                              <MenuItem
+                                key={v.id}
+                                value={v.id}
+                                sx={{
+                                  bgcolor: bgColor,
+                                  borderRadius: 1,
+                                  my: 0.3,
+                                  mx: 0.5,
+                                  transition: 'background-color 0.15s ease',
+                                  '&:hover': { bgcolor: hoverBg },
+                                  '&.Mui-selected': { bgcolor: selectedBg },
+                                }}
+                              >
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <i
+                                      className={isMale ? 'tabler-gender-male' : isFemale ? 'tabler-gender-female' : 'tabler-user'}
+                                      style={{
+                                        fontSize: 16,
+                                        color: isMale ? '#3b82f6' : isFemale ? '#ec4899' : 'inherit',
+                                      }}
+                                    />
+                                    <span><strong>{v.name}</strong></span>
+                                    <Chip
+                                      label={isMale ? 'Male' : isFemale ? 'Female' : 'Neutral'}
+                                      size='small'
+                                      variant='tonal'
+                                      color={isMale ? 'info' : isFemale ? 'secondary' : 'default'}
+                                      sx={{ height: 18, fontSize: 9, fontWeight: 700 }}
+                                    />
+                                  </Box>
+                                  <Typography variant='caption' color='text.secondary' sx={{ ml: 1, fontSize: 11 }}>
+                                    {v.desc}
+                                  </Typography>
                                 </Box>
-                                <Typography variant='caption' color='text.secondary' sx={{ ml: 1, fontSize: 11 }}>
-                                  {v.desc}
-                                </Typography>
-                              </Box>
-                            </MenuItem>
-                          )
-                        })}
-                      </Select>
-                    </FormControl>
+                              </MenuItem>
+                            )
+                          })}
+                        </Select>
+                      </FormControl>
+
+                      {/* 🔊 Cached Voice Sample Preview Button — zero API cost */}
+                      <Tooltip title={samplePlaying ? 'Click to stop sample' : 'Audition voice with 15s FedSafe script (0 API cost)'}>
+                        <Button
+                          variant={samplePlaying ? 'contained' : 'tonal'}
+                          color={samplePlaying ? 'warning' : 'primary'}
+                          size='small'
+                          onClick={handlePlayVoiceSample}
+                          startIcon={
+                            <i
+                              className={samplePlaying ? 'tabler-player-stop' : 'tabler-volume'}
+                              style={{ fontSize: 17 }}
+                            />
+                          }
+                          sx={{
+                            height: 38,
+                            px: 1.5,
+                            whiteSpace: 'nowrap',
+                            fontWeight: 600,
+                            fontSize: '0.8125rem',
+                            flexShrink: 0,
+                            ...(samplePlaying && {
+                              animation: 'pulse 1.5s ease-in-out infinite',
+                              '@keyframes pulse': {
+                                '0%, 100%': { boxShadow: '0 0 0 0 rgba(245, 158, 11, 0.4)' },
+                                '50%': { boxShadow: '0 0 0 6px rgba(245, 158, 11, 0)' },
+                              },
+                            }),
+                          }}
+                        >
+                          {samplePlaying ? 'Stop' : 'Preview'}
+                        </Button>
+                      </Tooltip>
+                    </Box>
 
                     {/* Tempo Chips */}
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
@@ -3846,6 +4296,27 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
         </Box>
       </EntityEditDialog>
 
+      {/* Navigation Guard — unsaved changes confirmation */}
+      <ConfirmDialog
+        open={navConfirmOpen}
+        title='Unsaved Changes'
+        message={`You have unsaved changes on "${title || 'this video'}". Navigating away will discard them. Continue?`}
+        confirmLabel='Discard & Navigate'
+        confirmColor='warning'
+        onConfirm={() => {
+          setNavConfirmOpen(false)
+          setDirty(false)
+          if (pendingNavVideo) {
+            onNavigate?.(pendingNavVideo)
+            setPendingNavVideo(null)
+          }
+        }}
+        onClose={() => {
+          setNavConfirmOpen(false)
+          setPendingNavVideo(null)
+        }}
+      />
+
       {/* Quick Templates Menu */}
       <Menu
         anchorEl={templateMenuAnchor}
@@ -3873,12 +4344,26 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
       </Menu>
 
       {/* Gallery Picker Dialog */}
-      <Dialog open={galleryOpen} onClose={() => setGalleryOpen(false)} maxWidth='md' fullWidth>
+      <Dialog open={galleryOpen} onClose={() => { setGalleryOpen(false); setGallerySelected([]) }} maxWidth='md' fullWidth>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span>Select from Gallery ({galleryTarget})</span>
-          <IconButton size='small' onClick={() => setGalleryOpen(false)}>
-            <i className='tabler-x' />
-          </IconButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {gallerySelected.length > 0 && (
+              <Button
+                size='small'
+                variant='contained'
+                color='error'
+                startIcon={<i className='tabler-trash' />}
+                onClick={() => setGalleryDeleteConfirmOpen(true)}
+                sx={{ fontSize: 12, fontWeight: 700 }}
+              >
+                Delete Selected ({gallerySelected.length})
+              </Button>
+            )}
+            <IconButton size='small' onClick={() => { setGalleryOpen(false); setGallerySelected([]) }}>
+              <i className='tabler-x' />
+            </IconButton>
+          </Box>
         </DialogTitle>
         <DialogContent dividers>
           {galleryLoading ? (
@@ -3895,44 +4380,100 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
               gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' },
               gap: 2,
             }}>
-              {galleryItems.map(item => (
-                <Card
-                  key={item.id}
-                  sx={{
-                    cursor: 'pointer',
-                    border: '2px solid transparent',
-                    '&:hover': { borderColor: 'primary.main', transform: 'scale(1.02)' },
-                    transition: 'all 0.15s ease',
-                  }}
-                  onClick={() => handleSelectGalleryItem(item)}
-                >
-                  {item.type === 'video' ? (
-                    <Box sx={{ height: 110, bgcolor: 'black', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <i className='tabler-video text-white text-[32px]' />
-                    </Box>
-                  ) : (
-                    <CardMedia
-                      component='img'
-                      height='110'
-                      image={item.publicUrl}
-                      alt={item.name}
-                      sx={{ height: 110, objectFit: 'cover' }}
-                    />
-                  )}
-                  <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
-                    <Typography variant='caption' noWrap fontWeight={600} display='block'>
-                      {item.name}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              ))}
+              {galleryItems.map(item => {
+                const isSelected = gallerySelected.includes(item.name)
+                return (
+                  <Card
+                    key={item.id}
+                    sx={{
+                      cursor: 'pointer',
+                      position: 'relative',
+                      border: isSelected ? '2px solid' : '2px solid transparent',
+                      borderColor: isSelected ? 'error.main' : 'transparent',
+                      '&:hover': { borderColor: isSelected ? 'error.main' : 'primary.main', transform: 'scale(1.02)' },
+                      '&:hover .gallery-delete-icon': { opacity: 1 },
+                      transition: 'all 0.15s ease',
+                      opacity: isSelected ? 0.75 : 1,
+                    }}
+                    onClick={() => handleSelectGalleryItem(item)}
+                  >
+                    {/* Delete selection toggle — red trash icon top-right */}
+                    <IconButton
+                      className='gallery-delete-icon'
+                      size='small'
+                      sx={{
+                        position: 'absolute',
+                        top: 4,
+                        right: 4,
+                        zIndex: 2,
+                        bgcolor: isSelected ? 'error.main' : 'rgba(0,0,0,0.55)',
+                        color: 'white',
+                        opacity: isSelected ? 1 : 0,
+                        '&:hover': { bgcolor: 'error.dark', opacity: 1 },
+                        transition: 'opacity 0.15s ease',
+                        width: 28,
+                        height: 28,
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setGallerySelected(prev =>
+                          prev.includes(item.name)
+                            ? prev.filter(n => n !== item.name)
+                            : [...prev, item.name]
+                        )
+                      }}
+                    >
+                      <i className='tabler-trash' style={{ fontSize: 16 }} />
+                    </IconButton>
+                    {item.type === 'video' ? (
+                      <Box sx={{ height: 110, bgcolor: 'black', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <i className='tabler-video text-white text-[32px]' />
+                      </Box>
+                    ) : (
+                      <CardMedia
+                        component='img'
+                        height='110'
+                        image={item.publicUrl}
+                        alt={item.name}
+                        sx={{ height: 110, objectFit: 'cover' }}
+                      />
+                    )}
+                    <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
+                      <Typography variant='caption' noWrap fontWeight={600} display='block'>
+                        {item.name}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setGalleryOpen(false)}>Cancel</Button>
+          <Button onClick={() => { setGalleryOpen(false); setGallerySelected([]) }}>Cancel</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Gallery Delete Confirmation */}
+      <ConfirmDialog
+        open={galleryDeleteConfirmOpen}
+        title='Delete Gallery Assets'
+        message={`Permanently delete ${gallerySelected.length} image${gallerySelected.length > 1 ? 's' : ''} from the gallery bucket?\n\n⚠️ If any of these images are assigned as scene assets in video scripts, those scenes will show a fallback image instead.`}
+        confirmLabel={`Delete ${gallerySelected.length} Image${gallerySelected.length > 1 ? 's' : ''}`}
+        confirmColor='error'
+        onConfirm={async () => {
+          setGalleryDeleteConfirmOpen(false)
+          for (const name of gallerySelected) {
+            try {
+              await fetch(`/api/gallery?name=${encodeURIComponent(name)}`, { method: 'DELETE' })
+            } catch { /* ignore individual failures */ }
+          }
+          // Refresh gallery list
+          setGalleryItems(prev => prev.filter(item => !gallerySelected.includes(item.name)))
+          setGallerySelected([])
+        }}
+        onCancel={() => setGalleryDeleteConfirmOpen(false)}
+      />
 
       {/* Pro Timeline Studio (Read-Only) Dialog */}
       <ProTimelineStudioDialog
@@ -3961,7 +4502,8 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
             borderRadius: 2.5,
             border: '1px solid rgba(255, 255, 255, 0.15)',
             boxShadow: '0 25px 60px rgba(0,0,0,0.85)',
-            overflow: 'hidden',
+            overflow: 'visible',
+            maxHeight: '95vh',
           }
         }}
       >
@@ -3969,9 +4511,8 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          p: 2,
+          py: 1.25,
           px: 3,
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <i className='tabler-player-play text-[22px] text-primary' />
@@ -3990,12 +4531,14 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
         </DialogTitle>
 
         <DialogContent sx={{
-          p: 3,
+          p: 2,
+          pt: 1,
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           bgcolor: '#030712',
           minHeight: 460,
+          overflow: 'hidden',
         }}>
           {(() => {
             const hasRenderedMp4 = Boolean(video?.video_url)
@@ -4006,30 +4549,22 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
               const items = []
               if (showShieldLogo && shieldLogoPosition === pos) {
                 items.push(
-                  <Box key="shield" sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)', opacity: logoOpacity }}>
-                    <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='FEDSafe Shield' style={{ height: Math.round(20 * scaleMult), objectFit: 'contain', display: 'block' }} />
-                  </Box>
+                  <img key="shield" src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='FEDSafe Shield' style={{ height: Math.round(20 * scaleMult), objectFit: 'contain', display: 'block', opacity: logoOpacity, filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.7))' }} />
                 )
               }
               if (showSamBadge && samBadgePosition === pos) {
                 items.push(
-                  <Box key="sam" sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)', opacity: logoOpacity }}>
-                    <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM.gov' style={{ height: Math.round(18 * scaleMult), objectFit: 'contain', display: 'block' }} />
-                  </Box>
+                  <img key="sam" src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM.gov' style={{ height: Math.round(18 * scaleMult), objectFit: 'contain', display: 'block', opacity: logoOpacity, filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.7))' }} />
                 )
               }
               if (showDoubleLogo && doubleLogoPosition === pos) {
                 items.push(
-                  <Box key="double" sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)', opacity: logoOpacity }}>
-                    <img src='/images/branding/fedsafe-double-logo-transparent.webp' alt='Dual Lockup' style={{ height: Math.round(20 * scaleMult), objectFit: 'contain', display: 'block' }} />
-                  </Box>
+                  <img key="double" src='/images/branding/fedsafe-double-logo-transparent.webp' alt='Dual Lockup' style={{ height: Math.round(20 * scaleMult), objectFit: 'contain', display: 'block', opacity: logoOpacity, filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.7))' }} />
                 )
               }
               if (showTaglineLogo && taglineLogoPosition === pos) {
                 items.push(
-                  <Box key="tagline" sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)', opacity: logoOpacity }}>
-                    <img src='/images/branding/fedsafe-logo-tagline-transparent.webp' alt='Tagline' style={{ height: Math.round(16 * scaleMult), objectFit: 'contain', display: 'block' }} />
-                  </Box>
+                  <img key="tagline" src='/images/branding/fedsafe-logo-tagline-transparent.webp' alt='Tagline' style={{ height: Math.round(16 * scaleMult), objectFit: 'contain', display: 'block', opacity: logoOpacity, filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.7))' }} />
                 )
               }
               return items
@@ -4043,11 +4578,15 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                     controls
                     autoPlay
                     style={{
+                      width: format === 'short' ? 320 : undefined,
                       maxWidth: '100%',
                       maxHeight: '68vh',
+                      aspectRatio: format === 'short' ? '9/16' : '16/9',
+                      objectFit: 'contain',
                       borderRadius: 12,
                       boxShadow: '0 12px 40px rgba(0,0,0,0.8)',
                       outline: 'none',
+                      background: '#000',
                     }}
                   />
 
@@ -4106,7 +4645,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                 {/* 1. Live Animated Video Screen Canvas */}
                 <Box sx={{
                   width: format === 'short' ? 320 : 640,
-                  height: format === 'short' ? 480 : 360,
+                  height: format === 'short' ? 504 : 360,
                   maxWidth: '100%',
                   bgcolor: '#040711',
                   borderRadius: 3.5,
@@ -4147,30 +4686,34 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                     zIndex: 2,
                   }} />
 
-                  {/* Top Row: Brand Watermarks & Camera Tag */}
+                  {/* Top Row: Brand Watermarks */}
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75 }}>
                       {showShieldLogo && (
-                        <Box sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)' }}>
-                          <img src='/images/branding/fedsafe-shield-logo-transparent.webp' alt='FEDSafe' style={{ height: 18, display: 'block' }} />
-                        </Box>
-                      )}
-                      {scriptNo !== null && (
-                        <Chip label={`#${String(scriptNo).padStart(2, '0')}`} size='small' color='primary' sx={{ height: 20, fontSize: 10, fontWeight: 800 }} />
+                        <img
+                          src='/images/branding/fedsafe-shield-logo-transparent.webp'
+                          alt='FEDSafe'
+                          style={{
+                            height: 40,
+                            display: 'block',
+                            filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.7))',
+                          }}
+                        />
                       )}
                     </Box>
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75 }}>
                       {showSamBadge && (
-                        <Box sx={{ bgcolor: 'rgba(6,29,50,0.85)', p: '3px 6px', borderRadius: 1, border: '1px solid rgba(255,255,255,0.18)' }}>
-                          <img src='/images/branding/fedsafe-sam-badge-transparent.webp' alt='SAM.gov' style={{ height: 16, display: 'block' }} />
-                        </Box>
+                        <img
+                          src='/images/branding/fedsafe-sam-badge-transparent.webp'
+                          alt='SAM.gov'
+                          style={{
+                            height: 40,
+                            display: 'block',
+                            filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.7))',
+                          }}
+                        />
                       )}
-                      <Chip
-                        label={activeLiveSegment?.camera_motion || 'motion'}
-                        size='small'
-                        sx={{ height: 18, fontSize: 9, fontWeight: 700, bgcolor: 'rgba(6,182,212,0.25)', color: '#22d3ee' }}
-                      />
                     </Box>
                   </Box>
 
@@ -4356,6 +4899,72 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
               Open Timeline Studio
             </Button>
           </Box>
+        </DialogActions>
+      </Dialog>
+
+      {/* ElevenLabs Quota Exceeded Dialog */}
+      <Dialog
+        fullWidth
+        maxWidth='xs'
+        open={quotaExceededOpen}
+        onClose={() => setQuotaExceededOpen(false)}
+        closeAfterTransition={false}
+        PaperProps={{ sx: { borderRadius: 2 } }}
+      >
+        <DialogContent
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            pt: 8,
+            pb: 3,
+            px: 6,
+          }}
+        >
+          <i className='tabler-alert-circle text-warning' style={{ fontSize: 88, marginBottom: 24 }} />
+          <Typography variant='h5' fontWeight={700} sx={{ mb: 1 }}>
+            ElevenLabs Credits Exhausted
+          </Typography>
+          <Typography color='text.secondary' sx={{ mb: 1 }}>
+            Your ElevenLabs account has only <strong>{quotaCreditsRemaining}</strong> credits remaining, which is not enough to generate this voiceover.
+          </Typography>
+          <Typography color='text.secondary' variant='body2'>
+            You can switch to <strong>OpenAI TTS</strong> (unlimited) to continue, or purchase more ElevenLabs credits at <strong>elevenlabs.io</strong>.
+          </Typography>
+        </DialogContent>
+        <DialogActions
+          sx={{
+            justifyContent: 'center',
+            pb: 6,
+            px: 6,
+            pt: 0,
+            gap: 1,
+            flexDirection: 'column',
+          }}
+        >
+          <Button
+            fullWidth
+            variant='contained'
+            color='primary'
+            startIcon={<i className='tabler-switch-horizontal' />}
+            onClick={() => {
+              setQuotaExceededOpen(false)
+              setTtsEngine('openai')
+            }}
+            sx={{ borderRadius: '8px' }}
+          >
+            Switch to OpenAI TTS
+          </Button>
+          <Button
+            fullWidth
+            variant='tonal'
+            color='secondary'
+            onClick={() => setQuotaExceededOpen(false)}
+            sx={{ borderRadius: '8px' }}
+          >
+            I'll Add More Credits
+          </Button>
         </DialogActions>
       </Dialog>
     </>

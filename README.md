@@ -6,7 +6,7 @@ This workspace contains multiple related projects. Only one of them is currently
 
 - `WebSite/` - production FEDSafe Retirement static site (GitHub + Vercel deployment target)
 - `WebSite_Designer/` - Next.js artwork review app used for creative review workflows
-- `SocialMedia/June28WebinarReel/` - Remotion project for video assets
+- `remotion/` - Remotion video rendering project (compositions → MP4)
 - `_ARCHIVE_20260606/` - historical archive material; not active development
 
 ## Vercel Project Mapping

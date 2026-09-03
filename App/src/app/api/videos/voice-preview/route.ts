@@ -8,6 +8,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60 // ElevenLabs full-script TTS can take 30-60s for long narrations
 
 export async function POST(request: NextRequest) {
   try {
@@ -117,7 +118,7 @@ export async function POST(request: NextRequest) {
       .replace(/(\d{3})-(\d{3})-(\d{4})/g, '$1, $2, $3')
 
     // Provider 1: ElevenLabs
-    const apiKey = process.env.ELEVENLABS_API_KEY || process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY || 'sk_da462719dbc91e7ba72b2f0ad2c0b70d84ecad811459991f'
+    const apiKey = process.env.ELEVENLABS_API_KEY
 
     if (engine === 'elevenlabs' && apiKey) {
       try {
@@ -156,6 +157,20 @@ export async function POST(request: NextRequest) {
         } else {
           const errText = await response.text()
           console.error('[ElevenLabs TTS Error]', response.status, errText)
+
+          // Return explicit quota error so the UI can show a dialog
+          try {
+            const errJson = JSON.parse(errText)
+            if (errJson?.detail?.status === 'quota_exceeded' || response.status === 401) {
+              return NextResponse.json({
+                error: 'ElevenLabs credit quota exceeded. Please switch to OpenAI TTS or purchase more ElevenLabs credits.',
+                code: 'elevenlabs_quota_exceeded',
+                credits_remaining: errJson?.detail?.message?.match(/(\d+) credits remaining/)?.[1] || '0',
+              }, { status: 402 })
+            }
+          } catch {
+            // not JSON, fall through
+          }
         }
       } catch (err: any) {
         console.error('[ElevenLabs Fetch Error]', err.message)
@@ -166,7 +181,7 @@ export async function POST(request: NextRequest) {
     const openAiApiKey = process.env.OPENAI_API_KEY
 
     if (openAiApiKey) {
-      const femaleVoices = ['Sarah', 'Alice', 'Bella', 'Lily', 'Jessica', 'Laura', 'Matilda', 'Amelia', 'Elena', 'Hope', 'Natasha', 'Nova', 'Shimmer']
+      const femaleVoices = ['Sarah', 'Alice', 'Bella', 'Lily', 'Jessica', 'Laura', 'Matilda', 'Amelia', 'Elena', 'Hope', 'Natasha', 'Nova', 'Shimmer', 'Kai', 'Aurora', 'Shanni', 'Carolyn', 'Cassidy']
       const isFemale = femaleVoices.includes(voiceName)
 
       const openAiVoice = ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'].includes(voiceId.toLowerCase())

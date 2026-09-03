@@ -12,7 +12,7 @@
     "build:designer": "npm --prefix WebSite_Designer run build",
     "typecheck:designer": "npm --prefix WebSite_Designer run typecheck",
     "dev:designer": "npm --prefix WebSite_Designer run dev",
-    "render:social": "npm --prefix SocialMedia/June28WebinarReel run render",
-    "preview:social": "npm --prefix SocialMedia/June28WebinarReel run preview"
+    "render:social": "npm --prefix remotion run render",
+    "preview:social": "npm --prefix remotion run preview"
   }
 }
