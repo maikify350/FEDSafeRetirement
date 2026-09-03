@@ -81,6 +81,7 @@ export interface Hyperframe {
   transition: 'fade' | 'slide_left' | 'zoom_in' | 'dissolve' | 'glitch'
   camera_motion: 'static' | 'pan_slow_right' | 'push_forward' | 'orbit' | 'tilt_up'
   asset_url?: string
+  scene_image?: string
 }
 
 export interface VideoRecord {
