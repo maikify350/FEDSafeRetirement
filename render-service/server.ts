@@ -17,6 +17,17 @@ import { spawn } from 'child_process'
 import { randomUUID } from 'crypto'
 import { createClient } from '@supabase/supabase-js'
 
+// Polyfill WebSocket for Supabase Realtime in serverless/worker containers
+if (typeof (globalThis as any).WebSocket === 'undefined') {
+  (globalThis as any).WebSocket = class DummyWebSocket {
+    constructor() {}
+    addEventListener() {}
+    removeEventListener() {}
+    send() {}
+    close() {}
+  }
+}
+
 const app = express()
 app.use(cors())
 app.use(express.json())
