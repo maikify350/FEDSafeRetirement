@@ -1331,7 +1331,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
       const startData = await startRes.json()
       if (!startRes.ok) {
         if (startData.local_only) {
-          throw new Error('⚠️ Render requires local dev server (npm run dev). Not available on Vercel production.')
+          throw new Error('⚠️ Render service unavailable. Please try again or contact support.')
         }
         throw new Error(startData.error || 'Failed to start render job')
       }
@@ -3107,7 +3107,7 @@ const SCENE_IMAGE_POOLS: Record<number, string[]> = {
                             }} />
                           </Box>
                           <Typography variant='caption' color='text.secondary' sx={{ fontSize: 10 }}>
-                            This runs locally via `npm run dev` — Vercel production will show an error. Render takes 2–4 min.
+                            Cloud rendering via Railway. Render takes 2–4 min.
                           </Typography>
                         </Box>
                       )}
