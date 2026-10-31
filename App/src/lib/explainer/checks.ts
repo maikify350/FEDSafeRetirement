@@ -4,6 +4,7 @@
  */
 
 import type { ExplainerPlan, PlanCheck } from './types'
+import { timingChecks } from './timing'
 import { ENGINES, KREA_VIDEO_MODELS, WORDS_PER_SECOND, getEngine, getSocialTarget, targetWordCount } from './presets'
 
 const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length
@@ -135,6 +136,9 @@ return need > have * 1.35
 
   // 15. Engine sanity
   if (!ENGINES.some(e => e.id === brief.engine)) push('engine', 'error', `Unknown engine ${brief.engine}.`)
+
+  // 16–19. Voice timing: pace, handovers inside silence, caption block length, unmatched narration
+  out.push(...timingChecks(plan))
 
   return out
 }

@@ -118,6 +118,8 @@ export default function ExplainerStudioView() {
 
   // Studio hand-off
   const [sending, setSending] = useState(false)
+  const [voicing, setVoicing] = useState(false)
+  const [voiceSpeed, setVoiceSpeed] = useState(1.05)
   const [sentVideoId, setSentVideoId] = useState<string | null>(null)
   const [confirmResetOpen, setConfirmResetOpen] = useState(false)
 
@@ -136,10 +138,11 @@ export default function ExplainerStudioView() {
   const checkSummary = useMemo(() => summarizeChecks(checks), [checks])
 
   const pipelineStep = useMemo(() => {
-    if (sentVideoId) return 6
-    if (plan && Object.values(kreaJobs).some(j => j.status === 'completed')) return 5
-    if (plan && !checkSummary.ok) return 3
-    if (plan) return 4
+    if (sentVideoId) return 7
+    if (plan?.voice && Object.values(kreaJobs).some(j => j.status === 'completed')) return 6
+    if (plan?.voice && checkSummary.ok) return 5
+    if (plan?.voice) return 4
+    if (plan) return 3
     if (refTranscript.trim()) return 2
     if (topic.trim()) return 1
 
@@ -228,6 +231,27 @@ return }
       setError(e.message || 'Generation failed')
     } finally {
       setGenerating(false)
+    }
+  }
+
+  // ── Voice first: record the take, then time every shot to the spoken words ──
+  const handleVoice = async () => {
+    if (!plan) return
+    setVoicing(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/explainer/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan, speed: voiceSpeed }) })
+      const json = await res.json()
+
+      if (!res.ok) throw new Error(json.error || 'Voice recording failed')
+      setPlan(json.plan)
+      setDurationSec(Math.round(json.plan.brief.durationSec))
+      setTab('checks')
+    } catch (e: any) {
+      setError(e.message || 'Voice recording failed')
+    } finally {
+      setVoicing(false)
     }
   }
 
@@ -585,6 +609,21 @@ return (
                         <Button variant='contained' onClick={handleSendToStudio} disabled={sending || !checkSummary.ok} startIcon={sending ? <CircularProgress size={16} color='inherit' /> : <i className='tabler-send' />}>{checkSummary.ok ? 'Send to Video Studio' : 'Fix check errors first'}</Button>
                       )}
                       <Typography variant='caption' color='text.secondary'>Creates a video record with script + hyperframes so you can voice, caption and render it.</Typography>
+                      <Divider />
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        <Button variant={plan.voice ? 'outlined' : 'contained'} color='secondary' onClick={handleVoice} disabled={voicing} startIcon={voicing ? <CircularProgress size={16} color='inherit' /> : <i className='tabler-microphone' />} sx={{ flex: 1 }}>
+                          {voicing ? 'Recording…' : plan.voice ? 'Re-record & re-time' : 'Voice & time'}
+                        </Button>
+                        <TextField size='small' type='number' label='Speed' value={voiceSpeed} onChange={e => setVoiceSpeed(Number(e.target.value) || 1)} inputProps={{ step: 0.05, min: 0.7, max: 1.2 }} sx={{ width: 90 }} />
+                      </Box>
+                      {plan.voice ? (
+                        <Box>
+                          <audio controls src={plan.voice.audio_url} style={{ width: '100%', height: 32 }} />
+                          <Typography variant='caption' color='text.secondary'>{plan.voice.words.length} words · {plan.voice.duration}s · {plan.voice.pace} words/s · {plan.voice.silences.length} silences · shots re-timed to spoken words</Typography>
+                        </Box>
+                      ) : (
+                        <Typography variant='caption' color='text.secondary'>Voice first: the ElevenLabs take sets the real timing. Every shot then starts on a spoken word.</Typography>
+                      )}
                     </Box>
                   </Box>
                 </CardContent>
@@ -658,6 +697,7 @@ return (
                             <Box sx={{ textAlign: 'center' }}>
                               <Typography variant='h5' fontWeight={900} color='primary'>{String(shot.order).padStart(2, '0')}</Typography>
                               <Typography variant='caption' sx={{ fontFamily: 'monospace', display: 'block' }}>{fmtTime(shot.timestamp_start)}–{fmtTime(shot.timestamp_end)}</Typography>
+                              {plan.voice && <Chip size='small' icon={<i className='tabler-microphone text-[12px]' />} label='on cue' color='secondary' variant='outlined' sx={{ mt: 0.5, height: 18, fontSize: 10 }} />}
                               {shot.era && <Chip size='small' label={shot.era} sx={{ mt: 0.5, height: 18, fontSize: 10 }} />}
                             </Box>
                             <Box sx={{ minWidth: 0 }}>

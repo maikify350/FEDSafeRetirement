@@ -44,9 +44,19 @@ export interface ExplainerScene {
   assets3d?: { slot: string; name: string; source_url?: string }[];
 }
 
+export interface WordTiming { w: string; t: number; e: number }
+export interface CaptionBlock { shot: number; words: number[]; key: number }
+
 export interface ExplainerReelProps {
   [key: string]: unknown;
   title?: string;
+  /** Word timings from the ElevenLabs take; with captionBlocks they drive the word-synced caption. */
+  words?: WordTiming[];
+  captionBlocks?: CaptionBlock[];
+  /** Draw layout bands and the zones platform UI covers (for stills). */
+  guides?: boolean;
+  /** Stamp the output DRAFT (half-size preview, never delivered). */
+  draft?: boolean;
   width?: number;
   height?: number;
   durationSec?: number;
@@ -159,6 +169,71 @@ const Caption = ({ text }: { text: string }) => {
   );
 };
 
+/** Word-synced caption: a word appears when it is spoken; the word being said is bold, said words turn grey, the key word keeps full ink with a marker. */
+const WordCaption = ({ words, blocks, accent }: { words: WordTiming[]; blocks: CaptionBlock[]; accent: string }) => {
+  const frame = useCurrentFrame();
+  const { fps, width } = useVideoConfig();
+  const vertical = width < 1200;
+  const t = frame / fps;
+  const bi = blocks.findIndex((b, i) => {
+    const first = words[b.words[0]];
+    const last = words[b.words[b.words.length - 1]];
+    const next = blocks[i + 1];
+    const to = next && words[next.words[0]] ? words[next.words[0]].t - 0.05 : Infinity;
+    return first && last && t >= first.t - 0.12 && t < Math.min(to, last.e + 0.6);
+  });
+  if (bi < 0) return null;
+  const block = blocks[bi];
+  return (
+    <div style={{ position: "absolute", left: "6%", right: "6%", bottom: vertical ? "22%" : 70, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0 0.32em", fontFamily: "Inter, Arial, sans-serif", fontWeight: 800, fontSize: vertical ? 52 : 40, lineHeight: 1.25, textShadow: "0 4px 18px rgba(0,0,0,.7)" }}>
+      {block.words.map((wi, k) => {
+        const w = words[wi];
+        if (!w) return null;
+        const spoken = t >= w.t - 0.12;
+        const saying = spoken && t < w.e + 0.08;
+        const isKey = k === block.key;
+        const blur = interpolate(t, [w.t - 0.12, w.t + 0.04], [6, 0], clamp);
+        return (
+          <span key={wi} style={{ opacity: spoken ? 1 : 0, filter: `blur(${spoken ? blur : 0}px)`, color: isKey || saying ? "#fff" : "rgba(255,255,255,0.62)", fontWeight: isKey || saying ? 900 : 700, padding: isKey ? "0 0.25em" : 0, borderRadius: 12, background: isKey && spoken ? `${accent}33` : "transparent", boxShadow: isKey && spoken ? `inset 0 0 0 3px ${accent}` : "none" }}>
+            {w.w}
+          </span>
+        );
+      })}
+    </div>
+  );
+};
+
+const Guides = () => {
+  const { width, height } = useVideoConfig();
+  const vertical = width < 1200;
+  return (
+    <AbsoluteFill style={{ fontFamily: "monospace", fontSize: 22, color: "#ff3b7f", pointerEvents: "none" }}>
+      {vertical ? (
+        <>
+          <div style={{ position: "absolute", top: height * 0.12, left: 0, right: 0, borderTop: "2px dashed #ff3b7f" }}>&nbsp;safe top (12%)</div>
+          <div style={{ position: "absolute", top: height * 0.78, bottom: 0, left: 0, right: 0, background: "rgba(255,59,127,0.16)" }}>&nbsp;platform caption + buttons (bottom 22%)</div>
+          <div style={{ position: "absolute", top: height * 0.55, bottom: height * 0.22, right: 0, width: 130, background: "rgba(255,59,127,0.16)" }} />
+        </>
+      ) : (
+        <>
+          <div style={{ position: "absolute", inset: 60, border: "2px dashed #ff3b7f" }}>&nbsp;60 px padding</div>
+          <div style={{ position: "absolute", right: 60, bottom: 60, width: 480, height: 336, background: "rgba(255,59,127,0.16)" }}>&nbsp;camera box (keep empty)</div>
+        </>
+      )}
+    </AbsoluteFill>
+  );
+};
+
+const DraftStamp = () => {
+  const { width } = useVideoConfig();
+  return (
+    <AbsoluteFill style={{ pointerEvents: "none" }}>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 54, background: "rgba(220,30,30,0.85)", color: "#fff", fontFamily: "Inter, Arial, sans-serif", fontWeight: 800, fontSize: 22, display: "flex", alignItems: "center", justifyContent: "center" }}>DRAFT · not checked yet</div>
+      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.35)", fontFamily: "Inter, Arial Black, sans-serif", fontWeight: 900, fontSize: width * 0.22, letterSpacing: 8, WebkitTextStroke: "4px rgba(220,30,30,0.6)" }}>DRAFT</div>
+    </AbsoluteFill>
+  );
+};
+
 const Progress = ({ total, accent }: { total: number; accent: string }) => {
   const frame = useCurrentFrame();
   const w = interpolate(frame, [0, total], [0, 100], clamp);
@@ -175,7 +250,12 @@ export const ExplainerReel = ({
   showCaptions = true,
   showProgress = true,
   accent = palette.gold,
+  words,
+  captionBlocks,
+  guides = false,
+  draft = false,
 }: ExplainerReelProps) => {
+  const wordSynced = Boolean(words && words.length && captionBlocks && captionBlocks.length);
   const { fps } = useVideoConfig();
   const totalFrames = Math.round(durationSec * fps);
   let cursor = 0;
@@ -196,13 +276,16 @@ export const ExplainerReel = ({
               {use3D ? <ExplainerScene3D scene={scene} frames={frames} accent={accent} /> : <Scene2D scene={scene} frames={frames} />}
               {scene.era && <EraBadge era={scene.era} accent={accent} />}
               {scene.onscreenText && <OnscreenText text={scene.onscreenText} accent={accent} />}
-              {showCaptions && scene.narration && <Caption text={scene.narration} />}
+              {showCaptions && !wordSynced && scene.narration && <Caption text={scene.narration} />}
             </Transitioner>
           </Sequence>
         );
       })}
 
+      {showCaptions && wordSynced && words && captionBlocks && <WordCaption words={words} blocks={captionBlocks} accent={accent} />}
       {showProgress && <Progress total={totalFrames} accent={accent} />}
+      {guides && <Guides />}
+      {draft && <DraftStamp />}
       <div style={{ position: "absolute", top: 24, right: 36, color: "rgba(255,255,255,0.55)", fontFamily: "Inter, Arial, sans-serif", fontSize: 22, fontWeight: 700, letterSpacing: 1 }}>{title.toUpperCase()}</div>
     </AbsoluteFill>
   );

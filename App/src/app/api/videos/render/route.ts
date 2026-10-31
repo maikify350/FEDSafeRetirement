@@ -330,10 +330,14 @@ async function buildExplainerProps(video: any, narrationFile: string | null): Pr
 
   return {
     title: video.title || 'Explainer',
+    words: ex.voice?.words || undefined,
+    captionBlocks: ex.voice?.caption_blocks || undefined,
     width: Number(ex.width) || 1080,
     height: Number(ex.height) || 1920,
     durationSec: video.duration_sec || scenes.reduce((a, s) => a + s.durationSec, 0) || 60,
-    narrationAudio: narrationFile,
+
+    // Prefer the voice recorded by Explainer Studio (already timed to the shots); else the TTS made by this route
+    narrationAudio: ex.voice?.audio_url || narrationFile,
     backgroundMusic: meta.background_music === false ? undefined : 'Sound_Script_01_vocalfocus-music05.mp3',
     musicVolume: 0.04,
     scenes,

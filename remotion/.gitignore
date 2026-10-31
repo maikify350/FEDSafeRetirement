@@ -8,3 +8,8 @@ out/
 # Render temp files (auto-generated and cleaned per render job)
 public/render_narration_*
 public/render_scene_*
+
+# Explainer Studio voice downloads + props
+public/explainer/
+out/explainer/
+__pycache__/

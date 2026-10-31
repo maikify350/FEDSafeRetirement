@@ -12,15 +12,15 @@
     "render:postal": "remotion render src/index.tsx PostalRetirementReel out/fedsafe-postal-retirement-reel.mp4 --codec=h264 --pixel-format=yuv420p",
     "render:fegli": "remotion render src/index.tsx FegliShockReel out/fedsafe-fegli-shock-reel.mp4 --codec=h264 --pixel-format=yuv420p",
     "render:all": "npm run render && npm run render:who && npm run render:dyk && npm run render:spotlight && npm run render:postal && npm run render:fegli",
-    "render:explainer": "remotion render src/index.tsx ExplainerReel out/explainer.mp4 --codec=h264 --pixel-format=yuv420p --props=./explainer-props.json",
-    "render:explainer:gl": "remotion render src/index.tsx ExplainerReel out/explainer.mp4 --codec=h264 --pixel-format=yuv420p --gl=angle --props=./explainer-props.json"
+    "explainer:draft": "node scripts/render_explainer.mjs --draft",
+    "explainer:render": "node scripts/render_explainer.mjs"
   },
   "dependencies": {
-    "@remotion/cli": "^4.0.379",
+    "@remotion/cli": "4.0.472",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
-    "remotion": "^4.0.379",
-    "@remotion/three": "^4.0.379",
+    "remotion": "4.0.472",
+    "@remotion/three": "4.0.472",
     "@react-three/fiber": "^9.8.2",
     "three": "^0.187.0"
   },

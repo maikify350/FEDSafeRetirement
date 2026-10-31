@@ -21,6 +21,7 @@ import {
   getEngine, getSocialTarget, targetWordCount,
 } from '@/lib/explainer/presets'
 import { runPlanChecks } from '@/lib/explainer/checks'
+import { rulesAsPrompt } from '@/lib/explainer/rules'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 120
@@ -216,6 +217,10 @@ async function openAiPlan(brief: ExplainerBrief, apiKey: string) {
 
   const system = `You are a showrunner for immersive, cinematic explainer videos (think: "the evolution of trains, from steam locomotives to Japan's bullet trains").
 You write tight, factual, vivid narration and a shot-by-shot storyboard that an AI video pipeline can render.
+Obey these house rules (DO / DON'T) in every shot:
+
+${rulesAsPrompt()}
+
 Respond with a single JSON object only.`
 
   const referenceBlock = brief.referenceTranscript?.trim()

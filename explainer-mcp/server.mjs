@@ -18,6 +18,34 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod'
+import { spawn } from 'node:child_process'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const REMOTION = path.join(REPO, 'remotion')
+
+/** Run a local command in remotion/, keep the tail of its output, report pass/fail by exit code. */
+function local(cmd, args, timeoutMs = 30 * 60_000) {
+  return new Promise((resolve) => {
+    const p = spawn(cmd, args, { cwd: REMOTION, env: process.env, shell: process.platform === 'win32' })
+    let out = ''
+    const keep = (d) => { out = (out + d).slice(-12_000) }
+    p.stdout.on('data', keep)
+    p.stderr.on('data', keep)
+    const timer = setTimeout(() => { p.kill('SIGTERM'); out += '\n(timed out)' }, timeoutMs)
+    p.on('close', (code) => { clearTimeout(timer); resolve({ pass: code === 0, out: out.trim() }) })
+    p.on('error', (e) => { clearTimeout(timer); resolve({ pass: false, out: String(e) }) })
+  })
+}
+
+function planToFile(plan) {
+  const f = path.join(os.tmpdir(), `explainer-plan-${Date.now()}.json`)
+  fs.writeFileSync(f, JSON.stringify(plan))
+  return f
+}
 
 const APP_URL = (process.env.EXPLAINER_APP_URL || 'http://localhost:3000').replace(/\/+$/, '')
 const SERVICE_KEY = process.env.EXPLAINER_SERVICE_KEY || ''
@@ -128,6 +156,64 @@ server.tool(
   { plan: z.record(z.any()), title: z.string().optional() },
   async ({ plan, title }) => {
     try { return asText(await api('/api/explainer/handoff', { method: 'POST', body: { plan, title } })) } catch (e) { return asError(e) }
+  },
+)
+
+server.tool(
+  'explainer_voice',
+  'Record the narration with ElevenLabs (word timestamps), store the MP3, and re-time every shot so it starts on a spoken word with handovers inside real silence. Returns the updated plan with plan.voice and fresh QA.',
+  {
+    plan: z.record(z.any()),
+    speed: z.number().min(0.7).max(1.2).optional(),
+    stability: z.number().min(0).max(1).optional(),
+    similarity: z.number().min(0).max(1).optional(),
+    style: z.number().min(0).max(1).optional(),
+  },
+  async (args) => {
+    try { return asText(await api('/api/explainer/voice', { method: 'POST', body: args })) } catch (e) { return asError(e) }
+  },
+)
+
+server.tool(
+  'explainer_render',
+  'Render a plan locally with the ExplainerReel Remotion composition (remotion/). draft=true gives a half-size DRAFT-stamped preview; otherwise the final render runs check_render.py and loudness.py --fix. Returns the output path and check output. Needs Node, ffmpeg, python3+numpy on this machine; set CHROME to a Chrome binary and REMOTION_GL=swangle when no GPU.',
+  { plan: z.record(z.any()), draft: z.boolean().optional(), guides: z.boolean().optional(), gl: z.enum(['angle', 'swangle', 'egl', 'swiftshader']).optional() },
+  async ({ plan, draft, guides, gl }) => {
+    const f = planToFile(plan)
+    const a = ['scripts/render_explainer.mjs', f]
+    if (draft) a.push('--draft')
+    if (guides) a.push('--guides')
+    if (gl) a.push('--gl', gl)
+    const r = await local('node', a, 90 * 60_000)
+    const file = r.out.split('\n').filter((l) => l.trim().endsWith('.mp4')).pop() || null
+    return asText({ pass: r.pass, file, out: r.out })
+  },
+)
+
+server.tool(
+  'explainer_stills',
+  'Render single frames of a plan at the given seconds (half size) to look at before any video. Returns PNG paths.',
+  { plan: z.record(z.any()), seconds: z.array(z.number()).min(1), guides: z.boolean().optional() },
+  async ({ plan, seconds, guides }) => {
+    const f = planToFile(plan)
+    const a = ['scripts/render_explainer.mjs', f, '--stills', seconds.join(','), '--draft']
+    if (guides) a.push('--guides')
+    const r = await local('node', a)
+    return asText({ pass: r.pass, files: r.out.split('\n').filter((l) => l.trim().endsWith('.png')), out: r.out })
+  },
+)
+
+server.tool(
+  'explainer_check_render',
+  'Run the render checks on an MP4: freeze (>1.2s still), hard cuts/snaps, camera too fast, freeze-then-jump, short shots, and loudness (-14 LUFS / -1.5 dBTP). PASS/WARN/FAIL per check.',
+  { mp4: z.string(), shots: z.array(z.record(z.any())).optional(), fix_loudness: z.boolean().optional() },
+  async ({ mp4, shots, fix_loudness }) => {
+    const py = process.env.PYTHON || 'python3'
+    const a = ['scripts/check_render.py', mp4, '--json']
+    if (shots) { const f = path.join(os.tmpdir(), `explainer-shots-${Date.now()}.json`); fs.writeFileSync(f, JSON.stringify(shots)); a.push('--shots', f) }
+    const r1 = await local(py, a)
+    const r2 = await local(py, ['scripts/loudness.py', mp4, ...(fix_loudness ? ['--fix'] : [])])
+    return asText({ pass: r1.pass && r2.pass, render_checks: r1.out, loudness: r2.out })
   },
 )
 

@@ -7,6 +7,28 @@ Explainer Studio clones the production flow used by immersive-history YouTube/In
 a repeatable, one-screen generator that hands off to the existing **Video Studio** (`/videos`) for
 voice, captions and rendering.
 
+## Reference workflows this mirrors (all MIT, by Sirio Berati / TEIN)
+
+| Repo | What we took from it | Where |
+| --- | --- | --- |
+| [showhow](https://github.com/sirioberati/showhow) | Voice **first** with ElevenLabs word timestamps; every scene change inside real silence; caption blocks ≤ 8 words with one key word; checks that PASS/FAIL (plan: pace 2.6–3.8 w/s, handover silence ≥ 0.15 s; render: freeze > 1.2 s, cuts, speed > 12, loudness −14 LUFS / −1.5 dBTP); half-size DRAFT stamped before the final; stills at word cues; an MCP server exposing each step | `lib/explainer/timing.ts`, `api/explainer/voice`, `lib/explainer/checks.ts`, `remotion/scripts/*.py`, `remotion/scripts/render_explainer.mjs`, `remotion/src/ExplainerReel.tsx` (WordCaption, Guides, DraftStamp), `explainer-mcp/` |
+| [YouTube-AI-Motion-Graphics](https://github.com/sirioberati/YouTube-AI-Motion-Graphics) | A living **DO / DON'T rules file** the generator reads before writing and the checks enforce; safe-zone guides (padding, camera box); word-level sync of boards to the voice; Chrome + ffmpeg frame-exact export | `lib/explainer/rules.ts` (`EXPLAINER_RULES`), ExplainerReel `guides` prop |
+| [YouTube-AI-Video-Editing-System](https://github.com/sirioberati/YouTube-AI-Video-Editing-System) | Role split (writing → design → animation → review) and JSON schemas for board timelines / edit plans | Pipeline stepper + `ExplainerPlan` shape |
+| Genjustsu / Emotion-Control workflows | Character / face replacement with Seedance (draft first, approve before 1080p) — not used by the explainer flow; kept as a reference for presenter-style videos | — |
+
+The code here is an original implementation of those ideas; nothing is copied. Attribution is kept in this file.
+
+### Voice-first timing (the heart of the showhow flow)
+
+1. `POST /api/explainer/voice` sends the narration to ElevenLabs **with timestamps** (`/v1/text-to-speech/<voice>/with-timestamps`),
+   gets every character's start/end, stores the MP3 in the `videos` bucket at `explainer/<stamp>/voice.mp3`.
+2. `timing.ts` turns characters into words, finds silences (gaps ≥ 0.12 s), maps each shot's narration onto the words,
+   builds caption blocks (≤ 8 words, one key word), and **re-times every shot** so it starts halfway through the silence
+   before its first spoken word. The last shot runs to the end of the audio (+0.7 s tail).
+3. Checks 16–19 now run: pace, handover-in-silence, caption block length, unmatched narration.
+4. `ExplainerReel` receives `words` + `captionBlocks` and renders the word-synced caption: a word appears as it is spoken,
+   the current word is bold, said words go grey, the key word keeps a marker.
+
 ## The stack (mirrors the reference creator's "exact stack")
 
 | Reference stack | Where it lives in this repo |
@@ -127,18 +149,26 @@ L0 maglev), each with a Seedance prompt locked to one continuity bible.
 ## Reference video note (2026-10-31)
 
 The requested reference `https://youtu.be/P9t0nmxGXF4` could **not** be transcribed from the build sandbox:
-`www.youtube.com` is outside the session's allowed network domains and no `SERPAPI_API_KEY` is present in the
-cloud environment (there is no `App/.env` in the clone). Paste the URL into the Reference card once the key is
-set in `App/.env` / Vercel and the studio will pull it; otherwise paste the transcript text directly.
+`www.youtube.com` is outside the session's allowed network domains and the SerpApi transcript script lives on the
+HP dev laptop, not in this repo. Options: (a) run the laptop script and paste the transcript into the Reference card;
+(b) commit the script under `scripts/` and set `SERPAPI_API_KEY` so `/api/explainer/transcript` can use it;
+(c) start a Remote Control session from the laptop folder so a cloud session can run it there.
+The structure was reconstructed from the video's own outline (stack → two ways to animate → 8 steps → 3D asset
+library → checks → MCP server) and from the creator's public repos listed above.
 
 ## Rendering an explainer locally
 
 ```bash
-cd remotion && npm install
-# props: export the plan from the studio (.json) or POST /api/explainer/handoff, then build ExplainerReel props
-npm run render:explainer        # 2D kinetic
-npm run render:explainer:gl     # 3D (WebGL via ANGLE in Headless Chrome)
+cd remotion && npm install          # Remotion packages are pinned to one version (required by Remotion)
+# export the plan from /explainer-studio (Export .json) after "Voice & time"
+node scripts/render_explainer.mjs plan.json --draft            # half size, DRAFT stamp, 30 fps
+node scripts/render_explainer.mjs plan.json --stills 1.2,8.4   # frames at word cues, --guides for safe zones
+node scripts/render_explainer.mjs plan.json                    # final + check_render.py + loudness.py --fix
+# no GPU (CI, cloud):  REMOTION_GL=swangle CHROME=/path/to/chrome node scripts/render_explainer.mjs plan.json
 ```
+
+Verified in the build sandbox: a 4 s mixed 2D + Three.js test rendered at 540×960 with `--gl=swangle`, and
+`check_render.py` passed on it (freeze 1.20 s, no cuts, peak speed 8.2).
 
 Or from the app: Video Studio → the hand-off record → Render with composition `ExplainerReel`
 (`POST /api/videos/render { video_id, composition_id: 'ExplainerReel', output_filename }`).
@@ -155,4 +185,6 @@ Or from the app: Video Studio → the hand-off record → Render with compositio
 - `App/src/app/api/explainer/{validate,presets,handoff}/route.ts`
 - `App/src/app/api/videos/render/route.ts`, `render-service/server.ts` — `ExplainerReel` allowed + props builder
 - `remotion/src/ExplainerReel.tsx`, `remotion/src/ExplainerScene3D.tsx`, `remotion/src/Root.tsx`, `remotion/package.json` (three, @react-three/fiber, @remotion/three)
-- `explainer-mcp/` — MCP server package
+- `explainer-mcp/` — MCP server package (now also `explainer_voice`, `explainer_render`, `explainer_stills`, `explainer_check_render`)
+- `App/src/lib/explainer/timing.ts`, `rules.ts`; `App/src/app/api/explainer/voice/route.ts`
+- `remotion/scripts/check_render.py`, `loudness.py`, `render_explainer.mjs`

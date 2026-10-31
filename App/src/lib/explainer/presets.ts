@@ -253,13 +253,13 @@ export const ASSET_3D_LIBRARY: Asset3DSlot[] = [
 
 /** The 8-step pipeline the studio walks a project through (matches the stepper in the UI). */
 export const PIPELINE_STEPS = [
-  { id: 'brief', label: '1 · Brief', desc: 'Topic, audience, platform, runtime, engine' },
+  { id: 'brief', label: '1 · Brief', desc: 'Topic, audience, platform, runtime, engine, animation mode' },
   { id: 'reference', label: '2 · Reference', desc: 'Transcript of a video whose structure you want to emulate (optional)' },
-  { id: 'plan', label: '3 · Script + storyboard', desc: 'Hook, beats, chapters, narration, time-coded shots' },
-  { id: 'qa', label: '4 · Checks', desc: 'Automated checks that catch runtime, budget, prompt and coverage mistakes' },
-  { id: 'assets', label: '5 · Assets & clips', desc: '3D asset slots, Krea / Higgsfield clips per shot' },
-  { id: 'voice', label: '6 · Voice', desc: 'ElevenLabs narration in the Video Studio' },
-  { id: 'render', label: '7 · Render', desc: 'Remotion → Headless Chrome → ffmpeg (ExplainerReel composition)' },
+  { id: 'plan', label: '3 · Script + storyboard', desc: 'Hook, beats, chapters, narration, shot list with engine prompts' },
+  { id: 'voice', label: '4 · Voice & timing', desc: 'ElevenLabs take with word timestamps; every shot re-timed to a spoken word, handovers inside silence' },
+  { id: 'qa', label: '5 · Checks', desc: 'Plan checks (budget, coverage, pacing, prompts) + timing checks (pace, silence, caption blocks)' },
+  { id: 'assets', label: '6 · Assets & clips', desc: '3D asset slots, Krea / Higgsfield clips per shot' },
+  { id: 'render', label: '7 · Draft → render → checks', desc: 'Remotion ExplainerReel → Headless Chrome → ffmpeg; freeze/cut/speed/loudness checks on the MP4' },
   { id: 'publish', label: '8 · Publish', desc: 'Titles, description, hashtags, thumbnail, export spec' },
 ] as const
 

@@ -98,6 +98,20 @@ export interface ExplainerPlan {
     engine_label: string
   }
   qa?: PlanCheck[]
+
+  /** Set by POST /api/explainer/voice once the narration has been recorded and the shots re-timed to it. */
+  voice?: {
+    audio_url: string
+    duration: number
+    pace: number
+    words: { w: string; t: number; e: number }[]
+    silences: [number, number][]
+    caption_blocks: { shot: number; words: number[]; key: number }[]
+    unmatched_shots: number[]
+    voice_id: string
+    model_id: string
+    recorded_at: string
+  }
   generated_by: 'openai' | 'fallback'
   generated_at: string
 }
