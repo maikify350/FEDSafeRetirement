@@ -14,12 +14,13 @@ import { NextResponse } from 'next/server'
 
 import OpenAI from 'openai'
 
-import { createClient } from '@/utils/supabase/server'
+import { authorizeExplainerRequest } from '@/lib/explainer/auth'
 import type { ExplainerBrief, ExplainerPlan, ExplainerShot } from '@/lib/explainer/types'
 import {
-  ENGINES, KREA_VIDEO_MODELS, PLAN_STYLES, WORDS_PER_SECOND,
+  ANIMATION_MODES, ASSET_3D_LIBRARY, ENGINES, KREA_VIDEO_MODELS, PLAN_STYLES, WORDS_PER_SECOND,
   getEngine, getSocialTarget, targetWordCount,
 } from '@/lib/explainer/presets'
+import { runPlanChecks } from '@/lib/explainer/checks'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 120
@@ -69,6 +70,13 @@ function normalizeShots(raw: any[], brief: ExplainerBrief): ExplainerShot[] {
       transition,
       era: s.era ? String(s.era) : undefined,
       sound_design: s.sound_design ? String(s.sound_design) : undefined,
+      assets_3d: Array.isArray(s.assets_3d)
+        ? s.assets_3d.filter((a: any) => a && (a.slot || a.name)).map((a: any) => ({
+          slot: ASSET_3D_LIBRARY.some(x => x.id === a.slot) ? String(a.slot) : 'prop',
+          name: String(a.name || a.slot || ''),
+          source_url: a.source_url ? String(a.source_url) : undefined,
+        }))
+        : undefined,
       engine_prompt: '',
     }
   })
@@ -159,6 +167,7 @@ return {
       visual_prompt: `${brief.style.replace(/_/g, ' ')} shot illustrating "${beat}" for a video about ${topic}`,
       camera_motion: getEngine(brief.engine).cameraMotions[i % getEngine(brief.engine).cameraMotions.length],
       transition: i === 0 ? 'fade' : TRANSITIONS[i % 3 + 1],
+      assets_3d: brief.animationMode === '3d_threejs' ? [{ slot: 'hero_vehicle', name: `Hero subject for ${topic}` }, { slot: 'environment', name: beat }] : [],
     }
   })
 
@@ -221,6 +230,8 @@ TONE: ${brief.tone || 'confident, warm, awe-inspiring'}
 PLATFORM: ${target.label} (${target.aspect}, ${target.width}x${target.height}). ${target.notes} Caption style: ${target.captionStyle}
 RUNTIME: exactly ~${brief.durationSec} seconds → narration of about ${words} words (${WORDS_PER_SECOND} words/sec).
 ENGINE: ${engine.label} — ${engine.tagline}. Allowed camera_motion values: ${engine.cameraMotions.join(', ')}.
+ANIMATION MODE: ${ANIMATION_MODES.find(m => m.id === brief.animationMode)?.label} — ${ANIMATION_MODES.find(m => m.id === brief.animationMode)?.desc}
+${brief.animationMode === '3d_threejs' ? `3D ASSET SLOTS (give each shot 1–3 "assets_3d" entries using these slot ids): ${ASSET_3D_LIBRARY.map(a => `${a.id} = ${a.label}`).join('; ')}. Name assets concretely and era-accurately (e.g. "1829 Rocket-class 0-2-2 steam locomotive").` : 'No 3D assets; visuals are stills + kinetic text + CSS camera moves, so make each visual_prompt a strong single still image.'}
 CTA (last shot only): ${brief.ctaText || 'none'}${referenceBlock}
 
 Return JSON with this exact shape:
@@ -237,7 +248,8 @@ Return JSON with this exact shape:
       "camera_motion": "one of the allowed values",
       "transition": "fade | slide_left | zoom_in | dissolve | glitch",
       "era": "e.g. 1829",
-      "sound_design": "ambient/sfx cue"
+      "sound_design": "ambient/sfx cue",
+      "assets_3d": [{"slot": "hero_vehicle", "name": "concrete era-accurate model name"}]  // only in 3D mode, else []
     }
   ],
   "continuity_bible": {"subject": "", "palette": "", "lighting": "", "lens": "", "recurring_motifs": [""], "negative_prompt": ""},
@@ -259,10 +271,9 @@ return JSON.parse(content)
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const auth = await authorizeExplainerRequest(request)
 
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!auth.ok) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await request.json()
 
@@ -275,6 +286,7 @@ export async function POST(request: NextRequest) {
       durationSec: clamp(Number(body.durationSec) || 60, 15, 1800),
       target: body.target || 'youtube_long',
       engine: ENGINES.some(e => e.id === body.engine) ? body.engine : 'hyperframes',
+      animationMode: ANIMATION_MODES.some(m => m.id === body.animationMode) ? body.animationMode : '2d_kinetic',
       kreaModel: String(body.kreaModel || KREA_VIDEO_MODELS[0].id),
       voiceId: String(body.voiceId || 'GGRMgbKfr7QscdcrvWga'),
       voiceName: String(body.voiceName || 'Kai'),
@@ -335,6 +347,8 @@ export async function POST(request: NextRequest) {
       generated_by: generatedBy,
       generated_at: new Date().toISOString(),
     }
+
+    plan.qa = runPlanChecks(plan)
 
     return NextResponse.json(plan)
   } catch (err: any) {

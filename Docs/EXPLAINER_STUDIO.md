@@ -7,6 +7,48 @@ Explainer Studio clones the production flow used by immersive-history YouTube/In
 a repeatable, one-screen generator that hands off to the existing **Video Studio** (`/videos`) for
 voice, captions and rendering.
 
+## The stack (mirrors the reference creator's "exact stack")
+
+| Reference stack | Where it lives in this repo |
+| --- | --- |
+| **Claude Code** | Drives the pipeline through the MCP server in `explainer-mcp/` (see below) |
+| **ElevenLabs** | Narration — existing Video Studio voice pipeline (`/api/videos/render` → ElevenLabs TTS) |
+| **Remotion** | `remotion/src/ExplainerReel.tsx` — one composition, size/duration from props (16:9, 9:16, 4:5) |
+| **Three.js** | `remotion/src/ExplainerScene3D.tsx` — `@remotion/three` + react-three-fiber; glTF hero models on real camera paths |
+| **Headless Chrome** | Remotion's renderer (use `--gl=angle` for WebGL scenes: `npm run render:explainer:gl`) |
+| **ffmpeg** | Remotion's encode step (`--codec=h264 --pixel-format=yuv420p`) |
+| **MCP** | `explainer-mcp/server.mjs` exposes plan / checks / clips / hand-off as MCP tools |
+
+### The only two ways to animate
+
+Every shot carries an `animation_mode`:
+
+| Mode | How it renders | Use when |
+| --- | --- | --- |
+| `2d_kinetic` | Scene image + CSS camera move (`cameraTransform2D`) + kinetic on-screen text, era badge, captions | Stills/AI clips, cheapest, deterministic |
+| `3d_threejs` | `<ThreeCanvas>` with a camera path per `camera_motion` (`cameraPath3D`: orbit, fly-by, dolly, aerial reveal…), glTF model from the shot's **3D asset slot**, procedural placeholder until the GLB is supplied | True camera moves around one consistent subject across eras |
+
+### 3D asset library
+
+Slot-based (`ASSET_3D_LIBRARY`): `hero_vehicle`, `environment`, `prop`, `character`, `diagram`. The plan fills slots with
+concrete, era-accurate names; you attach a GLB URL per slot (`assets_3d[].source_url`) — CC0 libraries, Blender
+exports, or AI-generated meshes (Krea `generate_3d`). Keep GLBs < 20 MB / < 200k tris; labels stay in the 2D overlay.
+
+### Checks that catch every mistake
+
+`App/src/lib/explainer/checks.ts` runs 15 checks on every plan (live in the UI, stored as `plan.qa`, exposed via
+`POST /api/explainer/validate` and the MCP `explainer_validate_plan` tool): runtime cap, word budget (±15 %),
+contiguous timeline coverage, shot length bounds, narration/visual presence, per-shot pacing, on-screen text ≤ 6 words,
+no baked-in text requested from the video model, camera vocabulary per engine, Krea clip caps, hook speed, chapter
+coverage, CTA on the last shot, 3D asset slots, engine sanity. Hand-off is blocked while any check is at `error`.
+
+### MCP server (turning it into a tool Claude Code can drive)
+
+`explainer-mcp/` — stdio MCP server with six tools (`explainer_list_presets`, `explainer_fetch_transcript`,
+`explainer_generate_plan`, `explainer_validate_plan`, `explainer_krea_clip`, `explainer_create_video`). It calls the
+app's `/api/explainer/*` routes with `EXPLAINER_SERVICE_KEY`. Setup and a `.mcp.json` snippet are in
+`explainer-mcp/README.md`.
+
 ## The production flow it reproduces
 
 | Stage | What the creator does by hand | What the studio does |
@@ -48,8 +90,13 @@ Kling 4.0 / 3.0, Hailuo 2.3, Runway Gen-4.5, Wan 3.0, LTX-2.5 Pro. Input fields 
 | `POST /api/explainer/transcript` `{ url }` | Reference transcript + metadata. Provider chain: SerpApi (`engine=youtube_video`) → SearchApi.io (`engine=youtube_transcripts`) → direct YouTube caption track. Returns 422 with the attempt log when nothing works, and the UI falls back to a paste box | `SERPAPI_API_KEY`, `SEARCHAPI_API_KEY` |
 | `POST /api/explainer/generate` (ExplainerBrief) | Full plan as JSON (OpenAI `gpt-4o`, JSON mode). Without a key returns a deterministic template plan flagged `generated_by: "fallback"` so the UI still works | `OPENAI_API_KEY`, `EXPLAINER_LLM_MODEL` |
 | `POST /api/explainer/krea` / `GET ?job=` | Submit / poll one clip | `KREA_API_KEY`, `KREA_API_BASE` |
+| `POST /api/explainer/validate` `{ plan }` | Run the 15 checks | — |
+| `GET /api/explainer/presets` | All presets + which keys are configured (MCP discovery) | — |
+| `POST /api/explainer/handoff` `{ plan, title?, clipUrls?, force? }` | Server-side hand-off to `videos` (MCP); 422 while checks have errors | — |
 
-All routes require a signed-in Supabase user (same gate as `/api/videos`). **No migration is needed** — the
+All routes accept a signed-in Supabase user **or** `Authorization: Bearer $EXPLAINER_SERVICE_KEY` (MCP server).
+
+**No migration is needed** — the
 hand-off writes to the existing `videos` table and stores the brief, chapters, publishing kit, engine and
 cost estimate under `videos.metadata.explainer`.
 
@@ -60,6 +107,7 @@ cost estimate under `videos.metadata.explainer`.
 | narration script | `script` |
 | shots | `hyperframes[]` (`text_segment`, `visual_prompt`, `transition`, `camera_motion`, `asset_url`) |
 | engine → model | hyperframes → `remotion-kinetic` (static), higgsfield → `higgsfield`, krea → `seeddance` (+ real model id in `metadata.explainer.krea_model`) |
+| composition | `metadata.remotion_composition = 'ExplainerReel'`; `/api/videos/render` builds `ExplainerReel` props (scenes with `onscreenText`, `era`, `cameraMotion`, `animationMode`, `assets3d`, `clip`) when that composition is requested |
 | runtime | `duration_sec`; `format` = `long` when > 180s |
 | platform | `platforms[]`, aspect/resolution in metadata |
 | chapters | `onscreen_structure` |
@@ -83,6 +131,18 @@ The requested reference `https://youtu.be/P9t0nmxGXF4` could **not** be transcri
 cloud environment (there is no `App/.env` in the clone). Paste the URL into the Reference card once the key is
 set in `App/.env` / Vercel and the studio will pull it; otherwise paste the transcript text directly.
 
+## Rendering an explainer locally
+
+```bash
+cd remotion && npm install
+# props: export the plan from the studio (.json) or POST /api/explainer/handoff, then build ExplainerReel props
+npm run render:explainer        # 2D kinetic
+npm run render:explainer:gl     # 3D (WebGL via ANGLE in Headless Chrome)
+```
+
+Or from the app: Video Studio → the hand-off record → Render with composition `ExplainerReel`
+(`POST /api/videos/render { video_id, composition_id: 'ExplainerReel', output_filename }`).
+
 ## Files touched
 
 - `App/src/lib/explainer/presets.ts` — platforms, lengths, styles, engines, Krea models, word budget, URL parsing
@@ -91,3 +151,8 @@ set in `App/.env` / Vercel and the studio will pull it; otherwise paste the tran
 - `App/src/views/explainer/ExplainerStudioView.tsx`, `App/src/app/(dashboard)/explainer-studio/page.tsx`
 - `App/src/data/navigation/verticalMenuData.tsx` — "Explainer Studio" menu entry
 - `App/.env.example` — new keys
+- `App/src/lib/explainer/checks.ts`, `auth.ts`, `handoff.ts` — checks, service-key auth, shared hand-off payload
+- `App/src/app/api/explainer/{validate,presets,handoff}/route.ts`
+- `App/src/app/api/videos/render/route.ts`, `render-service/server.ts` — `ExplainerReel` allowed + props builder
+- `remotion/src/ExplainerReel.tsx`, `remotion/src/ExplainerScene3D.tsx`, `remotion/src/Root.tsx`, `remotion/package.json` (three, @react-three/fiber, @remotion/three)
+- `explainer-mcp/` — MCP server package

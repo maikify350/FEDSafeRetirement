@@ -28,11 +28,13 @@ import Typography from '@mui/material/Typography'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { downloadBlob, downloadJson } from '@/utils/exportDownload'
 import { ELEVENLABS_VOICES } from '@/views/videos/VideoEditDialog'
-import type { ExplainerBrief, ExplainerPlan, ExplainerShot } from '@/lib/explainer/types'
+import type { ExplainerBrief, ExplainerPlan, ExplainerShot, PlanCheck } from '@/lib/explainer/types'
+import { runPlanChecks, summarizeChecks } from '@/lib/explainer/checks'
+import { buildVideoPayload } from '@/lib/explainer/handoff'
 import {
-  DEFAULT_KREA_MODEL, ENGINES, KREA_VIDEO_MODELS, LENGTH_PRESETS, PLAN_STYLES, SOCIAL_TARGETS,
+  ANIMATION_MODES, ASSET_3D_LIBRARY, DEFAULT_KREA_MODEL, ENGINES, KREA_VIDEO_MODELS, LENGTH_PRESETS, PIPELINE_STEPS, PLAN_STYLES, SOCIAL_TARGETS,
   getEngine, getSocialTarget, targetWordCount,
-  type EngineId, type PlanStyle, type SocialTarget,
+  type AnimationMode, type EngineId, type PlanStyle, type SocialTarget,
 } from '@/lib/explainer/presets'
 
 // ───────────────────────────── helpers ─────────────────────────────
@@ -94,6 +96,7 @@ export default function ExplainerStudioView() {
   const [customDuration, setCustomDuration] = useState('')
   const [target, setTarget] = useState<SocialTarget>('youtube_shorts')
   const [engine, setEngine] = useState<EngineId>('hyperframes')
+  const [animationMode, setAnimationMode] = useState<AnimationMode>('2d_kinetic')
   const [kreaModel, setKreaModel] = useState(DEFAULT_KREA_MODEL)
   const [voiceId, setVoiceId] = useState(ELEVENLABS_VOICES[7].id)
   const [ctaText, setCtaText] = useState('Follow for the next chapter.')
@@ -110,7 +113,7 @@ export default function ExplainerStudioView() {
   const [plan, setPlan] = useState<ExplainerPlan | null>(null)
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
-  const [tab, setTab] = useState<'script' | 'storyboard' | 'publishing'>('storyboard')
+  const [tab, setTab] = useState<'script' | 'storyboard' | 'checks' | 'publishing'>('storyboard')
   const [copiedKey, setCopiedKey] = useState('')
 
   // Studio hand-off
@@ -127,6 +130,21 @@ export default function ExplainerStudioView() {
   const enginePreset = useMemo(() => getEngine(engine), [engine])
   const words = useMemo(() => targetWordCount(durationSec), [durationSec])
   const selectedVoice = ELEVENLABS_VOICES.find(v => v.id === voiceId) || ELEVENLABS_VOICES[0]
+
+  // Checks re-run live against the current plan (server also stores plan.qa)
+  const checks: PlanCheck[] = useMemo(() => (plan ? runPlanChecks(plan) : []), [plan])
+  const checkSummary = useMemo(() => summarizeChecks(checks), [checks])
+
+  const pipelineStep = useMemo(() => {
+    if (sentVideoId) return 6
+    if (plan && Object.values(kreaJobs).some(j => j.status === 'completed')) return 5
+    if (plan && !checkSummary.ok) return 3
+    if (plan) return 4
+    if (refTranscript.trim()) return 2
+    if (topic.trim()) return 1
+
+    return 0
+  }, [plan, sentVideoId, kreaJobs, checkSummary.ok, refTranscript, topic])
 
   useEffect(() => {
     fetch('/api/explainer/krea').then(r => r.json()).then(j => setKreaConfigured(Boolean(j.configured))).catch(() => setKreaConfigured(false))
@@ -179,6 +197,7 @@ return
     durationSec,
     target,
     engine,
+    animationMode,
     kreaModel,
     voiceId,
     voiceName: selectedVoice.name,
@@ -219,53 +238,10 @@ return }
     setError('')
 
     try {
-      const videoModel = engine === 'higgsfield' ? 'higgsfield' : engine === 'krea' ? 'seeddance' : 'remotion-kinetic'
+      const clipUrls: Record<number, string> = {}
 
-      const payload = {
-        title: title.trim() || plan.publishing.title_options[0],
-        format: durationSec > 180 ? 'long' : 'short',
-        generation_mode: engine === 'hyperframes' ? 'static' : 'motion',
-        video_model: videoModel,
-        duration_sec: durationSec,
-        script: plan.script,
-        ai_directive: `${plan.logline}\n\nStyle: ${PLAN_STYLES.find(s => s.id === style)?.label}. Continuity: ${plan.continuity_bible.subject}; ${plan.continuity_bible.palette}; ${plan.continuity_bible.lighting}; ${plan.continuity_bible.lens}. Avoid: ${plan.continuity_bible.negative_prompt}`,
-        cta_text: ctaText,
-        tts_engine: 'elevenlabs',
-        voice_id: voiceId,
-        voice_name: selectedVoice.name,
-        hyperframes: plan.shots.map(s => ({
-          id: `hf_${s.order}_${Date.now()}`,
-          order: s.order,
-          timestamp_start: s.timestamp_start,
-          timestamp_end: s.timestamp_end,
-          text_segment: s.narration,
-          visual_prompt: s.visual_prompt,
-          transition: s.transition,
-          camera_motion: ['static', 'pan_slow_right', 'push_forward', 'orbit', 'tilt_up'].includes(s.camera_motion) ? s.camera_motion : 'push_forward',
-          asset_url: kreaJobs[s.order]?.url || undefined,
-        })),
-        platforms: [target],
-        video_source: 'custom',
-        end_screen_text: ctaText,
-        onscreen_structure: plan.chapters.map(c => `${fmtTime(c.start_sec)} ${c.title}`).join(' · '),
-        broll_notes: plan.shots.map(s => `#${s.order} ${s.engine_prompt}`).join('\n\n'),
-        metadata: {
-          explainer: {
-            brief: plan.brief,
-            engine,
-            krea_model: engine === 'krea' ? kreaModel : null,
-            social_target: target,
-            aspect: socialPreset.aspect,
-            resolution: `${socialPreset.width}x${socialPreset.height}`,
-            chapters: plan.chapters,
-            publishing: plan.publishing,
-            continuity_bible: plan.continuity_bible,
-            cost_estimate: plan.cost_estimate,
-            generated_by: plan.generated_by,
-            reference_url: refUrl.trim() || null,
-          },
-        },
-      }
+      for (const [order, job] of Object.entries(kreaJobs)) if (job.url) clipUrls[Number(order)] = job.url
+      const payload = buildVideoPayload(plan, { title: title.trim() || undefined, clipUrls })
 
       const res = await fetch('/api/videos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       const json = await res.json()
@@ -375,6 +351,21 @@ return }
         </Box>
       </Box>
 
+      {/* 8-step pipeline */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(4, 1fr)', md: 'repeat(8, 1fr)' }, gap: 0.75 }}>
+        {PIPELINE_STEPS.map((step, i) => {
+          const state = i < pipelineStep ? 'done' : i === pipelineStep ? 'active' : 'todo'
+
+          return (
+            <Tooltip key={step.id} title={step.desc}>
+              <Box sx={{ p: 1, borderRadius: 1.5, border: '1px solid', borderColor: state === 'active' ? 'primary.main' : 'divider', bgcolor: state === 'done' ? 'success.main' : state === 'active' ? 'action.selected' : 'transparent', color: state === 'done' ? '#fff' : 'text.primary', opacity: state === 'todo' ? 0.6 : 1 }}>
+                <Typography variant='caption' fontWeight={800} sx={{ display: 'block', lineHeight: 1.2 }}>{step.label}</Typography>
+              </Box>
+            </Tooltip>
+          )
+        })}
+      </Box>
+
       {error && <Alert severity='error' onClose={() => setError('')}>{error}</Alert>}
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 5fr) minmax(0, 7fr)' }, gap: 3, alignItems: 'start' }}>
@@ -479,6 +470,35 @@ return (
                 })}
               </Box>
               <Divider sx={{ my: 2 }} />
+              <Typography variant='body2' fontWeight={700} sx={{ mb: 0.5 }}>The only two ways to animate</Typography>
+              <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 1 }}>Every shot renders in Remotion one of two ways; Headless Chrome paints the frames, ffmpeg stitches them.</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1, mb: 1.5 }}>
+                {ANIMATION_MODES.map(m => {
+                  const active = m.id === animationMode
+
+                  return (
+                    <Box key={m.id} onClick={() => setAnimationMode(m.id)} sx={{ cursor: 'pointer', p: 1.25, borderRadius: 2, border: '2px solid', borderColor: active ? 'secondary.main' : 'divider', bgcolor: active ? 'action.selected' : 'transparent' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <i className={`${m.id === '3d_threejs' ? 'tabler-cube-3d-sphere' : 'tabler-layers-subtract'} text-[18px]`} />
+                        <Typography variant='body2' fontWeight={800}>{m.label}</Typography>
+                      </Box>
+                      <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 0.5 }}>{m.desc}</Typography>
+                      <Typography variant='caption' sx={{ display: 'block', mt: 0.5, fontFamily: 'monospace', fontSize: 10, opacity: 0.8 }}>{m.renderer}</Typography>
+                    </Box>
+                  )
+                })}
+              </Box>
+              <Collapse in={animationMode === '3d_threejs'}>
+                <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: 'action.hover', mb: 1.5 }}>
+                  <Typography variant='caption' fontWeight={800} sx={{ display: 'block', mb: 0.5 }}>3D asset library · slots the storyboard will fill</Typography>
+                  {ASSET_3D_LIBRARY.map(a => (
+                    <Box key={a.id} sx={{ display: 'flex', gap: 1, mb: 0.5 }}>
+                      <Chip size='small' label={a.label} sx={{ height: 20, fontSize: 10, flexShrink: 0 }} />
+                      <Typography variant='caption' color='text.secondary'>{a.description} <i>{a.sourcing}</i></Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Collapse>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <FormControl size='small'>
                   <InputLabel>Narrator voice</InputLabel>
@@ -551,6 +571,8 @@ return (
                         <Chip size='small' icon={<i className='tabler-aspect-ratio text-[14px]' />} label={`${socialPreset.label} · ${socialPreset.aspect}`} />
                         <Chip size='small' icon={<i className='tabler-clock text-[14px]' />} label={`${fmtTime(durationSec)} · ${plan.script.split(/\s+/).filter(Boolean).length} words`} />
                         <Chip size='small' icon={<i className='tabler-cpu text-[14px]' />} label={plan.cost_estimate.engine_label} color='primary' variant='outlined' />
+                        <Chip size='small' icon={<i className={`${plan.brief.animationMode === '3d_threejs' ? 'tabler-cube-3d-sphere' : 'tabler-layers-subtract'} text-[14px]`} />} label={ANIMATION_MODES.find(m => m.id === plan.brief.animationMode)?.label.split(' (')[0]} variant='outlined' />
+                        <Chip size='small' onClick={() => setTab('checks')} icon={<i className={`${checkSummary.ok ? 'tabler-shield-check' : 'tabler-alert-triangle'} text-[14px]`} />} label={checkSummary.ok ? `Checks: ${checkSummary.warnings} warning${checkSummary.warnings === 1 ? '' : 's'}` : `Checks: ${checkSummary.errors} error${checkSummary.errors === 1 ? '' : 's'}`} color={checkSummary.ok ? (checkSummary.warnings ? 'warning' : 'success') : 'error'} />
                         <Chip size='small' icon={<i className='tabler-microphone text-[14px]' />} label={plan.brief.voiceName} />
                         <Chip size='small' icon={<i className='tabler-coin text-[14px]' />} label={`≈ $${plan.cost_estimate.total_usd}`} color='success' variant='outlined' />
                         {plan.generated_by === 'fallback' && <Tooltip title='OPENAI_API_KEY not configured — template plan generated. Add the key for real research + writing.'><Chip size='small' color='warning' label='template mode' /></Tooltip>}
@@ -560,7 +582,7 @@ return (
                       {sentVideoId ? (
                         <Alert severity='success' sx={{ py: 0 }}>Saved to Video Studio. <Link href='/videos' style={{ fontWeight: 700 }}>Open /videos →</Link></Alert>
                       ) : (
-                        <Button variant='contained' onClick={handleSendToStudio} disabled={sending} startIcon={sending ? <CircularProgress size={16} color='inherit' /> : <i className='tabler-send' />}>Send to Video Studio</Button>
+                        <Button variant='contained' onClick={handleSendToStudio} disabled={sending || !checkSummary.ok} startIcon={sending ? <CircularProgress size={16} color='inherit' /> : <i className='tabler-send' />}>{checkSummary.ok ? 'Send to Video Studio' : 'Fix check errors first'}</Button>
                       )}
                       <Typography variant='caption' color='text.secondary'>Creates a video record with script + hyperframes so you can voice, caption and render it.</Typography>
                     </Box>
@@ -604,6 +626,7 @@ return (
                 <Tabs value={tab} onChange={(_, v) => setTab(v)} variant='scrollable' sx={{ px: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
                   <Tab value='storyboard' label={`Storyboard · ${plan.shots.length} shots`} icon={<i className='tabler-layout-grid' />} iconPosition='start' />
                   <Tab value='script' label='Narration script' icon={<i className='tabler-file-text' />} iconPosition='start' />
+                  <Tab value='checks' label={`Checks · ${checkSummary.errors}✕ ${checkSummary.warnings}⚠ ${checkSummary.passed}✓`} icon={<i className='tabler-shield-check' />} iconPosition='start' />
                   <Tab value='publishing' label='Publishing kit' icon={<i className='tabler-rocket' />} iconPosition='start' />
                 </Tabs>
                 <CardContent>
@@ -644,6 +667,7 @@ return (
                                 <Chip size='small' icon={<i className='tabler-video text-[13px]' />} label={shot.camera_motion.replace(/_/g, ' ')} sx={{ height: 20, fontSize: 11 }} />
                                 <Chip size='small' icon={<i className='tabler-transition-right text-[13px]' />} label={shot.transition} sx={{ height: 20, fontSize: 11 }} />
                                 {shot.sound_design && <Chip size='small' icon={<i className='tabler-volume text-[13px]' />} label={shot.sound_design} sx={{ height: 20, fontSize: 11 }} />}
+                                {shot.assets_3d?.map((a, i) => <Chip key={i} size='small' color='secondary' variant='outlined' icon={<i className='tabler-cube text-[13px]' />} label={`${ASSET_3D_LIBRARY.find(x => x.id === a.slot)?.label || a.slot}: ${a.name}`} sx={{ height: 20, fontSize: 11 }} />)}
                               </Box>
                               <Box sx={{ position: 'relative', p: 1.25, pr: 5, borderRadius: 1.5, bgcolor: '#0a0d14', color: '#cbd5e1', fontFamily: 'monospace', fontSize: 12, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
                                 {shot.engine_prompt}
@@ -671,6 +695,24 @@ return (
                           </Box>
                         )
                       })}
+                    </Box>
+                  )}
+
+                  {tab === 'checks' && (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Alert severity={checkSummary.ok ? (checkSummary.warnings ? 'warning' : 'success') : 'error'} sx={{ py: 0 }}>
+                        {checkSummary.ok ? 'No blocking errors.' : `${checkSummary.errors} blocking error${checkSummary.errors === 1 ? '' : 's'} — fix (or regenerate) before hand-off.`} {checkSummary.warnings} warning{checkSummary.warnings === 1 ? '' : 's'}, {checkSummary.passed} passed. Checks re-run on every change; the MCP server exposes the same set.
+                      </Alert>
+                      {[...checks].sort((a, b) => ['error', 'warn', 'pass'].indexOf(a.level) - ['error', 'warn', 'pass'].indexOf(b.level)).map(c => (
+                        <Box key={c.id} sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', p: 1, borderRadius: 1.5, border: '1px solid', borderColor: c.level === 'error' ? 'error.main' : c.level === 'warn' ? 'warning.main' : 'divider', opacity: c.level === 'pass' ? 0.75 : 1 }}>
+                          <i className={`${c.level === 'error' ? 'tabler-circle-x text-error' : c.level === 'warn' ? 'tabler-alert-triangle text-warning' : 'tabler-circle-check text-success'} text-[20px]`} />
+                          <Box sx={{ flex: 1 }}>
+                            <Typography variant='body2' fontWeight={c.level === 'pass' ? 500 : 700}>{c.message}</Typography>
+                            {c.shots && c.shots.length > 0 && <Typography variant='caption' color='text.secondary'>Shots: {c.shots.join(', ')}</Typography>}
+                          </Box>
+                          <Chip size='small' label={c.id} sx={{ height: 18, fontSize: 10, fontFamily: 'monospace' }} />
+                        </Box>
+                      ))}
                     </Box>
                   )}
 

@@ -15,7 +15,7 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
-import { createClient } from '@/utils/supabase/server'
+import { authorizeExplainerRequest } from '@/lib/explainer/auth'
 import { extractYouTubeId } from '@/lib/explainer/presets'
 
 export const dynamic = 'force-dynamic'
@@ -153,10 +153,9 @@ async function viaYouTube(videoId: string): Promise<Partial<TranscriptResult> | 
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const auth = await authorizeExplainerRequest(request)
 
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!auth.ok) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await request.json()
     const videoId = extractYouTubeId(body.url || '')

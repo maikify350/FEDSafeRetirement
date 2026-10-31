@@ -17,6 +17,7 @@ import {
 
 import {FederalQuestionsVideo} from "./FederalQuestionsVideo";
 import {DynamicScriptReel} from "./DynamicScriptReel";
+import {ExplainerReel, calculateExplainerMetadata, EXPLAINER_FPS} from "./ExplainerReel";
 
 export const FPS = 30;
 export const DURATION_SECONDS = 79.224;
@@ -27,6 +28,28 @@ export const WHO_WE_ARE_DURATION_FRAMES = WHO_WE_ARE_DURATION_SECONDS * FPS;
 export const RemotionRoot = () => {
   return (
     <>
+      {/* ── Explainer Studio (size/duration from props; 16:9, 9:16 or 4:5) ── */}
+      <Composition
+        id="ExplainerReel"
+        component={ExplainerReel}
+        durationInFrames={60 * EXPLAINER_FPS}
+        fps={EXPLAINER_FPS}
+        width={1080}
+        height={1920}
+        defaultProps={{
+          title: "Explainer",
+          width: 1080,
+          height: 1920,
+          durationSec: 12,
+          scenes: [
+            {narration: "Here is the story of trains, and why it changed everything.", onscreenText: "The Evolution of Trains", era: "1829", cameraMotion: "push_forward", transition: "fade", durationSec: 4, animationMode: "3d_threejs"},
+            {narration: "Steam gave way to diesel, then to electricity.", onscreenText: "Steam → Diesel → Electric", era: "1930s", cameraMotion: "orbit", transition: "slide_left", durationSec: 4, animationMode: "3d_threejs"},
+            {narration: "Then Japan rewrote the rules at 210 kilometres an hour.", onscreenText: "Shinkansen", era: "1964", cameraMotion: "fly_by_right", transition: "zoom_in", durationSec: 4, animationMode: "3d_threejs"},
+          ],
+        }}
+        calculateMetadata={calculateExplainerMetadata}
+      />
+
       {/* ── 16:9 Widescreen Brand & Homepage Videos ── */}
       <Composition
         id="FederalQuestionsVideo"

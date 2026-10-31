@@ -42,7 +42,7 @@ const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || 'sk_e3a4fadf2a1e951
 const REMOTION_PROJECT = path.resolve(__dirname, '..', 'remotion')
 
 const ALLOWED_COMPOSITIONS = [
-  'DynamicScriptReel', 'PostalRetirementReel', 'FegliShockReel',
+  'ExplainerReel', 'DynamicScriptReel', 'PostalRetirementReel', 'FegliShockReel',
   'PartnerSpotlightReel', 'WhyFedSafeReel', 'DidYouKnowReel',
   'WebinarReel', 'WhoWeAreVideo', 'FederalQuestionsVideo',
 ]

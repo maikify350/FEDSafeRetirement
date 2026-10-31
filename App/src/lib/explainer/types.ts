@@ -1,4 +1,4 @@
-import type { EngineId, PlanStyle, SocialTarget } from './presets'
+import type { AnimationMode, EngineId, PlanStyle, SocialTarget } from './presets'
 
 export interface ExplainerBrief {
   title: string
@@ -9,6 +9,9 @@ export interface ExplainerBrief {
   durationSec: number
   target: SocialTarget
   engine: EngineId
+
+  /** How Remotion renders each shot: 2D kinetic or Three.js scene. */
+  animationMode: AnimationMode
   kreaModel: string
   voiceId: string
   voiceName: string
@@ -39,6 +42,20 @@ export interface ExplainerShot {
   engine_prompt: string
   era?: string
   sound_design?: string
+
+  /** 3D asset slots this shot needs when animation mode is 3d_threejs. */
+  assets_3d?: { slot: string; name: string; source_url?: string }[]
+}
+
+export type CheckLevel = 'pass' | 'warn' | 'error'
+
+export interface PlanCheck {
+  id: string
+  level: CheckLevel
+  message: string
+
+  /** Shot numbers the check refers to, if any. */
+  shots?: number[]
 }
 
 export interface ExplainerChapter {
@@ -80,6 +97,7 @@ export interface ExplainerPlan {
     total_usd: number
     engine_label: string
   }
+  qa?: PlanCheck[]
   generated_by: 'openai' | 'fallback'
   generated_at: string
 }

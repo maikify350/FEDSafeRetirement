@@ -1,0 +1,16 @@
+{
+  "name": "fedsafe-explainer-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP server that exposes FEDSafe Explainer Studio (plan, checks, clips, hand-off) to Claude Code and other MCP clients",
+  "bin": { "fedsafe-explainer-mcp": "./server.mjs" },
+  "scripts": {
+    "start": "node server.mjs",
+    "inspect": "npx @modelcontextprotocol/inspector node server.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^3.25.0"
+  }
+}

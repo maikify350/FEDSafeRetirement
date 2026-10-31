@@ -210,3 +210,57 @@ export function extractYouTubeId(input: string): string | null {
   
 return null
 }
+
+// ───────────────────────── Production stack (mirrors the reference workflow) ─────────────────────────
+
+/** "The only two ways to animate" — every shot is rendered one of these two ways inside Remotion. */
+export type AnimationMode = '2d_kinetic' | '3d_threejs'
+
+export const ANIMATION_MODES: { id: AnimationMode; label: string; desc: string; renderer: string }[] = [
+  {
+    id: '2d_kinetic',
+    label: '2D kinetic (DOM + CSS)',
+    desc: 'Stills, Ken Burns, parallax layers, kinetic typography, stat pills. Deterministic, cheap, renders anywhere Headless Chrome runs.',
+    renderer: 'Remotion <Sequence> + CSS transforms → Headless Chrome → ffmpeg',
+  },
+  {
+    id: '3d_threejs',
+    label: '3D scene (Three.js)',
+    desc: 'Real camera moves around glTF models (a locomotive, a maglev, a city block). Orbit, fly-by and dolly are true 3D paths, not fake zooms.',
+    renderer: 'Remotion @remotion/three <ThreeCanvas> + react-three-fiber → Headless Chrome (WebGL) → ffmpeg',
+  },
+]
+
+/** Slot-based 3D asset library. Assets are glTF/GLB files you own or have licensed; the studio only tracks slots + URLs. */
+export interface Asset3DSlot {
+  id: string
+  category: 'hero_vehicle' | 'environment' | 'prop' | 'character' | 'diagram'
+  label: string
+  description: string
+
+  /** Where to find or make one; never a specific copyrighted model. */
+  sourcing: string
+  default_url?: string
+}
+
+export const ASSET_3D_LIBRARY: Asset3DSlot[] = [
+  { id: 'hero_vehicle', category: 'hero_vehicle', label: 'Hero vehicle / subject', description: 'The thing the video is about, one model per era (e.g. steam locomotive, streamliner, bullet train, maglev).', sourcing: 'CC0 model libraries, your own Blender exports, or AI-generated glTF (Krea generate_3d, Meshy). Export GLB, < 20 MB, Y-up, metres.' },
+  { id: 'environment', category: 'environment', label: 'Environment', description: 'Low-poly station, countryside, cityscape, tunnel — the stage the hero moves through.', sourcing: 'Modular CC0 kits; keep under 200k triangles for Headless Chrome.' },
+  { id: 'prop', category: 'prop', label: 'Props', description: 'Rails, signals, posters, clocks, maps, timeline markers.', sourcing: 'CC0 or self-made; instanced meshes for repeats (track segments).' },
+  { id: 'character', category: 'character', label: 'Characters', description: 'Engineers, passengers, silhouettes for scale.', sourcing: 'Rigged CC0 humanoids or stylised capsules — avoid uncanny realism.' },
+  { id: 'diagram', category: 'diagram', label: 'Diagram / schematic', description: 'Exploded engine, bogie, pantograph, maglev coil — for the "how it works" beat.', sourcing: 'Build procedurally from primitives in Three.js; label in 2D overlay, not in the mesh.' },
+]
+
+/** The 8-step pipeline the studio walks a project through (matches the stepper in the UI). */
+export const PIPELINE_STEPS = [
+  { id: 'brief', label: '1 · Brief', desc: 'Topic, audience, platform, runtime, engine' },
+  { id: 'reference', label: '2 · Reference', desc: 'Transcript of a video whose structure you want to emulate (optional)' },
+  { id: 'plan', label: '3 · Script + storyboard', desc: 'Hook, beats, chapters, narration, time-coded shots' },
+  { id: 'qa', label: '4 · Checks', desc: 'Automated checks that catch runtime, budget, prompt and coverage mistakes' },
+  { id: 'assets', label: '5 · Assets & clips', desc: '3D asset slots, Krea / Higgsfield clips per shot' },
+  { id: 'voice', label: '6 · Voice', desc: 'ElevenLabs narration in the Video Studio' },
+  { id: 'render', label: '7 · Render', desc: 'Remotion → Headless Chrome → ffmpeg (ExplainerReel composition)' },
+  { id: 'publish', label: '8 · Publish', desc: 'Titles, description, hashtags, thumbnail, export spec' },
+] as const
+
+export type PipelineStepId = typeof PIPELINE_STEPS[number]['id']

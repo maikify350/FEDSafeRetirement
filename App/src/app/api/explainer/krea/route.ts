@@ -16,7 +16,7 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
-import { createClient } from '@/utils/supabase/server'
+import { authorizeExplainerRequest } from '@/lib/explainer/auth'
 import { KREA_VIDEO_MODELS } from '@/lib/explainer/presets'
 
 export const dynamic = 'force-dynamic'
@@ -28,17 +28,9 @@ function headers(key: string) {
   return { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }
 }
 
-async function requireUser() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  
-return user
-}
-
 export async function POST(request: NextRequest) {
   try {
-    if (!(await requireUser())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!(await authorizeExplainerRequest(request)).ok) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const key = process.env.KREA_API_KEY
 
@@ -84,7 +76,7 @@ return NextResponse.json({ ...json, model: model.id, input })
 
 export async function GET(request: NextRequest) {
   try {
-    if (!(await requireUser())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!(await authorizeExplainerRequest(request)).ok) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     const key = process.env.KREA_API_KEY
 
     if (!key) return NextResponse.json({ error: 'KREA_API_KEY is not configured', configured: false }, { status: 503 })

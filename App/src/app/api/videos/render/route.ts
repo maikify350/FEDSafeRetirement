@@ -26,8 +26,10 @@ import path from 'path'
 import fs from 'fs'
 import { spawn } from 'child_process'
 import { randomUUID } from 'crypto'
+
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
+
 import { createAdminClient } from '@/utils/supabase/server'
 
 export interface RenderJob {
@@ -58,6 +60,7 @@ const REMOTION_PROJECT = path.resolve(
 )
 
 const ALLOWED_COMPOSITIONS = [
+  'ExplainerReel',
   'DynamicScriptReel',
   'PostalRetirementReel',
   'FegliShockReel',
@@ -79,6 +82,7 @@ const ALLOWED_COMPOSITIONS = [
 
 async function uploadToSupabase(filePath: string, remoteName: string): Promise<string> {
   const buf = fs.readFileSync(filePath)
+
   const res = await fetch(`${SUPABASE_URL}/storage/v1/object/videos/${remoteName}`, {
     method: 'POST',
     headers: {
@@ -89,21 +93,27 @@ async function uploadToSupabase(filePath: string, remoteName: string): Promise<s
     },
     body: buf as any,
   })
+
   if (!res.ok) {
     const txt = await res.text()
+
     throw new Error(`Supabase upload failed (${res.status}): ${txt}`)
   }
-  return `${SUPABASE_URL}/storage/v1/object/public/videos/${remoteName}`
+
+  
+return `${SUPABASE_URL}/storage/v1/object/public/videos/${remoteName}`
 }
 
 // ── Helper: Patch video_url in Supabase DB ──
 
 async function patchVideoUrl(videoId: string, videoUrl: string) {
   const admin = createAdminClient()
+
   const { error } = await admin
     .from('videos')
     .update({ video_url: videoUrl, mod_dt: new Date().toISOString() })
     .eq('id', videoId)
+
   if (error) throw new Error(error.message)
 }
 
@@ -111,25 +121,31 @@ async function patchVideoUrl(videoId: string, videoUrl: string) {
 
 async function fetchVideoRecord(videoId: string): Promise<any> {
   const admin = createAdminClient()
+
   const { data, error } = await admin
     .from('videos')
     .select('*')
     .eq('id', videoId)
     .single()
+
   if (error) throw new Error(`Video not found: ${error.message}`)
-  return data
+  
+return data
 }
 
 // ── Helper: Generate narration audio via ElevenLabs TTS ──
 
 async function generateNarrationAudio(video: any, outputPath: string): Promise<boolean> {
   const apiKey = process.env.ELEVENLABS_API_KEY
+
   if (!apiKey) {
     console.warn('[Render] No ELEVENLABS_API_KEY — skipping narration audio')
-    return false
+    
+return false
   }
 
   const script = (video.script || '').trim()
+
   if (!script) return false
 
   const voiceId = video.voice_id || 'GGRMgbKfr7QscdcrvWga'
@@ -137,10 +153,12 @@ async function generateNarrationAudio(video: any, outputPath: string): Promise<b
   const stability = 0.30
 
   // Same text normalization as voice-preview route
-  let processedText = script
+  const processedText = script
     .replace(/\/+/g, (match: string) => {
       const sec = match.length
-      return sec === 1 ? ' [short pause] ... ' : ' [long pause] ... ... '
+
+      
+return sec === 1 ? ' [short pause] ... ' : ' [long pause] ... ... '
     })
     .replace(/\{\{pause:([\d.]+)\}\}/gi, (_: string, p1: string) => (parseFloat(p1) >= 2 ? ' [long pause] ' : ' [short pause] '))
     .replace(/\[pause:([\d.]+)s?\]/gi, (_: string, p1: string) => (parseFloat(p1) >= 2 ? ' [long pause] ' : ' [short pause] '))
@@ -189,15 +207,18 @@ async function generateNarrationAudio(video: any, outputPath: string): Promise<b
     .replace(/\$([0-9,]+(\.[0-9]{2})?)\b/g, (_: string, p1: string) => {
       const clean = p1.replace(/,/g, '')
       const num = parseFloat(clean)
+
       if (num >= 1000000) return `${(num / 1000000).toFixed(num % 1000000 === 0 ? 0 : 1)} million dollars`
       if (num >= 1000) return `${(num / 1000).toFixed(num % 1000 === 0 ? 0 : 1)} thousand dollars`
-      return `${clean} dollars`
+      
+return `${clean} dollars`
     })
     .replace(/(\d+)%/g, '$1 percent')
     .replace(/(\d{3})-(\d{3})-(\d{4})/g, '$1, $2, $3')
 
   try {
     console.log(`[Render] Generating narration audio (${normalizedText.split(/\s+/).length} words)...`)
+
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: 'POST',
       headers: {
@@ -214,17 +235,22 @@ async function generateNarrationAudio(video: any, outputPath: string): Promise<b
 
     if (!response.ok) {
       const errText = await response.text()
+
       console.error('[Render] ElevenLabs TTS failed:', response.status, errText)
-      return false
+      
+return false
     }
 
     const audioBuffer = await response.arrayBuffer()
+
     fs.writeFileSync(outputPath, Buffer.from(audioBuffer))
     console.log(`[Render] Narration audio saved: ${outputPath} (${Math.round(audioBuffer.byteLength / 1024)}KB)`)
-    return true
+    
+return true
   } catch (err: any) {
     console.error('[Render] TTS generation error:', err.message)
-    return false
+    
+return false
   }
 }
 
@@ -239,29 +265,91 @@ async function downloadImageToPublic(imageUrl: string, publicDir: string, filena
 
     // For relative URLs from the Next.js app, make them absolute
     let absoluteUrl = imageUrl
+
     if (imageUrl.startsWith('/')) {
       absoluteUrl = `http://localhost:8001${imageUrl}`
     }
 
     const res = await fetch(absoluteUrl)
+
     if (!res.ok) {
       console.warn(`[Render] Failed to download image: ${absoluteUrl} (${res.status})`)
-      return null
+      
+return null
     }
 
     const buffer = await res.arrayBuffer()
     const outPath = path.join(publicDir, filename)
+
     fs.writeFileSync(outPath, Buffer.from(buffer))
-    return filename
+    
+return filename
   } catch (err: any) {
     console.warn(`[Render] Image download error: ${err.message}`)
-    return null
+    
+return null
+  }
+}
+
+// ── Helper: Build ExplainerReel props (Explainer Studio hand-offs) ──
+
+async function buildExplainerProps(video: any, narrationFile: string | null): Promise<Record<string, any>> {
+  const publicDir = path.join(REMOTION_PROJECT, 'public')
+  const meta = video.metadata || {}
+  const ex = meta.explainer || {}
+  const hyperframes = Array.isArray(video.hyperframes) ? video.hyperframes : []
+  const scenes: any[] = []
+
+  for (let idx = 0; idx < hyperframes.length; idx++) {
+    const hf = hyperframes[idx]
+    let image = ''
+
+    if (hf.scene_image) {
+      const ext = String(hf.scene_image).match(/\.(jpg|jpeg|png|webp)(\?.*)?$/i)?.[1] || 'jpg'
+
+      image = (await downloadImageToPublic(hf.scene_image, publicDir, `render_scene_${idx + 1}.${ext}`)) || ''
+    }
+
+    const durationSec = hf.timestamp_end != null && hf.timestamp_start != null
+      ? Number(hf.timestamp_end) - Number(hf.timestamp_start)
+      : (video.duration_sec || 60) / Math.max(1, hyperframes.length)
+
+    scenes.push({
+      image: image || undefined,
+      clip: hf.asset_url || undefined,
+      narration: String(hf.text_segment || '').replace(/\*\*/g, '').replace(/\/+/g, '').replace(/<[^>]*>/g, '').trim(),
+      onscreenText: hf.onscreen_text || undefined,
+      era: hf.era || undefined,
+      cameraMotion: hf.engine_camera_motion || hf.camera_motion || 'push_forward',
+      transition: hf.transition || 'fade',
+      durationSec: Math.round(durationSec * 10) / 10,
+      animationMode: hf.animation_mode || ex.animation_mode || '2d_kinetic',
+      assets3d: Array.isArray(hf.assets_3d) ? hf.assets_3d : [],
+    })
+  }
+
+  return {
+    title: video.title || 'Explainer',
+    width: Number(ex.width) || 1080,
+    height: Number(ex.height) || 1920,
+    durationSec: video.duration_sec || scenes.reduce((a, s) => a + s.durationSec, 0) || 60,
+    narrationAudio: narrationFile,
+    backgroundMusic: meta.background_music === false ? undefined : 'Sound_Script_01_vocalfocus-music05.mp3',
+    musicVolume: 0.04,
+    scenes,
+    showCaptions: meta.show_captions !== false,
+    showProgress: true,
+    accent: meta.accent || undefined,
   }
 }
 
 // ── Helper: Build DynamicScriptReel props from video record ──
 
-async function buildCompositionProps(video: any, narrationFile: string | null): Promise<Record<string, any>> {
+async function buildCompositionProps(video: any, narrationFile: string | null, compositionId?: string): Promise<Record<string, any>> {
+  if (compositionId === 'ExplainerReel' || video?.metadata?.remotion_composition === 'ExplainerReel') {
+    return buildExplainerProps(video, narrationFile)
+  }
+
   const publicDir = path.join(REMOTION_PROJECT, 'public')
 
   // Build scenes from hyperframes
@@ -278,9 +366,11 @@ async function buildCompositionProps(video: any, narrationFile: string | null): 
       const ext = sceneImageUrl.match(/\.(jpg|jpeg|png|webp)(\?.*)?$/i)?.[1] || 'jpg'
       const downloadName = `render_scene_${idx + 1}.${ext}`
       const result = await downloadImageToPublic(sceneImageUrl, publicDir, downloadName)
+
       imageFilename = result || 'federal-advisor-consultation.jpg'
     } else {
       const fallbacks = ['federal-advisor-consultation.jpg', 'federal-couple-happy.jpg', 'who-retired-vet.webp']
+
       imageFilename = fallbacks[idx % fallbacks.length]
     }
 
@@ -290,6 +380,7 @@ async function buildCompositionProps(video: any, narrationFile: string | null): 
 
     // Extract a short headline from the text segment (first clause or ~50 chars)
     const rawText = (hf.text_segment || '').replace(/\*\*/g, '').replace(/\/+/g, '').replace(/<[^>]*>/g, '').trim()
+
     const shortHeadline = idx === 0
       ? (video.title || 'Federal Retirement Brief')
       : rawText.split(/[.!?]/)[0]?.trim().substring(0, 55) || `Key Point #${idx + 1}`
@@ -306,6 +397,7 @@ async function buildCompositionProps(video: any, narrationFile: string | null): 
   // If no hyperframes, create a single scene from the script
   if (scenes.length === 0) {
     const script = (video.script || '').trim()
+
     scenes.push({
       image: 'federal-advisor-consultation.jpg',
       eyebrow: 'Federal Retirement Planning',
@@ -335,6 +427,7 @@ async function buildCompositionProps(video: any, narrationFile: string | null): 
     ctaWebsite,
     scenes,
     durationSec: video.duration_sec || 35,
+
     // Logo toggles — only show what the user explicitly enabled
     showShieldLogo: meta.show_shield_logo !== false,
     showSamBadge: Boolean(meta.show_sam_badge),
@@ -348,10 +441,12 @@ async function buildCompositionProps(video: any, narrationFile: string | null): 
 
 async function runRenderJob(jobId: string) {
   const job = renderJobs.get(jobId)!
+
   job.status = 'running'
   job.progress = 2
 
   const outDir = path.join(REMOTION_PROJECT, 'out')
+
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true })
   const outFile = path.join(outDir, job.output_filename)
 
@@ -361,52 +456,70 @@ async function runRenderJob(jobId: string) {
   try {
     // 0. CLEAN UP all previous render temp files first
     const publicDir = path.join(REMOTION_PROJECT, 'public')
+
     if (fs.existsSync(publicDir)) {
       const oldFiles = fs.readdirSync(publicDir).filter(f =>
         f.startsWith('render_narration_') || f.startsWith('render_scene_')
       )
+
       for (const f of oldFiles) {
         try { fs.unlinkSync(path.join(publicDir, f)) } catch { /* ignore */ }
       }
+
       if (oldFiles.length > 0) console.log(`[Render] Cleaned ${oldFiles.length} old render temp files`)
     }
+
+
     // Also clean old props files
     if (fs.existsSync(outDir)) {
       const oldProps = fs.readdirSync(outDir).filter(f => f.startsWith('props_') && f.endsWith('.json'))
+
       for (const f of oldProps) {
         try { fs.unlinkSync(path.join(outDir, f)) } catch { /* ignore */ }
       }
     }
+
+
     // 1. Fetch video record from Supabase
     console.log(`[Render] Fetching video record: ${job.video_id}`)
     const video = await fetchVideoRecord(job.video_id)
+
     job.progress = 5
 
     // 2. Generate narration audio
     const narrationFilename = `render_narration_${job.video_id.substring(0, 8)}.mp3`
     const narrationPath = path.join(REMOTION_PROJECT, 'public', narrationFilename)
     const hasAudio = await generateNarrationAudio(video, narrationPath)
+
     if (hasAudio) tempFiles.push(narrationPath)
     job.progress = 25
 
     // 3. Build composition props
-    const props = await buildCompositionProps(video, hasAudio ? narrationFilename : null)
+    const props = await buildCompositionProps(video, hasAudio ? narrationFilename : null, job.composition_id)
+
     job.progress = 30
 
     // Track downloaded scene images for cleanup
     const sceneFiles = props.scenes.map((_: any, idx: number) => {
       const p = path.join(REMOTION_PROJECT, 'public', `render_scene_${idx + 1}.jpg`)
+
       if (fs.existsSync(p)) return p
+
       for (const ext of ['png', 'webp', 'jpeg']) {
         const alt = path.join(REMOTION_PROJECT, 'public', `render_scene_${idx + 1}.${ext}`)
+
         if (fs.existsSync(alt)) return alt
       }
-      return null
+
+      
+return null
     }).filter(Boolean)
+
     tempFiles.push(...sceneFiles as string[])
 
     // 4. Write props to a temp file (Remotion CLI reads from file to avoid shell escaping issues)
     const propsFile = path.join(outDir, `props_${jobId}.json`)
+
     fs.writeFileSync(propsFile, JSON.stringify(props))
     tempFiles.push(propsFile)
     console.log(`[Render] Props written: ${propsFile}`)
@@ -433,20 +546,25 @@ async function runRenderJob(jobId: string) {
     child.stdout?.on('data', (data: Buffer) => {
       const line = data.toString()
       const m = line.match(/Rendered\s+(\d+)\/(\d+)/)
+
       if (m) {
         const done = parseInt(m[1])
         const total = parseInt(m[2])
+
         job.progress = 30 + Math.round((done / total) * 55) // 30–85% for render phase
       }
     })
 
     child.stderr?.on('data', (data: Buffer) => {
       const line = data.toString()
+
       stderrOutput += line
       const m = line.match(/Rendered\s+(\d+)\/(\d+)/)
+
       if (m) {
         const done = parseInt(m[1])
         const total = parseInt(m[2])
+
         job.progress = 30 + Math.round((done / total) * 55)
       }
     })
@@ -455,23 +573,28 @@ async function runRenderJob(jobId: string) {
       if (code !== 0) {
         job.status = 'error'
         const tail = stderrOutput.trim().slice(-500)
+
         job.error = `Remotion render exited with code ${code}${tail ? `: ${tail}` : ''}`
         cleanupTempFiles(tempFiles)
-        return
+        
+return
       }
 
       if (!fs.existsSync(outFile)) {
         job.status = 'error'
         job.error = `Rendered file not found at ${outFile}`
         cleanupTempFiles(tempFiles)
-        return
+        
+return
       }
 
       // Upload phase: 85–98%
       job.status = 'uploading'
       job.progress = 88
+
       try {
         const publicUrl = await uploadToSupabase(outFile, job.output_filename)
+
         job.progress = 95
         await patchVideoUrl(job.video_id, publicUrl)
         job.video_url = publicUrl
@@ -506,6 +629,7 @@ export async function POST(request: NextRequest) {
   if (isVercel) {
     // Proxy render request to Railway render service
     const serviceUrl = process.env.RENDER_SERVICE_URL
+
     if (!serviceUrl) {
       return NextResponse.json(
         {
@@ -518,6 +642,7 @@ export async function POST(request: NextRequest) {
 
     try {
       const body = await request.json()
+
       const proxyRes = await fetch(`${serviceUrl}/render`, {
         method: 'POST',
         headers: {
@@ -528,7 +653,9 @@ export async function POST(request: NextRequest) {
       })
 
       const data = await proxyRes.json()
-      return NextResponse.json(data, { status: proxyRes.status })
+
+      
+return NextResponse.json(data, { status: proxyRes.status })
     } catch (err: any) {
       return NextResponse.json(
         { error: `Render service unavailable: ${err.message}` },
@@ -554,6 +681,7 @@ export async function POST(request: NextRequest) {
     }
 
     const jobId = randomUUID()
+
     const job: RenderJob = {
       status: 'queued',
       progress: 0,
@@ -562,6 +690,7 @@ export async function POST(request: NextRequest) {
       video_id,
       started_at: new Date().toISOString(),
     }
+
     renderJobs.set(jobId, job)
 
     // Kick off render asynchronously — don't await!
