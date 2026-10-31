@@ -17,6 +17,7 @@ import {
 
 import {FederalQuestionsVideo} from "./FederalQuestionsVideo";
 import {DynamicScriptReel} from "./DynamicScriptReel";
+import type {DynamicScriptReelProps} from "./DynamicScriptReel";
 
 export const FPS = 30;
 export const DURATION_SECONDS = 79.224;
@@ -24,9 +25,31 @@ export const DURATION_FRAMES = Math.ceil(DURATION_SECONDS * FPS);
 export const WHO_WE_ARE_DURATION_SECONDS = 106;
 export const WHO_WE_ARE_DURATION_FRAMES = WHO_WE_ARE_DURATION_SECONDS * FPS;
 
+/**
+ * DynamicScriptReel length is driven by its props: the sum of the scene
+ * durations (falling back to `durationSec`). Without this the composition
+ * always rendered its default 90s regardless of the script length.
+ */
+export const dynamicScriptReelDurationSec = (props: DynamicScriptReelProps): number => {
+  const scenes = Array.isArray(props.scenes) ? props.scenes : [];
+  const fromScenes = scenes.reduce((sum, s) => sum + (Number(s?.durationSec) || 0), 0);
+  const total = fromScenes > 0 ? fromScenes : Number(props.durationSec) || 30;
+  return Math.max(1, total);
+};
+
 export const RemotionRoot = () => {
   return (
     <>
+      {/* ── June 28 Webinar Social Reel (9:16) ── */}
+      <Composition
+        id="WebinarReel"
+        component={WebinarReel}
+        durationInFrames={DURATION_FRAMES}
+        fps={FPS}
+        width={1080}
+        height={1920}
+      />
+
       {/* ── 16:9 Widescreen Brand & Homepage Videos ── */}
       <Composition
         id="FederalQuestionsVideo"
@@ -163,6 +186,9 @@ export const RemotionRoot = () => {
         fps={FPS}
         width={1080}
         height={1920}
+        calculateMetadata={({props}) => ({
+          durationInFrames: Math.round(dynamicScriptReelDurationSec(props) * FPS),
+        })}
       />
     </>
   );

@@ -85,3 +85,23 @@ The Video Generator calculates exact estimated costs in real-time as the creator
 - `POST /api/voices/preview` — Generate on-the-fly audio preview for any selected voice and script text.
 - `POST /api/voices/clone` — Clone Mike Zaino's 3-minute recording into an ElevenLabs voice profile.
 - `POST /api/videos/script-validate` — Algorithmic and LLM pacing estimation with auto-generated Hyperframe timestamps.
+
+---
+
+## 6. Render Pipeline (MVP 1) — Production
+
+**Flow:** `/videos` → *Render & Replace* → `POST /api/videos/render` (Vercel) → proxied to the Railway render service → ElevenLabs narration (or existing `audio_url`) → `npx remotion render <composition>` → upload to Supabase Storage `videos/renders/` → `videos.video_url` + `status='ready'` patched → UI polls `GET /api/videos/render/status?job=` every 2s.
+
+**Config:** Vercel needs `RENDER_SERVICE_URL`, `RENDER_SERVICE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ELEVENLABS_API_KEY`. Railway needs `RENDER_SERVICE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ELEVENLABS_API_KEY`, optional `APP_URL`. No key is baked into the code — a missing variable fails loudly.
+
+**Invariants (2026-10-31):**
+- The composition allowlists in `render-service/server.ts` and `App/src/app/api/videos/render/route.ts` must match the `<Composition id>` entries in `remotion/src/Root.tsx` (15 today, including `WebinarReel`).
+- `DynamicScriptReel` length is computed by `calculateMetadata` from the sum of scene durations, so a 35s script renders a 35s file (previously always 90s).
+- `videos.status` only accepts `draft | generating | ready | failed`; the render service writes `ready`. A failed DB patch fails the job instead of reporting success.
+
+**Local smoke test (no API keys needed):**
+```bash
+cd remotion && npm ci
+npx remotion render src/index.tsx DynamicScriptReel out/smoke.mp4 \
+  --codec=h264 --pixel-format=yuv420p --props=out/props_test.json
+```

@@ -48,10 +48,23 @@ if (!ELEVENLABS_API_KEY) {
 
 const REMOTION_PROJECT = path.resolve(__dirname, '..', 'remotion')
 
+// Must match the <Composition id="..."> entries registered in remotion/src/Root.tsx
 const ALLOWED_COMPOSITIONS = [
-  'DynamicScriptReel', 'PostalRetirementReel', 'FegliShockReel',
-  'PartnerSpotlightReel', 'WhyFedSafeReel', 'DidYouKnowReel',
-  'WebinarReel', 'WhoWeAreVideo', 'FederalQuestionsVideo',
+  'DynamicScriptReel',
+  'PostalRetirementReel',
+  'FegliShockReel',
+  'FersSupplementReel',
+  'TspMistakesReel',
+  'SurvivorBenefitReel',
+  'FehbFiveYearRuleReel',
+  'HighThreePensionReel',
+  'MilitaryBuybackReel',
+  'PartnerSpotlightReel',
+  'WhyFedSafeReel',
+  'DidYouKnowReel',
+  'WebinarReel',
+  'WhoWeAreVideo',
+  'FederalQuestionsVideo',
 ]
 
 // ── Auth Middleware ──
@@ -264,6 +277,10 @@ async function buildCompositionProps(video: any, narrationFile: string | null): 
 
   const meta = video.metadata || {}
 
+  // Composition length must follow the scenes, not the nominal duration_sec
+  const totalSceneSec = scenes.reduce((sum, s) => sum + (Number(s.durationSec) || 0), 0)
+  const durationSec = totalSceneSec > 0 ? Math.round(totalSceneSec * 10) / 10 : (video.duration_sec || 35)
+
   return {
     title: video.title || 'Federal Retirement Brief',
     badgeText: 'FEDERAL RETIREMENT',
@@ -273,7 +290,7 @@ async function buildCompositionProps(video: any, narrationFile: string | null): 
     ctaPhone,
     ctaWebsite,
     scenes,
-    durationSec: video.duration_sec || 35,
+    durationSec,
     showShieldLogo: meta.show_shield_logo !== false,
     showSamBadge: Boolean(meta.show_sam_badge),
     showDoubleLogo: Boolean(meta.show_double_logo),
@@ -412,13 +429,17 @@ async function runRenderJob(jobId: string) {
         .from('videos')
         .update({
           video_url: publicUrl,
-          status: 'rendered',
-          rendered_at: new Date().toISOString(),
+          // videos.status CHECK allows draft | generating | ready | failed
+          status: 'ready',
+          mod_by: 'render-service',
         })
         .eq('id', job.video_id)
 
-      if (patchError) console.error('[Render] DB patch error:', patchError.message)
+      // A failed patch means the render is orphaned in Storage — surface it as a job error
+      if (patchError) throw new Error(`DB patch failed: ${patchError.message}`)
       job.video_url = publicUrl
+    } else {
+      throw new Error('Could not resolve public URL for rendered video')
     }
 
     job.status = 'done'
