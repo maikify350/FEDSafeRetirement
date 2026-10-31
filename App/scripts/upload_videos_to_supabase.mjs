@@ -14,7 +14,11 @@ if (fs.existsSync(envPath)) {
 }
 
 const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL || 'https://gqarlkfmpgaotbezpkbs.supabase.co'
-const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxYXJsa2ZtcGdhb3RiZXpwa2JzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTA2NDYzNCwiZXhwIjoyMDkwNjQwNjM0fQ.N8TxFsnqnGUkMK_qmvATDSs-kyneci8ULziUHzpOwq8'
+const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY
+if (!serviceKey) {
+  console.error('SUPABASE_SERVICE_ROLE_KEY missing from App/.env')
+  process.exit(1)
+}
 
 console.log('Supabase URL:', supabaseUrl)
 console.log('Service key exists:', Boolean(serviceKey))

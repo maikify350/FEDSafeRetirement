@@ -111,7 +111,9 @@ async function patchVideoUrl(videoId: string, videoUrl: string) {
 
   const { error } = await admin
     .from('videos')
-    .update({ video_url: videoUrl, mod_dt: new Date().toISOString() })
+
+    // mod_dt/version_no are bumped by trg_videos_mod_dt; status must satisfy the CHECK constraint
+    .update({ video_url: videoUrl, status: 'ready', mod_by: 'render-service' })
     .eq('id', videoId)
 
   if (error) throw new Error(error.message)
@@ -421,6 +423,10 @@ async function buildCompositionProps(video: any, narrationFile: string | null, c
   // Logo settings from metadata
   const meta = video.metadata || {}
 
+  // Composition length must follow the scenes, not the nominal duration_sec
+  const totalSceneSec = scenes.reduce((sum, s) => sum + (Number(s.durationSec) || 0), 0)
+  const durationSec = totalSceneSec > 0 ? Math.round(totalSceneSec * 10) / 10 : (video.duration_sec || 35)
+
   return {
     title: video.title || 'Federal Retirement Brief',
     badgeText: 'FEDERAL RETIREMENT',  // Always short — batch_name is too long for a badge
@@ -430,7 +436,7 @@ async function buildCompositionProps(video: any, narrationFile: string | null, c
     ctaPhone,
     ctaWebsite,
     scenes,
-    durationSec: video.duration_sec || 35,
+    durationSec,
 
     // Logo toggles — only show what the user explicitly enabled
     showShieldLogo: meta.show_shield_logo !== false,
