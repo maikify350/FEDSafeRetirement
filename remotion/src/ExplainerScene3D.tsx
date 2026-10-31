@@ -12,6 +12,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { interpolate, useCurrentFrame, useVideoConfig, AbsoluteFill, Img, staticFile } from "remotion";
 import type { ExplainerScene, CameraMotion } from "./ExplainerReel";
+import { LightSweep } from "./components/LightSweep";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
@@ -179,7 +180,10 @@ const BackdropDrift = ({ frames, children }: { frames: number; children: React.R
 /** The hero travels along the track over the shot (≈ 3 units), independent of the camera path. */
 const HeroTravel = ({ frames, children }: { frames: number; children: React.ReactNode }) => {
   const frame = useCurrentFrame();
-  const x = interpolate(frame, [0, frames], [-3.2, 3.2], clamp);
+  // Constant speed (0.55 units/s) so long shots travel further, clamped to stay in frame.
+  const { fps } = useVideoConfig();
+  const half = Math.min(5.5, (frames / fps) * 0.9 * 0.5);
+  const x = interpolate(frame, [0, frames], [-half, half], clamp);
   return <group position={[x, 0, 0]}>{children}</group>;
 };
 
@@ -204,6 +208,7 @@ export const ExplainerScene3D = ({ scene, frames, accent }: { scene: ExplainerSc
           </Suspense>
         </HeroTravel>
       </ThreeCanvas>
+      <LightSweep frames={frames} strength={0.16} />
     </AbsoluteFill>
   );
 };

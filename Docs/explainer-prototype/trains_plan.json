@@ -1,8 +1,8 @@
 {
   "brief": {
     "title": "The Revolution of Trains",
-    "topic": "The evolution of trains — from Trevithick and Stephenson's Rocket, through diesel and electrification, to Japan's Shinkansen and the L0 maglev. Each leap driven by a bottleneck: brittle rails, hungry boilers, crowded tracks.",
-    "audience": "Curious general viewers 25–55 who watch history and engineering explainers",
+    "topic": "The evolution of trains \u2014 from Trevithick and Stephenson's Rocket, through diesel and electrification, to Japan's Shinkansen and the L0 maglev. Each leap driven by a bottleneck: brittle rails, hungry boilers, crowded tracks.",
+    "audience": "Curious general viewers 25\u201355 who watch history and engineering explainers",
     "style": "documentary",
     "tone": "Authoritative, warm, cinematic",
     "durationSec": 300,
@@ -23,7 +23,7 @@
     "1840s railway mania: ~6,000 miles of UK track in a decade; railway time standardised from 1840",
     "1869 Promontory Summit golden spike completes the US transcontinental railroad",
     "1938 LNER Mallard sets the 126 mph steam record (still standing)",
-    "1934 Pioneer Zephyr Denver–Chicago nonstop dawn-to-dusk run",
+    "1934 Pioneer Zephyr Denver\u2013Chicago nonstop dawn-to-dusk run",
     "1964 Tokaido Shinkansen opens 1 Oct at 210 km/h, 100M passengers by 1967",
     "2007 TGV V150 sets 574.8 km/h conventional rail record",
     "2015 L0 Series maglev reaches 603 km/h; Shinkansen: >10 billion passengers, zero on-board fatalities"
@@ -33,7 +33,7 @@
       "title": "The fastest thing on land",
       "start_sec": 0,
       "end_sec": 30,
-      "beat": "Hook: a horse in 1829 vs Tokyo–Osaka today; the bottleneck thesis"
+      "beat": "Hook: a horse in 1829 vs Tokyo\u2013Osaka today; the bottleneck thesis"
     },
     {
       "title": "The age of steam",
@@ -45,7 +45,7 @@
       "title": "The world shrinks",
       "start_sec": 75,
       "end_sec": 120,
-      "beat": "Liverpool–Manchester 1830, railway mania, standard time, golden spike 1869"
+      "beat": "Liverpool\u2013Manchester 1830, railway mania, standard time, golden spike 1869"
     },
     {
       "title": "The race for speed",
@@ -89,7 +89,7 @@
       "visual_prompt": "Dawn over an empty valley, a single early steam locomotive on fresh iron rails, white plume rising, long shadows, poster-flat shapes",
       "camera_motion": "orbit",
       "transition": "fade",
-      "engine_prompt": "[Hyperframe 1 · 0.0s–8.0s · fade · orbit]\nScene image: Dawn over an empty valley, a single early steam locomotive on fresh iron rails, white plume rising, long shadows, poster-flat shapes. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"The Revolution of Trains\"",
+      "engine_prompt": "[Hyperframe 1 \u00b7 0.0s\u20138.0s \u00b7 fade \u00b7 orbit]\nScene image: Dawn over an empty valley, a single early steam locomotive on fresh iron rails, white plume rising, long shadows, poster-flat shapes. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"The Revolution of Trains\"",
       "sound_design": "low wind, distant whistle",
       "animation_mode": "3d_threejs",
       "scene_image": "explainer/trains/01_rocket_hero.png",
@@ -110,11 +110,11 @@
       "timestamp_start": 8,
       "timestamp_end": 18,
       "narration": "Today a train leaves Tokyo every few minutes and reaches Osaka, five hundred kilometres away, in two hours and fifteen minutes.",
-      "onscreen_text": "Tokyo → Osaka: 2h 15m",
+      "onscreen_text": "Tokyo \u2192 Osaka: 2h 15m",
       "visual_prompt": "A white bullet train streaking past a neon city skyline at dusk, blue stripe, motion blur on the platform lights",
       "camera_motion": "push_forward",
       "transition": "dissolve",
-      "engine_prompt": "[Hyperframe 2 · 8.0s–18.0s · dissolve · push_forward]\nScene image: A white bullet train streaking past a neon city skyline at dusk, blue stripe, motion blur on the platform lights. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Tokyo → Osaka: 2h 15m\"",
+      "engine_prompt": "[Hyperframe 2 \u00b7 8.0s\u201318.0s \u00b7 dissolve \u00b7 push_forward]\nScene image: A white bullet train streaking past a neon city skyline at dusk, blue stripe, motion blur on the platform lights. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Tokyo \u2192 Osaka: 2h 15m\"",
       "sound_design": "electric hum, platform chime",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/02_shinkansen_today.png",
@@ -129,7 +129,7 @@
       "visual_prompt": "A horizontal timeline ribbon with six glowing year markers from 1804 to 2015 on a dark slate background",
       "camera_motion": "push_forward",
       "transition": "dissolve",
-      "engine_prompt": "[Hyperframe 3 · 18.0s–30.0s · dissolve · push_forward]\nScene image: A horizontal timeline ribbon with six glowing year markers from 1804 to 2015 on a dark slate background. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Every leap began as a bottleneck\"",
+      "engine_prompt": "[Hyperframe 3 \u00b7 18.0s\u201330.0s \u00b7 dissolve \u00b7 push_forward]\nScene image: A horizontal timeline ribbon with six glowing year markers from 1804 to 2015 on a dark slate background. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Every leap began as a bottleneck\"",
       "sound_design": "soft synth pad",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/03_timeline.png"
@@ -143,7 +143,7 @@
       "visual_prompt": "A horse-drawn coal wagon stuck on a muddy sepia road between low hills, overcast, period woodcut feel",
       "camera_motion": "pan_slow_right",
       "transition": "slide_left",
-      "engine_prompt": "[Hyperframe 4 · 30.0s–40.0s · slide_left · pan_slow_right]\nScene image: A horse-drawn coal wagon stuck on a muddy sepia road between low hills, overcast, period woodcut feel. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Fifty miles. One week.\"",
+      "engine_prompt": "[Hyperframe 4 \u00b7 30.0s\u201340.0s \u00b7 slide_left \u00b7 pan_slow_right]\nScene image: A horse-drawn coal wagon stuck on a muddy sepia road between low hills, overcast, period woodcut feel. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Fifty miles. One week.\"",
       "sound_design": "hooves in mud, creaking wood",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/04_horse_wagon.png",
@@ -158,7 +158,7 @@
       "visual_prompt": "A squat early high-pressure steam engine on wooden tramway rails outside a Welsh ironworks, sepia tones, smoke and sparks",
       "camera_motion": "push_forward",
       "transition": "zoom_in",
-      "engine_prompt": "[Hyperframe 5 · 40.0s–50.0s · zoom_in · push_forward]\nScene image: A squat early high-pressure steam engine on wooden tramway rails outside a Welsh ironworks, sepia tones, smoke and sparks. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"First steam locomotive\"",
+      "engine_prompt": "[Hyperframe 5 \u00b7 40.0s\u201350.0s \u00b7 zoom_in \u00b7 push_forward]\nScene image: A squat early high-pressure steam engine on wooden tramway rails outside a Welsh ironworks, sepia tones, smoke and sparks. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"First steam locomotive\"",
       "sound_design": "hissing steam, clanking iron",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/05_trevithick.png",
@@ -173,11 +173,11 @@
       "visual_prompt": "Close on brittle cast iron rails splitting with red fracture lines under a heavy wheel, grey slate palette, stark graphic look",
       "camera_motion": "static",
       "transition": "dissolve",
-      "engine_prompt": "[Hyperframe 6 · 50.0s–62.0s · dissolve · static]\nScene image: Close on brittle cast iron rails splitting with red fracture lines under a heavy wheel, grey slate palette, stark graphic look. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"The bottleneck: brittle rails\"",
+      "engine_prompt": "[Hyperframe 6 \u00b7 50.0s\u201362.0s \u00b7 dissolve \u00b7 static]\nScene image: Close on brittle cast iron rails splitting with red fracture lines under a heavy wheel, grey slate palette, stark graphic look. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"The bottleneck: brittle rails\"",
       "sound_design": "metallic crack, silence",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/06_cracked_rails.png",
-      "era": "1804–1825"
+      "era": "1804\u20131825"
     },
     {
       "order": 7,
@@ -188,7 +188,7 @@
       "visual_prompt": "A yellow and black early locomotive racing along a trial track past a cheering crowd at the Rainhill Trials, warm dawn light",
       "camera_motion": "orbit",
       "transition": "zoom_in",
-      "engine_prompt": "[Hyperframe 7 · 62.0s–75.0s · zoom_in · orbit]\nScene image: A yellow and black early locomotive racing along a trial track past a cheering crowd at the Rainhill Trials, warm dawn light. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Rocket: 30 mph\"",
+      "engine_prompt": "[Hyperframe 7 \u00b7 62.0s\u201375.0s \u00b7 zoom_in \u00b7 orbit]\nScene image: A yellow and black early locomotive racing along a trial track past a cheering crowd at the Rainhill Trials, warm dawn light. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Rocket: 30 mph\"",
       "sound_design": "crowd cheer, chuffing",
       "animation_mode": "3d_threejs",
       "scene_image": "explainer/trains/01_rocket_hero.png",
@@ -213,7 +213,7 @@
       "visual_prompt": "A grand covered railway station with iron columns and a golden roof, passengers boarding the first intercity train",
       "camera_motion": "tilt_up",
       "transition": "slide_left",
-      "engine_prompt": "[Hyperframe 8 · 75.0s–85.0s · slide_left · tilt_up]\nScene image: A grand covered railway station with iron columns and a golden roof, passengers boarding the first intercity train. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Faster than a horse\"",
+      "engine_prompt": "[Hyperframe 8 \u00b7 75.0s\u201385.0s \u00b7 slide_left \u00b7 tilt_up]\nScene image: A grand covered railway station with iron columns and a golden roof, passengers boarding the first intercity train. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Faster than a horse\"",
       "sound_design": "station bustle, bell",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/07_station.png",
@@ -228,7 +228,7 @@
       "visual_prompt": "An abstract network map lighting up node by node as rail lines spread across an island, mint and teal palette",
       "camera_motion": "pan_slow_right",
       "transition": "dissolve",
-      "engine_prompt": "[Hyperframe 9 · 85.0s–97.0s · dissolve · pan_slow_right]\nScene image: An abstract network map lighting up node by node as rail lines spread across an island, mint and teal palette. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"6,000 miles in ten years\"",
+      "engine_prompt": "[Hyperframe 9 \u00b7 85.0s\u201397.0s \u00b7 dissolve \u00b7 pan_slow_right]\nScene image: An abstract network map lighting up node by node as rail lines spread across an island, mint and teal palette. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"6,000 miles in ten years\"",
       "sound_design": "rising ticking rhythm",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/08_map.png",
@@ -243,7 +243,7 @@
       "visual_prompt": "Five station clocks in a row each showing a different time, then snapping into agreement, deep night blue palette",
       "camera_motion": "push_forward",
       "transition": "glitch",
-      "engine_prompt": "[Hyperframe 10 · 97.0s–110.0s · glitch · push_forward]\nScene image: Five station clocks in a row each showing a different time, then snapping into agreement, deep night blue palette. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Railways invented standard time\"",
+      "engine_prompt": "[Hyperframe 10 \u00b7 97.0s\u2013110.0s \u00b7 glitch \u00b7 push_forward]\nScene image: Five station clocks in a row each showing a different time, then snapping into agreement, deep night blue palette. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Railways invented standard time\"",
       "sound_design": "clock ticks aligning",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/09_clocks.png",
@@ -254,11 +254,11 @@
       "timestamp_start": 110,
       "timestamp_end": 120,
       "narration": "In 1869, a golden spike in Utah joined America's coasts. A journey of six months by wagon became six days by rail.",
-      "onscreen_text": "Six months → six days",
+      "onscreen_text": "Six months \u2192 six days",
       "visual_prompt": "A golden spike driven into the final rail joint in a sunlit Utah desert, two locomotives nose to nose, hills behind",
       "camera_motion": "static",
       "transition": "dissolve",
-      "engine_prompt": "[Hyperframe 11 · 110.0s–120.0s · dissolve · static]\nScene image: A golden spike driven into the final rail joint in a sunlit Utah desert, two locomotives nose to nose, hills behind. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Six months → six days\"",
+      "engine_prompt": "[Hyperframe 11 \u00b7 110.0s\u2013120.0s \u00b7 dissolve \u00b7 static]\nScene image: A golden spike driven into the final rail joint in a sunlit Utah desert, two locomotives nose to nose, hills behind. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Six months \u2192 six days\"",
       "sound_design": "hammer strike, cheer",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/10_golden_spike.png",
@@ -273,7 +273,7 @@
       "visual_prompt": "A massive express steam locomotive with towering driving wheels beside a city skyline, steel blue palette, heroic low angle",
       "camera_motion": "orbit",
       "transition": "zoom_in",
-      "engine_prompt": "[Hyperframe 12 · 120.0s–132.0s · zoom_in · orbit]\nScene image: A massive express steam locomotive with towering driving wheels beside a city skyline, steel blue palette, heroic low angle. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"The race for speed\"",
+      "engine_prompt": "[Hyperframe 12 \u00b7 120.0s\u2013132.0s \u00b7 zoom_in \u00b7 orbit]\nScene image: A massive express steam locomotive with towering driving wheels beside a city skyline, steel blue palette, heroic low angle. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"The race for speed\"",
       "sound_design": "deep piston rhythm",
       "animation_mode": "3d_threejs",
       "scene_image": "explainer/trains/11_big_steam.png",
@@ -298,7 +298,7 @@
       "visual_prompt": "A streamlined teal art deco steam locomotive at full speed on a straight line, speed lines across green countryside",
       "camera_motion": "push_forward",
       "transition": "slide_left",
-      "engine_prompt": "[Hyperframe 13 · 132.0s–145.0s · slide_left · push_forward]\nScene image: A streamlined teal art deco steam locomotive at full speed on a straight line, speed lines across green countryside. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Mallard: 126 mph\"",
+      "engine_prompt": "[Hyperframe 13 \u00b7 132.0s\u2013145.0s \u00b7 slide_left \u00b7 push_forward]\nScene image: A streamlined teal art deco steam locomotive at full speed on a straight line, speed lines across green countryside. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Mallard: 126 mph\"",
       "sound_design": "rushing wind, whistle",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/12_mallard.png",
@@ -313,7 +313,7 @@
       "visual_prompt": "Inside a firebox, glowing coals filling the frame, a shovel tossing in more, orange embers on black",
       "camera_motion": "tilt_up",
       "transition": "dissolve",
-      "engine_prompt": "[Hyperframe 14 · 145.0s–160.0s · dissolve · tilt_up]\nScene image: Inside a firebox, glowing coals filling the frame, a shovel tossing in more, orange embers on black. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"The bottleneck: the engine\"",
+      "engine_prompt": "[Hyperframe 14 \u00b7 145.0s\u2013160.0s \u00b7 dissolve \u00b7 tilt_up]\nScene image: Inside a firebox, glowing coals filling the frame, a shovel tossing in more, orange embers on black. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"The bottleneck: the engine\"",
       "sound_design": "roaring fire, shovel scrape",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/13_coal_fire.png",
@@ -328,7 +328,7 @@
       "visual_prompt": "A gleaming stainless steel streamlined diesel train crossing the plains at sunrise, long horizon, art deco styling",
       "camera_motion": "pan_slow_right",
       "transition": "zoom_in",
-      "engine_prompt": "[Hyperframe 15 · 160.0s–172.0s · zoom_in · pan_slow_right]\nScene image: A gleaming stainless steel streamlined diesel train crossing the plains at sunrise, long horizon, art deco styling. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Zephyr: 1,000 miles nonstop\"",
+      "engine_prompt": "[Hyperframe 15 \u00b7 160.0s\u2013172.0s \u00b7 zoom_in \u00b7 pan_slow_right]\nScene image: A gleaming stainless steel streamlined diesel train crossing the plains at sunrise, long horizon, art deco styling. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Zephyr: 1,000 miles nonstop\"",
       "sound_design": "diesel drone, horn",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/14_zephyr.png",
@@ -343,7 +343,7 @@
       "visual_prompt": "A rail yard at dusk with three modern diesel locomotives lined up and a cold steam engine fading in the background",
       "camera_motion": "static",
       "transition": "dissolve",
-      "engine_prompt": "[Hyperframe 16 · 172.0s–185.0s · dissolve · static]\nScene image: A rail yard at dusk with three modern diesel locomotives lined up and a cold steam engine fading in the background. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Steam retires\"",
+      "engine_prompt": "[Hyperframe 16 \u00b7 172.0s\u2013185.0s \u00b7 dissolve \u00b7 static]\nScene image: A rail yard at dusk with three modern diesel locomotives lined up and a cold steam engine fading in the background. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Steam retires\"",
       "sound_design": "idling engines",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/15_diesel_yard.png",
@@ -358,7 +358,7 @@
       "visual_prompt": "Overhead catenary masts and wires receding to the horizon above electrified track, teal evening light, graphic repetition",
       "camera_motion": "push_forward",
       "transition": "slide_left",
-      "engine_prompt": "[Hyperframe 17 · 185.0s–200.0s · slide_left · push_forward]\nScene image: Overhead catenary masts and wires receding to the horizon above electrified track, teal evening light, graphic repetition. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Power from the wire\"",
+      "engine_prompt": "[Hyperframe 17 \u00b7 185.0s\u2013200.0s \u00b7 slide_left \u00b7 push_forward]\nScene image: Overhead catenary masts and wires receding to the horizon above electrified track, teal evening light, graphic repetition. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Power from the wire\"",
       "sound_design": "electric crackle, smooth acceleration",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/16_catenary.png",
@@ -373,7 +373,7 @@
       "visual_prompt": "A crowded night time Tokyo station with packed narrow gauge commuter trains nose to tail under neon signs",
       "camera_motion": "tilt_up",
       "transition": "dissolve",
-      "engine_prompt": "[Hyperframe 18 · 200.0s–212.0s · dissolve · tilt_up]\nScene image: A crowded night time Tokyo station with packed narrow gauge commuter trains nose to tail under neon signs. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"The bottleneck: capacity\"",
+      "engine_prompt": "[Hyperframe 18 \u00b7 200.0s\u2013212.0s \u00b7 dissolve \u00b7 tilt_up]\nScene image: A crowded night time Tokyo station with packed narrow gauge commuter trains nose to tail under neon signs. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"The bottleneck: capacity\"",
       "sound_design": "crowd murmur, announcements",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/17_crowded_tokyo.png",
@@ -388,11 +388,11 @@
       "visual_prompt": "Construction cranes raising a dedicated elevated high speed line across sunlit countryside, fresh concrete viaducts",
       "camera_motion": "pan_slow_right",
       "transition": "slide_left",
-      "engine_prompt": "[Hyperframe 19 · 212.0s–225.0s · slide_left · pan_slow_right]\nScene image: Construction cranes raising a dedicated elevated high speed line across sunlit countryside, fresh concrete viaducts. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"A railway built only for speed\"",
+      "engine_prompt": "[Hyperframe 19 \u00b7 212.0s\u2013225.0s \u00b7 slide_left \u00b7 pan_slow_right]\nScene image: Construction cranes raising a dedicated elevated high speed line across sunlit countryside, fresh concrete viaducts. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"A railway built only for speed\"",
       "sound_design": "construction clatter, wind",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/18_construction.png",
-      "era": "1959–1964"
+      "era": "1959\u20131964"
     },
     {
       "order": 20,
@@ -403,7 +403,7 @@
       "visual_prompt": "The original blue and white bullet train leaving a platform with Mount Fuji behind at dawn, flags and crowd, pristine",
       "camera_motion": "orbit",
       "transition": "zoom_in",
-      "engine_prompt": "[Hyperframe 20 · 225.0s–237.0s · zoom_in · orbit]\nScene image: The original blue and white bullet train leaving a platform with Mount Fuji behind at dawn, flags and crowd, pristine. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Shinkansen: 210 km/h\"",
+      "engine_prompt": "[Hyperframe 20 \u00b7 225.0s\u2013237.0s \u00b7 zoom_in \u00b7 orbit]\nScene image: The original blue and white bullet train leaving a platform with Mount Fuji behind at dawn, flags and crowd, pristine. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Shinkansen: 210 km/h\"",
       "sound_design": "departure chime, rising whoosh",
       "animation_mode": "3d_threejs",
       "scene_image": "explainer/trains/19_shinkansen_1964.png",
@@ -428,7 +428,7 @@
       "visual_prompt": "A grid of dozens of stylised passenger silhouettes filling the frame in a mint palette, counting upward",
       "camera_motion": "static",
       "transition": "dissolve",
-      "engine_prompt": "[Hyperframe 21 · 237.0s–245.0s · dissolve · static]\nScene image: A grid of dozens of stylised passenger silhouettes filling the frame in a mint palette, counting upward. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"100 million passengers\"",
+      "engine_prompt": "[Hyperframe 21 \u00b7 237.0s\u2013245.0s \u00b7 dissolve \u00b7 static]\nScene image: A grid of dozens of stylised passenger silhouettes filling the frame in a mint palette, counting upward. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"100 million passengers\"",
       "sound_design": "soft crowd, counter ticks",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/20_passengers.png",
@@ -443,11 +443,11 @@
       "visual_prompt": "A silver and orange French high speed train blasting through rolling hills, speed blur, steel blue sky",
       "camera_motion": "push_forward",
       "transition": "slide_left",
-      "engine_prompt": "[Hyperframe 22 · 245.0s–255.0s · slide_left · push_forward]\nScene image: A silver and orange French high speed train blasting through rolling hills, speed blur, steel blue sky. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"TGV: 574 km/h record\"",
+      "engine_prompt": "[Hyperframe 22 \u00b7 245.0s\u2013255.0s \u00b7 slide_left \u00b7 push_forward]\nScene image: A silver and orange French high speed train blasting through rolling hills, speed blur, steel blue sky. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"TGV: 574 km/h record\"",
       "sound_design": "high pitched whine, sonic rush",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/21_tgv.png",
-      "era": "1981–2007"
+      "era": "1981\u20132007"
     },
     {
       "order": 23,
@@ -458,7 +458,7 @@
       "visual_prompt": "A modern green striped bullet train gliding past a teal city skyline, calm and precise, clean composition",
       "camera_motion": "tilt_up",
       "transition": "dissolve",
-      "engine_prompt": "[Hyperframe 23 · 255.0s–268.0s · dissolve · tilt_up]\nScene image: A modern green striped bullet train gliding past a teal city skyline, calm and precise, clean composition. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Ten billion passengers. Zero fatalities.\"",
+      "engine_prompt": "[Hyperframe 23 \u00b7 255.0s\u2013268.0s \u00b7 dissolve \u00b7 tilt_up]\nScene image: A modern green striped bullet train gliding past a teal city skyline, calm and precise, clean composition. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Ten billion passengers. Zero fatalities.\"",
       "sound_design": "calm hum, clock tick",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/22_shinkansen_now.png",
@@ -472,8 +472,8 @@
       "onscreen_text": "Maglev: 603 km/h",
       "visual_prompt": "A white maglev train hovering on a glowing blue guideway through a night city, magnetic glow beneath, futuristic",
       "camera_motion": "orbit",
-      "transition": "glitch",
-      "engine_prompt": "[Hyperframe 24 · 268.0s–280.0s · glitch · orbit]\nScene image: A white maglev train hovering on a glowing blue guideway through a night city, magnetic glow beneath, futuristic. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Maglev: 603 km/h\"",
+      "transition": "zoom_in",
+      "engine_prompt": "[Hyperframe 24 \u00b7 268.0s\u2013280.0s \u00b7 zoom_in \u00b7 orbit]\nScene image: A white maglev train hovering on a glowing blue guideway through a night city, magnetic glow beneath, futuristic. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Maglev: 603 km/h\"",
       "sound_design": "electromagnetic hum, pulse",
       "animation_mode": "3d_threejs",
       "scene_image": "explainer/trains/23_maglev.png",
@@ -498,11 +498,11 @@
       "visual_prompt": "The timeline ribbon returns with seven markers now lit, warm dawn palette, slowly drifting right",
       "camera_motion": "push_forward",
       "transition": "dissolve",
-      "engine_prompt": "[Hyperframe 25 · 280.0s–290.0s · dissolve · push_forward]\nScene image: The timeline ribbon returns with seven markers now lit, warm dawn palette, slowly drifting right. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Limits are the starting line\"",
+      "engine_prompt": "[Hyperframe 25 \u00b7 280.0s\u2013290.0s \u00b7 dissolve \u00b7 push_forward]\nScene image: The timeline ribbon returns with seven markers now lit, warm dawn palette, slowly drifting right. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Limits are the starting line\"",
       "sound_design": "swelling pad",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/24_timeline_end.png",
-      "era": "1804–2027"
+      "era": "1804\u20132027"
     },
     {
       "order": 26,
@@ -513,7 +513,7 @@
       "visual_prompt": "Rails running straight into a huge rising sun on the horizon, golden light, empty track inviting the viewer forward",
       "camera_motion": "static",
       "transition": "fade",
-      "engine_prompt": "[Hyperframe 26 · 290.0s–300.0s · fade · static]\nScene image: Rails running straight into a huge rising sun on the horizon, golden light, empty track inviting the viewer forward. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Subscribe for the next story\"",
+      "engine_prompt": "[Hyperframe 26 \u00b7 290.0s\u2013300.0s \u00b7 fade \u00b7 static]\nScene image: Rails running straight into a huge rising sun on the horizon, golden light, empty track inviting the viewer forward. One consistent locomotive silhouette per era (Rocket, express steam, streamliner, Shinkansen, maglev), always moving left to right. low golden hour sun or night neon, strong silhouettes, desaturated teal, slate and amber with one accent colour per era, 35mm equivalent, wide establishing shots, shallow depth only on hero shots.\nKinetic text: \"Subscribe for the next story\"",
       "sound_design": "rising chord, resolve",
       "animation_mode": "2d_kinetic",
       "scene_image": "explainer/trains/25_horizon.png"
@@ -549,7 +549,7 @@
       "#explainer"
     ],
     "thumbnail_concepts": [
-      "Split frame: Rocket silhouette left, maglev right, bold '1829 → 603 km/h'",
+      "Split frame: Rocket silhouette left, maglev right, bold '1829 \u2192 603 km/h'",
       "Bullet train nose breaking through a cracked cast iron rail",
       "Horse vs bullet train with a giant year badge"
     ],
@@ -570,12 +570,12 @@
     {
       "id": "runtime_cap",
       "level": "pass",
-      "message": "Runtime 300s fits YouTube (long form) (≤ 1800s)."
+      "message": "Runtime 300s fits YouTube (long form) (\u2264 1800s)."
     },
     {
       "id": "word_budget",
       "level": "pass",
-      "message": "Script 611 words ≈ 237s spoken, within budget (681)."
+      "message": "Script 611 words \u2248 237s spoken, within budget (681)."
     },
     {
       "id": "coverage",
@@ -600,7 +600,7 @@
     {
       "id": "onscreen_len",
       "level": "pass",
-      "message": "On-screen text is ≤ 6 words everywhere."
+      "message": "On-screen text is \u2264 6 words everywhere."
     },
     {
       "id": "text_in_frame",

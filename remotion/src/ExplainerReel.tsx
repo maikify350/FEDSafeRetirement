@@ -21,6 +21,7 @@ import {
 import type { CalculateMetadataFunction } from "remotion";
 import { palette } from "./components/SharedComponents";
 import { ExplainerScene3D } from "./ExplainerScene3D";
+import { LightSweep } from "./components/LightSweep";
 
 export const EXPLAINER_FPS = 30;
 
@@ -71,28 +72,38 @@ export interface ExplainerReelProps {
 }
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
+
+/** Orientation from the aspect ratio and a unit scale so half-size drafts keep the final layout. */
+const useLayout = () => {
+  const { width, height } = useVideoConfig();
+  const vertical = height > width;
+  const u = vertical ? width / 1080 : width / 1920;
+  return { vertical, u, width, height };
+};
 const ease = (t: number) => 1 - Math.pow(1 - t, 3);
 
 /** CSS transform for a 2D camera move over the scene duration. */
-export const cameraTransform2D = (motion: CameraMotion, p: number): string => {
-  // Amplitudes are sized for 8–15 s long-form shots: every move must stay visibly alive for the
-  // whole shot (check_render.py fails anything frozen > 1.2 s), so even "static" drifts slowly.
+export const cameraTransform2D = (motion: CameraMotion, p: number, durationSec = 6): string => {
+  // Moves are rate-based: the amplitude grows with shot length so per-frame motion stays constant
+  // (check_render.py fails anything frozen > 1.2 s). k = 1 at 6 s, capped at 2.4 (≈ 15 s shots).
+  const k = Math.min(2.4, Math.max(1, durationSec / 6));
+  const zoomTo = (from: number, to: number) => interpolate(p, [0, 1], [from, Math.min(1.75, from + (to - from) * k)]);
   switch (motion) {
-    case "pan_slow_right": return `scale(1.28) translateX(${interpolate(p, [0, 1], [9, -9])}%) translateY(${interpolate(p, [0, 1], [1.5, -1.5])}%)`;
+    case "pan_slow_right": return `scale(${1.1 + 0.09 * k}) translateX(${interpolate(p, [0, 1], [4.5 * k, -4.5 * k])}%) translateY(${interpolate(p, [0, 1], [1, -1])}%)`;
     case "push_forward":
-    case "slow_dolly_in": return `scale(${interpolate(p, [0, 1], [1.02, 1.42])}) translateY(${interpolate(p, [0, 1], [0, -2])}%)`;
-    case "dolly_out": return `scale(${interpolate(p, [0, 1], [1.44, 1.04])})`;
+    case "slow_dolly_in": return `scale(${zoomTo(1.02, 1.3)}) translateY(${interpolate(p, [0, 1], [0, -1.5 * k])}%)`;
+    case "dolly_out": return `scale(${interpolate(p, [0, 1], [Math.min(1.75, 1.04 + 0.28 * k), 1.04])})`;
     case "crash_zoom": return `scale(${interpolate(ease(p), [0, 1], [1.0, 1.7])})`;
     case "tilt_up":
-    case "aerial_reveal": return `scale(1.32) translateY(${interpolate(p, [0, 1], [10, -10])}%) translateX(${interpolate(p, [0, 1], [-1.5, 1.5])}%)`;
+    case "aerial_reveal": return `scale(${1.12 + 0.09 * k}) translateY(${interpolate(p, [0, 1], [5 * k, -5 * k])}%) translateX(${interpolate(p, [0, 1], [-1, 1])}%)`;
     case "orbit":
-    case "dynamic_orbit": return `scale(1.3) translateX(${Math.sin(p * Math.PI) * 7}%) translateY(${Math.cos(p * Math.PI) * 3.5}%) rotate(${interpolate(p, [0, 1], [-2, 2])}deg)`;
+    case "dynamic_orbit": return `scale(${1.12 + 0.08 * k}) translateX(${Math.sin(p * Math.PI) * 4 * k}%) translateY(${Math.cos(p * Math.PI) * 2 * k}%) rotate(${interpolate(p, [0, 1], [-1.2 * k, 1.2 * k])}deg)`;
     case "fly_by_left":
-    case "drone_fly_by": return `scale(1.38) translateX(${interpolate(p, [0, 1], [13, -13])}%) translateY(${interpolate(p, [0, 1], [3, -2])}%)`;
+    case "drone_fly_by": return `scale(${1.15 + 0.1 * k}) translateX(${interpolate(p, [0, 1], [6.5 * k, -6.5 * k])}%) translateY(${interpolate(p, [0, 1], [2, -1.5])}%)`;
     case "fly_by_right":
-    case "tracking_shot": return `scale(1.38) translateX(${interpolate(p, [0, 1], [-13, 13])}%)`;
+    case "tracking_shot": return `scale(${1.15 + 0.1 * k}) translateX(${interpolate(p, [0, 1], [-6.5 * k, 6.5 * k])}%)`;
     case "handheld": return `scale(1.14) translate(${Math.sin(p * 31) * 0.8}%, ${Math.cos(p * 23) * 0.6}%)`;
-    default: return `scale(${interpolate(p, [0, 1], [1.04, 1.26])}) translate(${interpolate(p, [0, 1], [2.5, -2.5])}%, ${interpolate(p, [0, 1], [-2, 2])}%)`;
+    default: return `scale(${zoomTo(1.04, 1.18)}) translate(${interpolate(p, [0, 1], [1.5 * k, -1.5 * k])}%, ${interpolate(p, [0, 1], [-1.2 * k, 1.2 * k])}%)`;
   }
 };
 
@@ -114,7 +125,7 @@ const Transitioner = ({ transition, frames, fadeOut, children }: { transition: T
   let transform = "none";
   if (transition === "slide_left") transform = `translateX(${interpolate(ease(p), [0, 1], [8, 0])}%)`;
   if (transition === "zoom_in") transform = `scale(${interpolate(ease(p), [0, 1], [1.12, 1])})`;
-  if (transition === "glitch") transform = `translateX(${p < 1 ? Math.sin(frame * 9) * (1 - p) * 1.5 : 0}%) skewX(${p < 1 ? (1 - p) * 3 : 0}deg)`;
+  if (transition === "glitch") transform = `translateX(${p < 1 ? Math.sin(frame * 9) * (1 - p) * 0.5 : 0}%) skewX(${p < 1 ? (1 - p) * 1.5 : 0}deg)`;
   const opacity = transition === "dissolve" ? Math.min(p, out) : Math.min(interpolate(p, [0, 1], [0, 1]), out);
   return <AbsoluteFill style={{ opacity, transform }}>{children}</AbsoluteFill>;
 };
@@ -126,8 +137,9 @@ const Scene2D = ({ scene, frames }: { scene: ExplainerScene; frames: number }) =
   return (
     <AbsoluteFill style={{ backgroundColor: palette.deepNavy, overflow: "hidden" }}>
       {src && (
-        <Img src={src} style={{ width: "100%", height: "100%", objectFit: "cover", transform: cameraTransform2D(scene.cameraMotion, p), transformOrigin: "center" }} />
+        <Img src={src} style={{ width: "100%", height: "100%", objectFit: "cover", transform: cameraTransform2D(scene.cameraMotion, p, scene.durationSec), transformOrigin: "center" }} />
       )}
+      <LightSweep frames={frames} />
       <AbsoluteFill style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.55) 100%)" }} />
     </AbsoluteFill>
   );
@@ -135,12 +147,11 @@ const Scene2D = ({ scene, frames }: { scene: ExplainerScene; frames: number }) =
 
 const EraBadge = ({ era, accent }: { era: string; accent: string }) => {
   const frame = useCurrentFrame();
-  const { width } = useVideoConfig();
-  const vertical = width < 1200;
+  const { vertical, u } = useLayout();
   const y = interpolate(frame, [0, 14], [-30, 0], { ...clamp, easing: ease });
   const o = interpolate(frame, [0, 12], [0, 1], clamp);
   return (
-    <div style={{ position: "absolute", top: vertical ? 220 : 72, left: vertical ? 60 : 90, transform: `translateY(${y}px)`, opacity: o, padding: "10px 22px", borderRadius: 999, background: accent, color: "#0b1220", fontWeight: 900, fontSize: vertical ? 40 : 34, letterSpacing: 2, fontFamily: "Inter, Arial, sans-serif", boxShadow: "0 10px 30px rgba(0,0,0,.35)" }}>
+    <div style={{ position: "absolute", top: (vertical ? 220 : 72) * u, left: (vertical ? 60 : 90) * u, transform: `translateY(${y * u}px)`, opacity: o, padding: `${10 * u}px ${22 * u}px`, borderRadius: 999, background: accent, color: "#0b1220", fontWeight: 900, fontSize: (vertical ? 40 : 34) * u, letterSpacing: 2 * u, fontFamily: "Inter, Arial, sans-serif", boxShadow: "0 10px 30px rgba(0,0,0,.35)" }}>
       {era}
     </div>
   );
@@ -148,17 +159,16 @@ const EraBadge = ({ era, accent }: { era: string; accent: string }) => {
 
 const OnscreenText = ({ text, accent }: { text: string; accent: string }) => {
   const frame = useCurrentFrame();
-  const { width } = useVideoConfig();
-  const vertical = width < 1200;
+  const { vertical, u } = useLayout();
   const words = text.split(/\s+/).filter(Boolean);
   return (
-    <div style={{ position: "absolute", left: vertical ? 60 : 110, right: vertical ? 60 : 110, top: vertical ? "34%" : "auto", bottom: vertical ? "auto" : 190, display: "flex", flexWrap: "wrap", fontSize: vertical ? 88 : 84, columnGap: "0.28em", rowGap: "0.05em", justifyContent: vertical ? "center" : "flex-start" }}>
+    <div style={{ position: "absolute", left: (vertical ? 60 : 110) * u, right: (vertical ? 60 : 110) * u, top: vertical ? "34%" : "auto", bottom: vertical ? "auto" : 190 * u, display: "flex", flexWrap: "wrap", fontSize: (vertical ? 88 : 84) * u, columnGap: "0.28em", rowGap: "0.05em", justifyContent: vertical ? "center" : "flex-start" }}>
       {words.map((w, i) => {
         const d = i * 3;
         const o = interpolate(frame, [d, d + 8], [0, 1], clamp);
         const y = interpolate(frame, [d, d + 10], [26, 0], { ...clamp, easing: ease });
         return (
-          <span key={i} style={{ display: "inline-block", opacity: o, transform: `translateY(${y}px)`, color: "#fff", fontFamily: "Inter, Arial, sans-serif", fontWeight: 900, fontSize: vertical ? 88 : 84, lineHeight: 1.05, textShadow: "0 6px 24px rgba(0,0,0,.6)", borderBottom: i === words.length - 1 ? `10px solid ${accent}` : "none" }}>
+          <span key={i} style={{ display: "inline-block", opacity: o, transform: `translateY(${y * u}px)`, color: "#fff", fontFamily: "Inter, Arial, sans-serif", fontWeight: 900, fontSize: (vertical ? 88 : 84) * u, lineHeight: 1.05, textShadow: "0 6px 24px rgba(0,0,0,.6)", borderBottom: i === words.length - 1 ? `${10 * u}px solid ${accent}` : "none" }}>
             {w}
           </span>
         );
@@ -169,12 +179,11 @@ const OnscreenText = ({ text, accent }: { text: string; accent: string }) => {
 
 const Caption = ({ text }: { text: string }) => {
   const frame = useCurrentFrame();
-  const { width } = useVideoConfig();
-  const vertical = width < 1200;
+  const { vertical, u } = useLayout();
   const o = interpolate(frame, [0, 8], [0, 1], clamp);
   return (
-    <div style={{ position: "absolute", left: "7%", right: "7%", bottom: vertical ? "22%" : 70, display: "flex", justifyContent: "center", opacity: o }}>
-      <div style={{ background: "rgba(8,12,20,0.78)", color: "#f8fafc", padding: vertical ? "18px 26px" : "14px 22px", borderRadius: 18, fontSize: vertical ? 44 : 36, fontWeight: 700, textAlign: "center", lineHeight: 1.25, fontFamily: "Inter, Arial, sans-serif", border: "1px solid rgba(255,255,255,0.12)" }}>
+    <div style={{ position: "absolute", left: "7%", right: "7%", bottom: vertical ? "22%" : 70 * u, display: "flex", justifyContent: "center", opacity: o }}>
+      <div style={{ background: "rgba(8,12,20,0.78)", color: "#f8fafc", padding: vertical ? `${18 * u}px ${26 * u}px` : `${14 * u}px ${22 * u}px`, borderRadius: 18 * u, fontSize: (vertical ? 44 : 36) * u, fontWeight: 700, textAlign: "center", lineHeight: 1.25, fontFamily: "Inter, Arial, sans-serif", border: "1px solid rgba(255,255,255,0.12)" }}>
         {text}
       </div>
     </div>
@@ -184,8 +193,8 @@ const Caption = ({ text }: { text: string }) => {
 /** Word-synced caption: a word appears when it is spoken; the word being said is bold, said words turn grey, the key word keeps full ink with a marker. */
 const WordCaption = ({ words, blocks, accent }: { words: WordTiming[]; blocks: CaptionBlock[]; accent: string }) => {
   const frame = useCurrentFrame();
-  const { fps, width } = useVideoConfig();
-  const vertical = width < 1200;
+  const { fps } = useVideoConfig();
+  const { vertical, u } = useLayout();
   const t = frame / fps;
   const bi = blocks.findIndex((b, i) => {
     const first = words[b.words[0]];
@@ -197,7 +206,7 @@ const WordCaption = ({ words, blocks, accent }: { words: WordTiming[]; blocks: C
   if (bi < 0) return null;
   const block = blocks[bi];
   return (
-    <div style={{ position: "absolute", left: "6%", right: "6%", bottom: vertical ? "22%" : 70, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0 0.32em", fontFamily: "Inter, Arial, sans-serif", fontWeight: 800, fontSize: vertical ? 52 : 40, lineHeight: 1.25, textShadow: "0 4px 18px rgba(0,0,0,.7)" }}>
+    <div style={{ position: "absolute", left: "6%", right: "6%", bottom: vertical ? "22%" : 70 * u, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0 0.32em", fontFamily: "Inter, Arial, sans-serif", fontWeight: 800, fontSize: (vertical ? 52 : 40) * u, lineHeight: 1.25, textShadow: "0 4px 18px rgba(0,0,0,.7)" }}>
       {block.words.map((wi, k) => {
         const w = words[wi];
         if (!w) return null;
@@ -206,7 +215,7 @@ const WordCaption = ({ words, blocks, accent }: { words: WordTiming[]; blocks: C
         const isKey = k === block.key;
         const blur = interpolate(t, [w.t - 0.12, w.t + 0.04], [6, 0], clamp);
         return (
-          <span key={wi} style={{ opacity: spoken ? 1 : 0, filter: `blur(${spoken ? blur : 0}px)`, color: isKey || saying ? "#fff" : "rgba(255,255,255,0.62)", fontWeight: isKey || saying ? 900 : 700, padding: isKey ? "0 0.25em" : 0, borderRadius: 12, background: isKey && spoken ? `${accent}33` : "transparent", boxShadow: isKey && spoken ? `inset 0 0 0 3px ${accent}` : "none" }}>
+          <span key={wi} style={{ opacity: spoken ? 1 : 0, filter: `blur(${spoken ? blur : 0}px)`, color: isKey || saying ? "#fff" : "rgba(255,255,255,0.62)", fontWeight: isKey || saying ? 900 : 700, padding: isKey ? "0 0.25em" : 0, borderRadius: 12 * u, background: isKey && spoken ? `${accent}33` : "transparent", boxShadow: isKey && spoken ? `inset 0 0 0 ${3 * u}px ${accent}` : "none" }}>
             {w.w}
           </span>
         );
@@ -234,8 +243,7 @@ const ShotCaptions = ({ scenes, fps }: { scenes: ExplainerScene[]; fps: number }
 };
 
 const Guides = () => {
-  const { width, height } = useVideoConfig();
-  const vertical = width < 1200;
+  const { vertical, height } = useLayout();
   return (
     <AbsoluteFill style={{ fontFamily: "monospace", fontSize: 22, color: "#ff3b7f", pointerEvents: "none" }}>
       {vertical ? (
@@ -258,7 +266,7 @@ const DraftStamp = () => {
   const { width } = useVideoConfig();
   return (
     <AbsoluteFill style={{ pointerEvents: "none" }}>
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 54, background: "rgba(220,30,30,0.85)", color: "#fff", fontFamily: "Inter, Arial, sans-serif", fontWeight: 800, fontSize: 22, display: "flex", alignItems: "center", justifyContent: "center" }}>DRAFT · not checked yet</div>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 54 * (width / 1920), background: "rgba(220,30,30,0.85)", color: "#fff", fontFamily: "Inter, Arial, sans-serif", fontWeight: 800, fontSize: 22 * Math.max(0.6, width / 1920), display: "flex", alignItems: "center", justifyContent: "center" }}>DRAFT · not checked yet</div>
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.35)", fontFamily: "Inter, Arial Black, sans-serif", fontWeight: 900, fontSize: width * 0.22, letterSpacing: 8, WebkitTextStroke: "4px rgba(220,30,30,0.6)" }}>DRAFT</div>
     </AbsoluteFill>
   );
@@ -267,7 +275,8 @@ const DraftStamp = () => {
 const Progress = ({ total, accent }: { total: number; accent: string }) => {
   const frame = useCurrentFrame();
   const w = interpolate(frame, [0, total], [0, 100], clamp);
-  return <div style={{ position: "absolute", left: 0, bottom: 0, height: 8, width: `${w}%`, background: accent }} />;
+  const { u } = useLayout();
+  return <div style={{ position: "absolute", left: 0, bottom: 0, height: 8 * u, width: `${w}%`, background: accent }} />;
 };
 
 export const ExplainerReel = ({
@@ -287,6 +296,7 @@ export const ExplainerReel = ({
 }: ExplainerReelProps) => {
   const wordSynced = Boolean(words && words.length && captionBlocks && captionBlocks.length);
   const { fps } = useVideoConfig();
+  const { u } = useLayout();
   const totalFrames = Math.round(durationSec * fps);
   let cursor = 0;
 
@@ -321,7 +331,7 @@ export const ExplainerReel = ({
       {showProgress && <Progress total={totalFrames} accent={accent} />}
       {guides && <Guides />}
       {draft && <DraftStamp />}
-      <div style={{ position: "absolute", top: 24, right: 36, color: "rgba(255,255,255,0.55)", fontFamily: "Inter, Arial, sans-serif", fontSize: 22, fontWeight: 700, letterSpacing: 1 }}>{title.toUpperCase()}</div>
+      <div style={{ position: "absolute", top: 24 * u, right: 36 * u, color: "rgba(255,255,255,0.55)", fontFamily: "Inter, Arial, sans-serif", fontSize: 22 * u, fontWeight: 700, letterSpacing: 1 }}>{title.toUpperCase()}</div>
     </AbsoluteFill>
   );
 };
