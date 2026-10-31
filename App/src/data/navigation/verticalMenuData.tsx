@@ -104,6 +104,11 @@ const verticalMenuData = (): VerticalMenuDataType[] => [
     icon: 'tabler-video',
   },
   {
+    label: 'Explainer Studio',
+    href: '/explainer-studio',
+    icon: 'tabler-movie',
+  },
+  {
     isSection: true,
     label: 'ACCOUNT'
   },
