@@ -9,7 +9,8 @@ out/
 public/render_narration_*
 public/render_scene_*
 
-# Explainer Studio voice downloads + props
-public/explainer/
+# Explainer Studio voice downloads + props (prototype scene art under trains/ is versioned)
+public/explainer/*
+!public/explainer/trains/
 out/explainer/
 __pycache__/

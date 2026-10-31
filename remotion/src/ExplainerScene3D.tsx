@@ -69,15 +69,69 @@ const Model = ({ url }: { url: string }) => {
   return <primitive object={scene} />;
 };
 
+type PlaceholderKind = "steam" | "bullet" | "maglev";
+
+/** Pick a stand-in silhouette from the hero asset's name until a GLB is supplied. */
+const placeholderKind = (scene: ExplainerScene): PlaceholderKind => {
+  const name = (scene.assets3d || []).map((a) => a.name).join(" ").toLowerCase();
+  if (/maglev|l0|hover|magnet/.test(name)) return "maglev";
+  if (/shinkansen|bullet|tgv|high.?speed|streamlin/.test(name)) return "bullet";
+  return "steam";
+};
+
+/** Streamlined high-speed set: long rounded body, pointed nose, low bogies. */
+const BulletPlaceholder = ({ accent, floating, frame }: { accent: string; floating: boolean; frame: number }) => {
+  const lift = floating ? 0.35 + Math.sin(frame / 9) * 0.03 : 0;
+  return (
+    <group position={[0, lift, 0]}>
+      <mesh position={[0.4, 0.95, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <capsuleGeometry args={[0.55, 5.2, 8, 24]} />
+        <meshStandardMaterial color="#e5e7eb" metalness={0.35} roughness={0.3} />
+      </mesh>
+      <mesh position={[-2.9, 0.78, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <coneGeometry args={[0.5, 1.6, 24]} />
+        <meshStandardMaterial color="#e5e7eb" metalness={0.35} roughness={0.3} />
+      </mesh>
+      <mesh position={[0.4, 0.9, 0]}>
+        <boxGeometry args={[5.6, 0.12, 1.14]} />
+        <meshStandardMaterial color={accent} />
+      </mesh>
+      {Array.from({ length: 9 }, (_, i) => (
+        <mesh key={i} position={[-1.8 + i * 0.6, 1.15, 0.56]}>
+          <boxGeometry args={[0.32, 0.26, 0.02]} />
+          <meshStandardMaterial color="#0b1220" />
+        </mesh>
+      ))}
+      {!floating && [-2, -0.6, 1.0, 2.4].map((x) => (
+        <group key={x}>
+          {[0.5, -0.5].map((z) => (
+            <mesh key={z} position={[x, 0.28, z]} rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.26, 0.26, 0.08, 24]} />
+              <meshStandardMaterial color="#6b7280" metalness={0.8} roughness={0.3} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+      {floating && (
+        <mesh position={[0.2, -0.3, 0]}>
+          <boxGeometry args={[7, 0.06, 1.3]} />
+          <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={1.4} transparent opacity={0.55} />
+        </mesh>
+      )}
+    </group>
+  );
+};
+
 /** Procedural stand-in so a shot renders even before its GLB is supplied. */
-const Placeholder = ({ accent }: { accent: string }) => {
+const Placeholder = ({ accent, kind = "steam" }: { accent: string; kind?: PlaceholderKind }) => {
   const frame = useCurrentFrame();
   const wheelSpin = frame * 0.15;
+  if (kind !== "steam") return <BulletPlaceholder accent={accent} floating={kind === "maglev"} frame={frame} />;
   return (
     <group>
       <mesh position={[0, 0.9, 0]} castShadow>
         <boxGeometry args={[4, 1.2, 1.2]} />
-        <meshStandardMaterial color="#1f2937" metalness={0.6} roughness={0.35} />
+        <meshStandardMaterial color="#3b4a63" metalness={0.6} roughness={0.35} />
       </mesh>
       <mesh position={[1.4, 1.75, 0]}>
         <cylinderGeometry args={[0.18, 0.22, 0.6, 24]} />
@@ -122,7 +176,7 @@ export const ExplainerScene3D = ({ scene, frames, accent }: { scene: ExplainerSc
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#0b1220" }}>
-      {backdrop && <Img src={backdrop} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.55, filter: "blur(2px)" }} />}
+      {backdrop && <Img src={backdrop} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.8, filter: "blur(1.5px)" }} />}
       <ThreeCanvas width={width} height={height} camera={{ fov: 42, near: 0.1, far: 200, position: [4, 1.8, 6.5] }} style={{ position: "absolute", inset: 0 }}>
         <ambientLight intensity={0.5} />
         <directionalLight position={[6, 10, 4]} intensity={2.2} castShadow />
@@ -130,8 +184,8 @@ export const ExplainerScene3D = ({ scene, frames, accent }: { scene: ExplainerSc
         <fog attach="fog" args={["#0b1220", 12, 45]} />
         <Rig motion={scene.cameraMotion} frames={frames} />
         <Ground />
-        <Suspense fallback={<Placeholder accent={accent} />}>
-          {modelUrl ? <Model url={modelUrl} /> : <Placeholder accent={accent} />}
+        <Suspense fallback={<Placeholder accent={accent} kind={placeholderKind(scene)} />}>
+          {modelUrl ? <Model url={modelUrl} /> : <Placeholder accent={accent} kind={placeholderKind(scene)} />}
         </Suspense>
       </ThreeCanvas>
     </AbsoluteFill>

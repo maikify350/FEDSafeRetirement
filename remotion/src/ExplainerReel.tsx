@@ -94,11 +94,21 @@ export const cameraTransform2D = (motion: CameraMotion, p: number): string => {
   }
 };
 
-const Transitioner = ({ transition, frames, children }: { transition: Transition; frames: number; children: React.ReactNode }) => {
+/** Frames the incoming shot overlaps the outgoing one, so no cut ever dips to black. */
+export const TRANSITION_OVERLAP = 14;
+
+/** Overlay text (era badge, kinetic headline) of the outgoing shot fades during the overlap so two headlines never stack. */
+const OverlayFade = ({ frames, children }: { frames: number; children: React.ReactNode }) => {
   const frame = useCurrentFrame();
-  const inN = Math.min(14, Math.floor(frames / 3));
+  const o = interpolate(frame, [frames - 4, frames + 6], [1, 0], clamp);
+  return <AbsoluteFill style={{ opacity: o, pointerEvents: "none" }}>{children}</AbsoluteFill>;
+};
+
+const Transitioner = ({ transition, frames, fadeOut, children }: { transition: Transition; frames: number; fadeOut?: boolean; children: React.ReactNode }) => {
+  const frame = useCurrentFrame();
+  const inN = Math.min(TRANSITION_OVERLAP, Math.floor(frames / 3));
   const p = interpolate(frame, [0, inN], [0, 1], clamp);
-  const out = interpolate(frame, [frames - 10, frames], [1, 0], clamp);
+  const out = fadeOut ? interpolate(frame, [frames - 12, frames], [1, 0], clamp) : 1;
   let transform = "none";
   if (transition === "slide_left") transform = `translateX(${interpolate(ease(p), [0, 1], [8, 0])}%)`;
   if (transition === "zoom_in") transform = `scale(${interpolate(ease(p), [0, 1], [1.12, 1])})`;
@@ -140,7 +150,7 @@ const OnscreenText = ({ text, accent }: { text: string; accent: string }) => {
   const vertical = width < 1200;
   const words = text.split(/\s+/).filter(Boolean);
   return (
-    <div style={{ position: "absolute", left: vertical ? 60 : 110, right: vertical ? 60 : 110, top: vertical ? "34%" : "auto", bottom: vertical ? "auto" : 190, display: "flex", flexWrap: "wrap", gap: "0.25em", justifyContent: vertical ? "center" : "flex-start" }}>
+    <div style={{ position: "absolute", left: vertical ? 60 : 110, right: vertical ? 60 : 110, top: vertical ? "34%" : "auto", bottom: vertical ? "auto" : 190, display: "flex", flexWrap: "wrap", fontSize: vertical ? 88 : 84, columnGap: "0.28em", rowGap: "0.05em", justifyContent: vertical ? "center" : "flex-start" }}>
       {words.map((w, i) => {
         const d = i * 3;
         const o = interpolate(frame, [d, d + 8], [0, 1], clamp);
@@ -201,6 +211,24 @@ const WordCaption = ({ words, blocks, accent }: { words: WordTiming[]; blocks: C
       })}
     </div>
   );
+};
+
+/** Per-shot caption fallback (used until word timings exist): shows the active shot's narration. */
+const ShotCaptions = ({ scenes, fps }: { scenes: ExplainerScene[]; fps: number }) => {
+  const frame = useCurrentFrame();
+  let cursor = 0;
+  for (let i = 0; i < scenes.length; i++) {
+    const frames = Math.max(1, Math.round(scenes[i].durationSec * fps));
+    if (frame >= cursor && frame < cursor + frames) {
+      return scenes[i].narration ? (
+        <Sequence key={i} from={cursor} durationInFrames={frames} layout="none">
+          <Caption text={scenes[i].narration} />
+        </Sequence>
+      ) : null;
+    }
+    cursor += frames;
+  }
+  return null;
 };
 
 const Guides = () => {
@@ -270,18 +298,23 @@ export const ExplainerReel = ({
         const from = cursor;
         cursor += frames;
         const use3D = scene.animationMode === "3d_threejs";
+        const isLast = idx === scenes.length - 1;
+        // Later shots render on top; extend each by the overlap so the outgoing shot stays under the incoming fade.
+        const span = isLast ? frames : frames + TRANSITION_OVERLAP;
         return (
-          <Sequence key={idx} from={from} durationInFrames={frames} name={`Shot ${idx + 1}${scene.era ? ` · ${scene.era}` : ""}`}>
-            <Transitioner transition={scene.transition} frames={frames}>
+          <Sequence key={idx} from={from} durationInFrames={span} name={`Shot ${idx + 1}${scene.era ? ` · ${scene.era}` : ""}`}>
+            <Transitioner transition={scene.transition} frames={span} fadeOut={isLast}>
               {use3D ? <ExplainerScene3D scene={scene} frames={frames} accent={accent} /> : <Scene2D scene={scene} frames={frames} />}
-              {scene.era && <EraBadge era={scene.era} accent={accent} />}
-              {scene.onscreenText && <OnscreenText text={scene.onscreenText} accent={accent} />}
-              {showCaptions && !wordSynced && scene.narration && <Caption text={scene.narration} />}
+              <OverlayFade frames={frames}>
+                {scene.era && <EraBadge era={scene.era} accent={accent} />}
+                {scene.onscreenText && <OnscreenText text={scene.onscreenText} accent={accent} />}
+              </OverlayFade>
             </Transitioner>
           </Sequence>
         );
       })}
 
+      {showCaptions && !wordSynced && <ShotCaptions scenes={scenes} fps={fps} />}
       {showCaptions && wordSynced && words && captionBlocks && <WordCaption words={words} blocks={captionBlocks} accent={accent} />}
       {showProgress && <Progress total={totalFrames} accent={accent} />}
       {guides && <Guides />}

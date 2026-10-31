@@ -45,6 +45,12 @@ export interface ExplainerShot {
 
   /** 3D asset slots this shot needs when animation mode is 3d_threejs. */
   assets_3d?: { slot: string; name: string; source_url?: string }[]
+
+  /** Per-shot override of brief.animationMode (hero shots in 3D, the rest 2D). */
+  animation_mode?: AnimationMode
+
+  /** Background still for the shot (remotion/public path or URL). */
+  scene_image?: string
 }
 
 export type CheckLevel = 'pass' | 'warn' | 'error'

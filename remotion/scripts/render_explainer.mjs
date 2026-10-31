@@ -51,16 +51,18 @@ const scenes = (plan.shots || []).map((s) => ({
   cameraMotion: s.camera_motion || "push_forward",
   transition: s.transition || "fade",
   durationSec: Math.max(0.5, Number(s.timestamp_end) - Number(s.timestamp_start)),
-  animationMode: brief.animationMode || "2d_kinetic",
+  animationMode: s.animation_mode || brief.animationMode || "2d_kinetic",
   assets3d: s.assets_3d || [],
 }));
-const durationSec = plan.voice?.duration || brief.durationSec || scenes.reduce((a, s) => a + s.durationSec, 0);
+const durationSec = plan.voice?.duration || scenes.reduce((a, s) => a + s.durationSec, 0) || brief.durationSec;
 const props = {
   title: brief.title || plan.publishing?.title_options?.[0] || "Explainer",
   width: draft ? Math.round(W / 2) : W,
   height: draft ? Math.round(H / 2) : H,
   durationSec,
   narrationAudio,
+  backgroundMusic: plan.music || undefined,
+  musicVolume: plan.music_volume ?? 0.05,
   scenes,
   words: plan.voice?.words,
   captionBlocks: plan.voice?.caption_blocks,
