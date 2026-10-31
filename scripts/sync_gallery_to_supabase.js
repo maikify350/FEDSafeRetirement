@@ -2,7 +2,11 @@ const fs = require('fs');
 const path = require('path');
 
 const SUPABASE_URL = 'https://gqarlkfmpgaotbezpkbs.supabase.co';
-const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxYXJsa2ZtcGdhb3RiZXpwa2JzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTA2NDYzNCwiZXhwIjoyMDkwNjQwNjM0fQ.N8TxFsnqnGUkMK_qmvATDSs-kyneci8ULziUHzpOwq8';
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SERVICE_KEY) {
+  console.error('SUPABASE_SERVICE_ROLE_KEY env var is required (export it from App/.env)');
+  process.exit(1);
+}
 
 async function main() {
   console.log('1. Ensuring "gallery" bucket is public...');
