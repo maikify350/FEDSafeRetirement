@@ -169,6 +169,20 @@ const Ground = () => (
   </group>
 );
 
+/** The 2D backdrop behind the 3D stage drifts slowly so the frame never reads as frozen. */
+const BackdropDrift = ({ frames, children }: { frames: number; children: React.ReactNode }) => {
+  const frame = useCurrentFrame();
+  const p = interpolate(frame, [0, frames], [0, 1], clamp);
+  return <AbsoluteFill style={{ transform: `scale(${interpolate(p, [0, 1], [1.12, 1.28])}) translateX(${interpolate(p, [0, 1], [3, -3])}%)`, transformOrigin: "center" }}>{children}</AbsoluteFill>;
+};
+
+/** The hero travels along the track over the shot (≈ 3 units), independent of the camera path. */
+const HeroTravel = ({ frames, children }: { frames: number; children: React.ReactNode }) => {
+  const frame = useCurrentFrame();
+  const x = interpolate(frame, [0, frames], [-3.2, 3.2], clamp);
+  return <group position={[x, 0, 0]}>{children}</group>;
+};
+
 export const ExplainerScene3D = ({ scene, frames, accent }: { scene: ExplainerScene; frames: number; accent: string }) => {
   const { width, height } = useVideoConfig();
   const modelUrl = scene.assets3d?.find((a) => a.source_url)?.source_url;
@@ -176,17 +190,19 @@ export const ExplainerScene3D = ({ scene, frames, accent }: { scene: ExplainerSc
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#0b1220" }}>
-      {backdrop && <Img src={backdrop} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.8, filter: "blur(1.5px)" }} />}
+      {backdrop && <BackdropDrift frames={frames}><Img src={backdrop} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85, filter: "blur(1.2px)" }} /></BackdropDrift>}
       <ThreeCanvas width={width} height={height} camera={{ fov: 42, near: 0.1, far: 200, position: [4, 1.8, 6.5] }} style={{ position: "absolute", inset: 0 }}>
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[6, 10, 4]} intensity={2.2} castShadow />
+        <ambientLight intensity={0.9} />
+        <directionalLight position={[6, 10, 4]} intensity={3.0} castShadow />
         <pointLight position={[-6, 3, -4]} intensity={1.2} color={accent} />
         <fog attach="fog" args={["#0b1220", 12, 45]} />
         <Rig motion={scene.cameraMotion} frames={frames} />
         <Ground />
-        <Suspense fallback={<Placeholder accent={accent} kind={placeholderKind(scene)} />}>
-          {modelUrl ? <Model url={modelUrl} /> : <Placeholder accent={accent} kind={placeholderKind(scene)} />}
-        </Suspense>
+        <HeroTravel frames={frames}>
+          <Suspense fallback={<Placeholder accent={accent} kind={placeholderKind(scene)} />}>
+            {modelUrl ? <Model url={modelUrl} /> : <Placeholder accent={accent} kind={placeholderKind(scene)} />}
+          </Suspense>
+        </HeroTravel>
       </ThreeCanvas>
     </AbsoluteFill>
   );

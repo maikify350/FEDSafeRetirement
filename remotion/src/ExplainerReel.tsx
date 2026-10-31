@@ -75,22 +75,24 @@ const ease = (t: number) => 1 - Math.pow(1 - t, 3);
 
 /** CSS transform for a 2D camera move over the scene duration. */
 export const cameraTransform2D = (motion: CameraMotion, p: number): string => {
+  // Amplitudes are sized for 8–15 s long-form shots: every move must stay visibly alive for the
+  // whole shot (check_render.py fails anything frozen > 1.2 s), so even "static" drifts slowly.
   switch (motion) {
-    case "pan_slow_right": return `scale(1.18) translateX(${interpolate(p, [0, 1], [4, -4])}%)`;
+    case "pan_slow_right": return `scale(1.28) translateX(${interpolate(p, [0, 1], [9, -9])}%) translateY(${interpolate(p, [0, 1], [1.5, -1.5])}%)`;
     case "push_forward":
-    case "slow_dolly_in": return `scale(${interpolate(p, [0, 1], [1.04, 1.22])})`;
-    case "dolly_out": return `scale(${interpolate(p, [0, 1], [1.24, 1.04])})`;
-    case "crash_zoom": return `scale(${interpolate(ease(p), [0, 1], [1.0, 1.6])})`;
+    case "slow_dolly_in": return `scale(${interpolate(p, [0, 1], [1.02, 1.42])}) translateY(${interpolate(p, [0, 1], [0, -2])}%)`;
+    case "dolly_out": return `scale(${interpolate(p, [0, 1], [1.44, 1.04])})`;
+    case "crash_zoom": return `scale(${interpolate(ease(p), [0, 1], [1.0, 1.7])})`;
     case "tilt_up":
-    case "aerial_reveal": return `scale(1.2) translateY(${interpolate(p, [0, 1], [5, -5])}%)`;
+    case "aerial_reveal": return `scale(1.32) translateY(${interpolate(p, [0, 1], [10, -10])}%) translateX(${interpolate(p, [0, 1], [-1.5, 1.5])}%)`;
     case "orbit":
-    case "dynamic_orbit": return `scale(1.22) translateX(${Math.sin(p * Math.PI) * 4}%) translateY(${Math.cos(p * Math.PI) * 2}%) rotate(${interpolate(p, [0, 1], [-1.5, 1.5])}deg)`;
+    case "dynamic_orbit": return `scale(1.3) translateX(${Math.sin(p * Math.PI) * 7}%) translateY(${Math.cos(p * Math.PI) * 3.5}%) rotate(${interpolate(p, [0, 1], [-2, 2])}deg)`;
     case "fly_by_left":
-    case "drone_fly_by": return `scale(1.3) translateX(${interpolate(p, [0, 1], [10, -10])}%) translateY(${interpolate(p, [0, 1], [3, -2])}%)`;
+    case "drone_fly_by": return `scale(1.38) translateX(${interpolate(p, [0, 1], [13, -13])}%) translateY(${interpolate(p, [0, 1], [3, -2])}%)`;
     case "fly_by_right":
-    case "tracking_shot": return `scale(1.3) translateX(${interpolate(p, [0, 1], [-10, 10])}%)`;
-    case "handheld": return `scale(1.12) translate(${Math.sin(p * 31) * 0.6}%, ${Math.cos(p * 23) * 0.5}%)`;
-    default: return "scale(1.06)";
+    case "tracking_shot": return `scale(1.38) translateX(${interpolate(p, [0, 1], [-13, 13])}%)`;
+    case "handheld": return `scale(1.14) translate(${Math.sin(p * 31) * 0.8}%, ${Math.cos(p * 23) * 0.6}%)`;
+    default: return `scale(${interpolate(p, [0, 1], [1.04, 1.26])}) translate(${interpolate(p, [0, 1], [2.5, -2.5])}%, ${interpolate(p, [0, 1], [-2, 2])}%)`;
   }
 };
 

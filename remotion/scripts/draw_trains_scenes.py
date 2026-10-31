@@ -118,11 +118,20 @@ def s_hero_rocket():
     img,d,(sky,mid,hi,ground)=base("dawn"); hills(d,hi,ground,600,seed=11); rails(d,rgb(hi)); steam_loco(d,560,860,1.0,rgb(ground),rgb(hi)); save(img,"01_rocket_hero")
 def s_shinkansen_today():
     img,d,(sky,mid,hi,ground)=base("steel"); city(d,rgb(hi),ground); d.rectangle([0,700,W,H],fill=ground); bullet(d,300,900,1.0,rgb("#e8eef5"),rgb(hi),rgb("#2563eb")); save(img,"02_shinkansen_today")
+def timeline_scene(pal, name, n, seed):
+    """Timeline with enough structure (hills, rails, tall tick posts, rings) that a camera move reads on screen."""
+    img,d,(sky,mid,hi,ground)=base(pal); hills(d,hi,ground,600,seed=seed); rails(d,rgb(hi))
+    d.line([(120,520),(W-120,520)],fill=rgb(hi),width=14)
+    for i in range(n):
+        x=160+i*(W-320)//max(1,n-1)
+        d.rectangle([x-6,300,x+6,520],fill=rgb(hi))                       # tick post
+        d.ellipse([x-46,474,x+46,566],outline=rgb(hi),width=10)           # ring
+        d.ellipse([x-22,498,x+22,542],fill=rgb(hi))
+        d.rounded_rectangle([x-70,230,x+70,300],radius=18,fill=rgb(ground),outline=rgb(hi),width=6)  # label plate
+    save(img,name)
+
 def s_timeline():
-    img,d,(sky,mid,hi,ground)=base("slate"); d.line([(120,560),(W-120,560)],fill=rgb(hi),width=10)
-    for i,yr in enumerate(["1804","1829","1869","1938","1964","2015"]):
-        x=160+i*(W-320)//5; d.ellipse([x-26,534,x+26,586],fill=rgb(hi)); d.ellipse([x-12,548,x+12,572],fill=ground)
-    save(img,"03_timeline")
+    timeline_scene("slate","03_timeline",6,3)
 def s_horse():
     img,d,(sky,mid,hi,ground)=base("sepia"); hills(d,hi,ground,560,seed=5)
     d.rectangle([0,760,W,H],fill=rgb(mid)); d.rectangle([900,700,1500,860],fill=rgb(ground)); # wagon
@@ -201,9 +210,7 @@ def s_maglev():
     g=maglev(d,300,900,1.0,rgb(mid),rgb(hi),rgb("#60a5fa")); bullet(d,300,890,1.0,rgb("#f8fafc"),rgb(hi),rgb("#60a5fa"))
     img=Image.alpha_composite(img.convert("RGBA"), g.filter(ImageFilter.GaussianBlur(30))); save(img,"23_maglev")
 def s_timeline2():
-    img,d,(sky,mid,hi,ground)=base("dawn"); d.line([(120,560),(W-120,560)],fill=rgb(hi),width=10)
-    for i in range(7): x=160+i*(W-320)//6; d.ellipse([x-26,534,x+26,586],fill=rgb(hi))
-    save(img,"24_timeline_end")
+    timeline_scene("dawn","24_timeline_end",7,19)
 def s_horizon():
     img,d,(sky,mid,hi,ground)=base("sun"); hills(d,hi,ground,640,seed=41); rails(d,rgb(hi)); d.ellipse([W//2-160,420,W//2+160,740],fill=rgb(hi)); d.rectangle([0,740,W,H],fill=rgb(ground)); rails(d,rgb(hi)); save(img,"25_horizon")
 
