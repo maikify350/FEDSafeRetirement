@@ -9,7 +9,7 @@ and the L0 maglev.
 | File | What it is |
 | --- | --- |
 | `trains_plan.json` | The full Explainer Studio plan: brief, hook, 10 research beats, 8 chapters, 611-word narration, 26 time-coded shots with engine prompts, continuity bible, publishing kit, cost estimate, and the stored check results (`qa`). |
-| `stills/` | Review frames rendered from the plan at 1920×1080. |
+| `stills/` | Review frames rendered from the plan at 1920×1080 (downsized to 1280×720). |
 
 The plan is exactly what `/explainer-studio` produces and what `POST /api/explainer/handoff`
 accepts, so it can be loaded into the studio, re-voiced, and sent to Video Studio unchanged.
@@ -30,6 +30,23 @@ accepts, so it can be loaded into the studio, re-voiced, and sent to Video Studi
 `runPlanChecks` on the plan: 12 pass, 0 errors, 1 warning. The warning is `voice_timing`
 (no ElevenLabs take yet, so shot times are estimates). Word budget 611 / 681, every shot
 2–15 s, contiguous coverage 0–300 s, hook inside the 6 s window, CTA on the last shot.
+
+## Render checks on the 5-minute draft
+
+`check_render.py` on `the-revolution-of-trains-DRAFT.mp4` (960×540, 300.0 s, 26 shots):
+
+| Check | Result |
+| --- | --- |
+| freeze (nothing still > 1.2 s) | PASS — longest still stretch 0.00 s |
+| cut (single-frame snaps) | PASS |
+| speed (quarter-second motion ≤ 12) | PASS — peak 4.4 |
+| jump (freeze then jump) | PASS |
+| short_shot (≥ 2 s) | PASS |
+
+It took three passes to get there: the first draft froze for 8.3 s on a flat night scene, the
+second for 7.8 s on a 3D orbit plus one hard cut from a glitch transition on a WebGL shot.
+The fixes (rate-based camera moves, light sweep, 3D hero travel, redrawn timeline art) are
+listed below and are now part of the platform, not this video.
 
 ## How it was rendered
 
@@ -54,8 +71,15 @@ real stills (`scene_image`) and re-render; nothing else changes.
 - `ExplainerReel`: incoming shots now overlap the outgoing one by 14 frames, so no cut dips
   to black; the outgoing headline and era badge fade during the overlap; captions live in
   their own layer keyed to the active shot; kinetic headline word spacing fixed.
+- `ExplainerReel` camera moves are rate-based: amplitude scales with shot length so an
+  8–15 s long-form shot moves as fast per frame as a 6 s Short; "static" drifts slowly.
+- `components/LightSweep`: two soft light bands drifting a quarter cycle apart on every shot,
+  so dark or flat art never reads as frozen.
 - `ExplainerScene3D`: procedural placeholders are era-aware (steam, bullet, maglev) chosen
-  from the hero asset's name; backdrop image brighter.
+  from the hero asset's name; the hero travels along the track at constant speed; backdrop
+  drifts and is brighter; glitch transitions are avoided on WebGL shots.
+- Layout: orientation comes from the aspect ratio and all typography scales with frame
+  width, so half-size drafts match the final frame.
 
 ## Still missing for a publishable cut
 
